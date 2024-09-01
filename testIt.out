@@ -2,8 +2,9 @@
 
   Lock
     Deployment
-      ✔ Deploy (438ms)
+smartWalletTemplate: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be
+      ✔ Deploy (419ms)
 
 
-  1 passing (441ms)
+  1 passing (420ms)
 

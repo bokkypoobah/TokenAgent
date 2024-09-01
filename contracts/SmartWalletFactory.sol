@@ -12,21 +12,7 @@ pragma solidity ^0.8.24;
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
 // ----------------------------------------------------------------------------
 
-interface IERC20 {
-    event Transfer(address indexed from, address indexed to, uint tokens);
-    event Approval(address indexed owner, address indexed spender, uint tokens);
-
-    function name() external view returns (string memory);
-    function symbol() external view returns (string memory);
-    function decimals() external view returns (uint8);
-
-    function totalSupply() external view returns (uint);
-    function balanceOf(address owner) external view returns (uint balance);
-    function allowance(address owner, address spender) external view returns (uint remaining);
-    function transfer(address to, uint tokens) external returns (bool success);
-    function approve(address spender, uint tokens) external returns (bool success);
-    function transferFrom(address from, address to, uint tokens) external returns (bool success);
-}
+import "hardhat/console.sol";
 
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
@@ -89,6 +75,27 @@ contract CloneFactory {
 }
 // End CloneFactory.sol
 
+
+interface IERC20 {
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed owner, address indexed spender, uint tokens);
+
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+
+    function totalSupply() external view returns (uint);
+    function balanceOf(address owner) external view returns (uint balance);
+    function allowance(address owner, address spender) external view returns (uint remaining);
+    function transfer(address to, uint tokens) external returns (bool success);
+    function approve(address spender, uint tokens) external returns (bool success);
+    function transferFrom(address from, address to, uint tokens) external returns (bool success);
+}
+
+interface IERC165 {
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+}
+
 type Account is address;
 type OfferKey is bytes32;
 type Price is uint128;
@@ -143,20 +150,23 @@ contract Owned {
 contract SmartWallet is Owned {
 
     struct Offer {
-        Account taker;
-        BuySell buySell;
-        TokenType tokenType;
-        Token token;
-        Tokens tokens; // ERC-20
-        TokenId[] tokenIds; // ERC-721/1155
-        Tokens[] tokenss; // ERC-1155
-        Price price; // token/WETH 18dp
-        Unixtime expiry;
+        // Account taker; // 160 bits
+        BuySell buySell; // 8 bits
+        TokenType tokenType; // 8 bits
+        Unixtime expiry; // 64 bits
+        Token token; // 160 bits
+        Tokens tokens; // 128 bits // ERC-20
+        // TokenId[] tokenIds; // ERC-721/1155
+        // Tokens[] tokenss; // ERC-1155
+        Price price; // 128 bits // token/WETH 18dp
     }
 
     struct Trade {
         OfferKey offerKey;
     }
+
+    bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
+    bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
 
     IERC20 public weth;
     bool public active;
@@ -166,6 +176,7 @@ contract SmartWallet is Owned {
     event Traded(Trade trade, Unixtime timestamp);
 
     error InvalidOfferKey(OfferKey offerKey);
+    error OfferExpired(OfferKey offerKey, Unixtime expiry);
 
     constructor() {
     }
@@ -176,15 +187,31 @@ contract SmartWallet is Owned {
     }
 
     function makeOfferKey(Offer memory offer) internal pure returns (OfferKey offerKey) {
-        return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
+        // return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
+        return OfferKey.wrap(keccak256(abi.encodePacked(offer.buySell, offer.tokenType, offer.token)));
     }
+
+    function isERC721(address token) internal view returns (bool b) {
+        if (token.code.length > 0) {
+            try IERC165(token).supportsInterface(ERC721_INTERFACE) returns (bool _b) {
+                b = _b;
+            } catch {
+            }
+        }
+    }
+
 
     function addOffers(Offer[] calldata _offers) external onlyOwner {
         for (uint i = 0; i < _offers.length; i++) {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
             // Check ERC-20/721/1155
+            uint startGas = gasleft();
+            // 45833 gas
             offers[offerKey] = offer;
+            uint usedGas = startGas - gasleft();
+            console.log("usedGas", usedGas);
+            // 4802 gas
             emit OfferAdded(offerKey, offer, Unixtime.wrap(uint64(block.timestamp)));
         }
     }
@@ -200,6 +227,9 @@ contract SmartWallet is Owned {
             Offer memory offer = offers[offerKey];
             if (Token.unwrap(offer.token) == address(0)) {
                 revert InvalidOfferKey(offerKey);
+            }
+            if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
+                revert OfferExpired(offerKey, offer.expiry);
             }
             // Transfer from msg.sender first
             if (offer.buySell == BuySell.BUY) {

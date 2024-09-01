@@ -78,13 +78,20 @@ describe("SmartWalletFactory", function () {
       const now = parseInt(new Date().getTime()/1000);
       const expiry = now + 60 * 1000;
 
+      // const offers1 = [
+      //   [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
+      //   [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
+      //   [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
+      // ];
       const offers1 = [
-        [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
-        [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
-        [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
+        [BUY, ERC20, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999999"],
+        [BUY, ERC721, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999998"],
+        [SELL, ERC1155, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999997"],
       ];
       const addOffers1Tx = await smartWallet.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
+      console.log("        * addOffers1TxReceipt.gasUsed: " + addOffers1TxReceipt.gasUsed);
+      // console.log("        * addOffers1TxReceipt: " + JSON.stringify(addOffers1TxReceipt, null, 2));
       const offerKeys = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = smartWallet.interface.parseLog(event);

@@ -126,11 +126,13 @@ contract SmartWallet is Owned {
         OfferKey offerKey;
     }
 
+    bool public active;
+    mapping(OfferKey => Offer) public offers;
+
     event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);
 
-    bool public active;
-    mapping(OfferKey => Offer) public offers;
+    error InvalidOfferKey(OfferKey offerKey);
 
     constructor() {
     }
@@ -160,6 +162,11 @@ contract SmartWallet is Owned {
     function trade(Trade[] calldata _trades) external {
         for (uint i = 0; i < _trades.length; i++) {
             Trade memory _trade = _trades[i];
+            OfferKey offerKey = _trade.offerKey;
+            Offer memory offer = offers[offerKey];
+            if (Token.unwrap(offer.token) == address(0)) {
+                revert InvalidOfferKey(offerKey);
+            }
             emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
         }
     }

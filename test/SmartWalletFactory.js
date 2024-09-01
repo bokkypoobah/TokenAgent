@@ -2,11 +2,13 @@ const { time, loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
+const ADDRESS0 = "0x0000000000000000000000000000000000000000";
+
 describe("SmartWalletFactory", function () {
 
   async function deployContracts() {
     const accounts = await ethers.getSigners();
-    console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 2).map(e => e.address)));
+    console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
 
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy();
@@ -55,7 +57,7 @@ describe("SmartWalletFactory", function () {
         .withArgs(accounts[0].address, accounts[1].address);
     });
 
-    it("Test SmartWallet orders", async function () {
+    it.only("Test SmartWallet orders", async function () {
       const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
@@ -64,20 +66,48 @@ describe("SmartWalletFactory", function () {
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);
 
-      // await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
-      //   .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
-      // const smartWalletOwner = await smartWallet.owner();
-      // await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
-      //   .to.be.revertedWithCustomError(smartWallet, "NotOwner");
-      await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
 
-      const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
-      const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
-      acceptOwnershipTxReceipt.logs.forEach((event) => {
+      // struct Order {
+      //     Account taker;
+      //     BuySell buySell;
+      //     TokenType tokenType;
+      //     Token token;
+      //     TokenId[] tokenIds; // ERC-721/1155
+      //     Tokens[] tokenss; // ERC-20/1155
+      //     Price price; // token/WETH 18dp
+      //     Unixtime expiry;
+      // }
+      const orders1 = [
+        [accounts[0].address],
+        [accounts[1].address],
+        [accounts[2].address],
+      ];
+      const addOrders1Tx = await smartWallet.addOrders(orders1);
+      const addOrders1TxReceipt = await addOrders1Tx.wait();
+      addOrders1TxReceipt.logs.forEach((event) => {
         const log = smartWallet.interface.parseLog(event);
         console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
-        console.log("        * log: " + JSON.stringify(log));
+        // console.log("        * log: " + JSON.stringify(log));
       });
+
+
+
+      if (false) {
+        // await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
+        //   .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
+        // const smartWalletOwner = await smartWallet.owner();
+        // await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
+        //   .to.be.revertedWithCustomError(smartWallet, "NotOwner");
+        await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
+
+        const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
+        const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
+        acceptOwnershipTxReceipt.logs.forEach((event) => {
+          const log = smartWallet.interface.parseLog(event);
+          console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
+          console.log("        * log: " + JSON.stringify(log));
+        });
+      }
     });
 
 

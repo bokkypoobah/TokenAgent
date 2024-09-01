@@ -85,12 +85,12 @@ describe("SmartWalletFactory", function () {
       //     Unixtime expiry;
       // }
 
-      // console.log("fixedSupplyToken.address: " + JSON.stringify(fixedSupplyToken, null, 2));
+      console.log("fixedSupplyToken: " + JSON.stringify(fixedSupplyToken, null, 2));
 
       const orders1 = [
-        [accounts[0].address, BUYSELL_BUY, TOKENTYPE_ERC20, fixedSupplyToken.target],
-        [accounts[1].address, BUYSELL_BUY, TOKENTYPE_ERC721, fixedSupplyToken.target],
-        [ADDRESS0, BUYSELL_SELL, TOKENTYPE_ERC1155, fixedSupplyToken.target],
+        [accounts[0].address, BUYSELL_BUY, TOKENTYPE_ERC20, fixedSupplyToken.target, [1, 2, 3], [11, 22, 33, 44]],
+        [accounts[1].address, BUYSELL_BUY, TOKENTYPE_ERC721, fixedSupplyToken.target, [4, 5, 6], [55, 66, 77, 88]],
+        [ADDRESS0, BUYSELL_SELL, TOKENTYPE_ERC1155, fixedSupplyToken.target, [7, 8, 9], [999]],
       ];
       const addOrders1Tx = await smartWallet.addOrders(orders1);
       const addOrders1TxReceipt = await addOrders1Tx.wait();

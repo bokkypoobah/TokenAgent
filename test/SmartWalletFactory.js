@@ -1,13 +1,10 @@
-const {
-  time,
-  loadFixture,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { time, loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
-describe("Lock", function () {
+describe("SmartWalletFactory", function () {
 
-  async function deployOneYearLockFixture() {
+  async function deployContracts() {
     const accounts = await ethers.getSigners();
 
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
@@ -25,7 +22,7 @@ describe("Lock", function () {
   describe("Deployment", function () {
 
     it("Deploy SmartWalletFactory And SmartWallet", async function () {
-      const { smartWalletFactory, accounts } = await loadFixture(deployOneYearLockFixture);
+      const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
       const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
@@ -39,7 +36,7 @@ describe("Lock", function () {
     });
 
     it("Test SmartWallet ownership", async function () {
-      const { smartWalletFactory, accounts } = await loadFixture(deployOneYearLockFixture);
+      const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address);
@@ -58,14 +55,14 @@ describe("Lock", function () {
     });
 
     // it("Should set the right owner", async function () {
-    //   const { lock, owner } = await loadFixture(deployOneYearLockFixture);
+    //   const { lock, owner } = await loadFixture(deployContracts);
     //
     //   expect(await lock.owner()).to.equal(owner.address);
     // });
 
     // it("Should receive and store the funds to lock", async function () {
     //   const { lock, lockedAmount } = await loadFixture(
-    //     deployOneYearLockFixture
+    //     deployContracts
     //   );
     //
     //   expect(await ethers.provider.getBalance(lock.target)).to.equal(
@@ -88,7 +85,7 @@ describe("Lock", function () {
 
     // describe("Validations", function () {
     //   it("Should revert with the right error if called too soon", async function () {
-    //     const { lock } = await loadFixture(deployOneYearLockFixture);
+    //     const { lock } = await loadFixture(deployContracts);
     //
     //     await expect(lock.withdraw()).to.be.revertedWith(
     //       "You can't withdraw yet"
@@ -97,7 +94,7 @@ describe("Lock", function () {
     //
     //   it("Should revert with the right error if called from another account", async function () {
     //     const { lock, unlockTime, otherAccount } = await loadFixture(
-    //       deployOneYearLockFixture
+    //       deployContracts
     //     );
     //
     //     // We can increase the time in Hardhat Network
@@ -111,7 +108,7 @@ describe("Lock", function () {
     //
     //   it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
     //     const { lock, unlockTime } = await loadFixture(
-    //       deployOneYearLockFixture
+    //       deployContracts
     //     );
     //
     //     // Transactions are sent using the first signer by default
@@ -124,7 +121,7 @@ describe("Lock", function () {
     // describe("Events", function () {
     //   it("Should emit an event on withdrawals", async function () {
     //     const { lock, unlockTime, lockedAmount } = await loadFixture(
-    //       deployOneYearLockFixture
+    //       deployContracts
     //     );
     //
     //     await time.increaseTo(unlockTime);
@@ -138,7 +135,7 @@ describe("Lock", function () {
     // describe("Transfers", function () {
     //   it("Should transfer the funds to the owner", async function () {
     //     const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-    //       deployOneYearLockFixture
+    //       deployContracts
     //     );
     //
     //     await time.increaseTo(unlockTime);

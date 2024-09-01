@@ -1,10 +1,10 @@
 
 
-  Lock
+  SmartWalletFactory
     Deployment
-      ✔ Deploy SmartWalletFactory And SmartWallet (479ms)
+      ✔ Deploy SmartWalletFactory And SmartWallet (461ms)
       ✔ Test SmartWallet ownership
 
 
-  2 passing (508ms)
+  2 passing (478ms)
 

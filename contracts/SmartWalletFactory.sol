@@ -96,6 +96,7 @@ contract Owned {
     }
 }
 
+/// @notice User owned SmartWallet
 contract SmartWallet is Owned {
     constructor() {
     }
@@ -105,6 +106,7 @@ contract SmartWallet is Owned {
     }
 }
 
+/// @notice SmartWallet factory
 contract SmartWalletFactory is CloneFactory {
     SmartWallet public smartWalletTemplate;
 

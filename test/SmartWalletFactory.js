@@ -13,7 +13,13 @@ describe("Lock", function () {
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy();
 
-    return { smartWalletFactory, accounts };
+    const WETH9 = await ethers.getContractFactory("WETH9");
+    const weth9 = await WETH9.deploy();
+
+    const FixedSupplyToken = await ethers.getContractFactory("FixedSupplyToken");
+    const fixedSupplyToken = await FixedSupplyToken.deploy();
+
+    return { smartWalletFactory, weth9, fixedSupplyToken, accounts };
   }
 
   describe("Deployment", function () {

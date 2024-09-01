@@ -167,6 +167,34 @@ contract SmartWallet is Owned {
             if (Token.unwrap(offer.token) == address(0)) {
                 revert InvalidOfferKey(offerKey);
             }
+            // Transfer from msg.sender first
+            if (offer.buySell == BuySell.BUY) {
+                // SmartWallet BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
+                if (offer.tokenType == TokenType.ERC20) {
+                } else if (offer.tokenType == TokenType.ERC721) {
+                } else if (offer.tokenType == TokenType.ERC1155) {
+                }
+            } else {
+                // SmartWallet SELL, msg.sender BUY - msg.sender transfers WETH
+                if (offer.tokenType == TokenType.ERC20) {
+                } else if (offer.tokenType == TokenType.ERC721) {
+                } else if (offer.tokenType == TokenType.ERC1155) {
+                }
+            }
+            // Transfer to msg.sender last
+            if (offer.buySell == BuySell.BUY) {
+                // SmartWallet BUY, msg.sender SELL - SmartWallet transfers WETH
+                if (offer.tokenType == TokenType.ERC20) {
+                } else if (offer.tokenType == TokenType.ERC721) {
+                } else if (offer.tokenType == TokenType.ERC1155) {
+                }
+            } else {
+                // SmartWallet SELL, msg.sender BUY - SmartWallet transfers ERC-20/721/1155
+                if (offer.tokenType == TokenType.ERC20) {
+                } else if (offer.tokenType == TokenType.ERC721) {
+                } else if (offer.tokenType == TokenType.ERC1155) {
+                }
+            }
             emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
         }
     }

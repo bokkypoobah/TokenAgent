@@ -67,7 +67,7 @@ contract Owned {
     address public owner;
     address public newOwner;
 
-    event OwnershipTransferred(address indexed _from, address indexed _to);
+    event OwnershipTransferred(address indexed from, address indexed to);
 
     error NotOwner();
     error AlreadyInitialised();
@@ -115,8 +115,8 @@ contract SmartWallet is Owned {
         BuySell buySell;
         TokenType tokenType;
         Token token;
-        TokenId tokenId; // ERC-721/1155
-        Tokens tokens; // ERC-20/1155
+        TokenId[] tokenIds; // ERC-721/1155
+        Tokens[] tokenss; // ERC-20/1155
         Price price; // token/WETH 18dp
         Unixtime expiry;
     }
@@ -135,7 +135,7 @@ contract SmartWallet is Owned {
     }
 
     function makeKey(Order memory order) internal pure returns (OrderKey orderKey) {
-        return OrderKey.wrap(keccak256(abi.encodePacked(order.buySell, order.tokenType, order.token, order.tokenId, order.tokens)));
+        return OrderKey.wrap(keccak256(abi.encodePacked(order.buySell, order.tokenType, order.token, order.tokenIds, order.tokenss)));
     }
 
     function addOrders(Order[] calldata _orders) external onlyOwner {

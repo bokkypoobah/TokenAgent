@@ -1,11 +1,14 @@
-Compiled 1 Solidity file successfully (evm target: paris).
 
 
   SmartWalletFactory
-    Deployment
-      ✔ Deploy SmartWalletFactory And SmartWallet (489ms)
+    Deploy SmartWalletFactory And SmartWallet
+        * accounts: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0x70997970C51812dc3A010C7d01b50e0d17dc79C8"]
+      ✔ Basic deployment (527ms)
       ✔ Test SmartWallet ownership
+        * log: OwnershipTransferred(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8)
+        * log: {"fragment":{"type":"event","inputs":[{"name":"from","type":"address","baseType":"address","indexed":true,"components":null,"arrayLength":null,"arrayChildren":null},{"name":"to","type":"address","baseType":"address","indexed":true,"components":null,"arrayLength":null,"arrayChildren":null}],"name":"OwnershipTransferred","anonymous":false},"name":"OwnershipTransferred","signature":"OwnershipTransferred(address,address)","topic":"0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0","args":["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0x70997970C51812dc3A010C7d01b50e0d17dc79C8"]}
+      ✔ Test SmartWallet orders
 
 
-  2 passing (509ms)
+  3 passing (557ms)
 

@@ -6,6 +6,7 @@ describe("SmartWalletFactory", function () {
 
   async function deployContracts() {
     const accounts = await ethers.getSigners();
+    console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 2).map(e => e.address)));
 
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy();
@@ -19,9 +20,9 @@ describe("SmartWalletFactory", function () {
     return { smartWalletFactory, weth9, fixedSupplyToken, accounts };
   }
 
-  describe("Deployment", function () {
+  describe("Deploy SmartWalletFactory And SmartWallet", function () {
 
-    it("Deploy SmartWalletFactory And SmartWallet", async function () {
+    it("Basic deployment", async function () {
       const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
       const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
       await expect(smartWalletFactory.newSmartWallet())
@@ -53,6 +54,32 @@ describe("SmartWalletFactory", function () {
         .to.emit(smartWallet, "OwnershipTransferred")
         .withArgs(accounts[0].address, accounts[1].address);
     });
+
+    it("Test SmartWallet orders", async function () {
+      const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
+      await expect(smartWalletFactory.newSmartWallet())
+        .to.emit(smartWalletFactory, "NewSmartWallet")
+        .withArgs(anyValue, accounts[0].address);
+      const smartWalletAddress = await smartWalletFactory.smartWallets(0);
+      const SmartWallet = await ethers.getContractFactory("SmartWallet");
+      const smartWallet = SmartWallet.attach(smartWalletAddress);
+
+      // await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
+      //   .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
+      // const smartWalletOwner = await smartWallet.owner();
+      // await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
+      //   .to.be.revertedWithCustomError(smartWallet, "NotOwner");
+      await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
+
+      const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
+      const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
+      acceptOwnershipTxReceipt.logs.forEach((event) => {
+        const log = smartWallet.interface.parseLog(event);
+        console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
+        console.log("        * log: " + JSON.stringify(log));
+      });
+    });
+
 
     // it("Should set the right owner", async function () {
     //   const { lock, owner } = await loadFixture(deployContracts);

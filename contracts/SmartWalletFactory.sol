@@ -98,11 +98,37 @@ contract Owned {
 
 /// @notice User owned SmartWallet
 contract SmartWallet is Owned {
+
+    enum OrderType { BUY, SELL }
+
+    struct Order {
+        OrderType orderType;
+        address token; // ERC-20/721/1155
+        uint tokenId; // ERC-721/1155
+        uint tokens; // ERC-20/1155
+        uint price; // ABC/WETH = 0.00054087 = #quoteToken per unit baseToken
+        uint expiry;
+    }
+
+    mapping(bytes32 => Order) orders;
+
     constructor() {
     }
 
     function init(address owner) external {
         super.initOwned(owner);
+    }
+
+    function addOrder() external {
+
+    }
+
+    function removeOrder(bytes32 orderKey) external {
+
+    }
+
+    function execute(Order[] calldata _orders) external {
+
     }
 }
 

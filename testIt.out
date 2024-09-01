@@ -1,8 +1,9 @@
+Compiled 1 Solidity file successfully (evm target: paris).
 
 
   SmartWalletFactory
     Deployment
-      ✔ Deploy SmartWalletFactory And SmartWallet (461ms)
+      ✔ Deploy SmartWalletFactory And SmartWallet (458ms)
       ✔ Test SmartWallet ownership
 
 

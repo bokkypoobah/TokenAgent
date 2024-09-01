@@ -1,22 +1,9 @@
-Compiled 1 Solidity file successfully (evm target: paris).
 
 
   Lock
     Deployment
-      ✔ Should set the right unlockTime (1219ms)
-      ✔ Should set the right owner
-      ✔ Should receive and store the funds to lock
-      ✔ Should fail if the unlockTime is not in the future
-    Withdrawals
-      Validations
-        ✔ Should revert with the right error if called too soon
-        ✔ Should revert with the right error if called from another account
-        ✔ Shouldn't fail if the unlockTime has arrived and the owner calls it
-      Events
-        ✔ Should emit an event on withdrawals
-      Transfers
-        ✔ Should transfer the funds to the owner
+      ✔ Deploy (438ms)
 
 
-  9 passing (1s)
+  1 passing (441ms)
 

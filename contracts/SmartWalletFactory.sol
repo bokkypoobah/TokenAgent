@@ -69,13 +69,20 @@ contract Owned {
 
     event OwnershipTransferred(address indexed _from, address indexed _to);
 
+    error NotOwner();
+    error AlreadyInitialised();
+
     modifier onlyOwner {
-        require(msg.sender == owner, "Not owner");
+        if (msg.sender != owner) {
+            revert NotOwner();
+        }
         _;
     }
 
     function initOwned(address _owner) internal {
-        require(!initialised, "Already initialised");
+        if (initialised) {
+            revert AlreadyInitialised();
+        }
         owner = address(uint160(_owner));
         initialised = true;
     }
@@ -101,9 +108,10 @@ contract SmartWallet is Owned {
 contract SmartWalletFactory is CloneFactory {
     SmartWallet public smartWalletTemplate;
 
-    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner);
     SmartWallet[] public smartWallets;
     mapping(address => SmartWallet[]) public smartWalletsByOwners;
+
+    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner);
 
     constructor() {
         smartWalletTemplate = new SmartWallet();

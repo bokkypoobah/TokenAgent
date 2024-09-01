@@ -8,49 +8,47 @@ const { expect } = require("chai");
 describe("Lock", function () {
 
   async function deployOneYearLockFixture() {
-    // const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-    // const ONE_GWEI = 1_000_000_000;
-
-    // const lockedAmount = ONE_GWEI;
-    // const unlockTime = (await time.latest()) + ONE_YEAR_IN_SECS;
-
-    // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const accounts = await ethers.getSigners();
 
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy();
 
-    return { smartWalletFactory, owner, otherAccount };
+    return { smartWalletFactory, accounts };
   }
 
   describe("Deployment", function () {
+
     it("Deploy SmartWalletFactory And SmartWallet", async function () {
-      const { smartWalletFactory, owner, otherAccount } = await loadFixture(deployOneYearLockFixture);
-      console.log("        owner: " + owner.address);
-
+      const { smartWalletFactory, accounts } = await loadFixture(deployOneYearLockFixture);
       const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
-      console.log("        smartWalletTemplate: " + smartWalletTemplate);
-
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
-        .withArgs(anyValue, owner.address);
-
-      const smartWallet = await smartWalletFactory.smartWallets(0);
-      console.log("        smartWallet: " + smartWallet);
-
-      const smartWalletByOwner = await smartWalletFactory.smartWalletsByOwners(owner.address, 0);
-      console.log("        smartWalletByOwner: " + smartWalletByOwner);
-
+        .withArgs(anyValue, accounts[0].address);
+      const smartWalletAddress = await smartWalletFactory.smartWallets(0);
+      const smartWalletByOwner = await smartWalletFactory.smartWalletsByOwners(accounts[0].address, 0);
+      expect(await smartWalletFactory.smartWalletsByOwners(accounts[0].address, 0)).to.equal(smartWalletAddress);
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
-      // console.log("        SmartWallet: " + JSON.stringify(SmartWallet));
+      const smartWallet = SmartWallet.attach(smartWalletAddress);
+      const smartWalletOwner = await smartWallet.owner();
+    });
 
-      const smartWalletContract = SmartWallet.attach(smartWallet);
-      // console.log("        smartWalletContract: " + JSON.stringify(smartWalletContract));
-
-      const smartWalletOwner = await smartWalletContract.owner();
-      console.log("        smartWalletOwner: " + smartWalletOwner);
-
-      // expect(await lock.unlockTime()).to.equal(unlockTime);
+    it("Test SmartWallet ownership", async function () {
+      const { smartWalletFactory, accounts } = await loadFixture(deployOneYearLockFixture);
+      await expect(smartWalletFactory.newSmartWallet())
+        .to.emit(smartWalletFactory, "NewSmartWallet")
+        .withArgs(anyValue, accounts[0].address);
+      const smartWalletAddress = await smartWalletFactory.smartWallets(0);
+      const SmartWallet = await ethers.getContractFactory("SmartWallet");
+      const smartWallet = SmartWallet.attach(smartWalletAddress);
+      await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
+        .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
+      const smartWalletOwner = await smartWallet.owner();
+      await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
+        .to.be.revertedWithCustomError(smartWallet, "NotOwner");
+      await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
+      await expect(smartWallet.connect(accounts[1]).acceptOwnership())
+        .to.emit(smartWallet, "OwnershipTransferred")
+        .withArgs(accounts[0].address, accounts[1].address);
     });
 
     // it("Should set the right owner", async function () {

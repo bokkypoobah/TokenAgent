@@ -35,7 +35,7 @@ describe("Lock", function () {
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, owner.address);
 
-      const smartWallet = await smartWalletFactory.smartWallet();
+      const smartWallet = await smartWalletFactory.smartWallets(0);
       console.log("        smartWallet: " + smartWallet);
 
       const SmartWallet = await ethers.getContractFactory("SmartWallet");

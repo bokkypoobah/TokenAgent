@@ -127,7 +127,7 @@ contract SmartWallet is Owned {
     }
 
     event OrderAdded(OrderKey indexed orderKey, Order order, Unixtime timestamp);
-    event OrderExecuted(OrderKey indexed orderKey, Account taker, BuySell buySell, Token indexed token, TokenId indexed tokenId, Tokens tokens, Price price, Unixtime timestamp);
+    event Traded(Trade trade, Unixtime timestamp);
 
     bool public active;
     mapping(OrderKey => Order) public orders;
@@ -157,11 +157,12 @@ contract SmartWallet is Owned {
         // TODO: Update order.tokenIds, order.tokenss, price, expiry?
     }
 
-    // function execute(Trade[] calldata _trades) external {
-    //     for (uint i = 0; i < _trade.length; i++) {
-    //         Trade memory trade = _trades[i];
-    //     }
-    // }
+    function execute(Trade[] calldata _trades) external {
+        for (uint i = 0; i < _trades.length; i++) {
+            Trade memory trade = _trades[i];
+            emit Traded(trade, Unixtime.wrap(uint64(block.timestamp)));
+        }
+    }
 }
 
 /// @notice SmartWallet factory

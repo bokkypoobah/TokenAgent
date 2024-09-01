@@ -104,6 +104,7 @@ contract SmartWalletFactory is CloneFactory {
 
     event NewSmartWallet(SmartWallet smartWallet, address owner);
     SmartWallet[] public smartWallets;
+    mapping(address => SmartWallet[]) public smartWalletsByOwners;
 
     constructor() {
         smartWalletTemplate = new SmartWallet();
@@ -113,6 +114,7 @@ contract SmartWalletFactory is CloneFactory {
         SmartWallet smartWallet = SmartWallet(createClone(address(smartWalletTemplate)));
         smartWallet.init(msg.sender);
         smartWallets.push(smartWallet);
+        smartWalletsByOwners[msg.sender].push(smartWallet);
         emit NewSmartWallet(smartWallet, msg.sender);
     }
 

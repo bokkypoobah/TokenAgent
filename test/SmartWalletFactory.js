@@ -38,6 +38,9 @@ describe("Lock", function () {
       const smartWallet = await smartWalletFactory.smartWallets(0);
       console.log("        smartWallet: " + smartWallet);
 
+      const smartWalletByOwner = await smartWalletFactory.smartWalletsByOwners(owner.address, 0);
+      console.log("        smartWalletByOwner: " + smartWalletByOwner);
+
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       // console.log("        SmartWallet: " + JSON.stringify(SmartWallet));
 

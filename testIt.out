@@ -5,9 +5,10 @@
         owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
         smartWalletTemplate: 0xa16E02E87b7454126E5E10d957A927A7F5B5d2be
         smartWallet: 0xB7A5bd0345EF1Cc5E66bf61BdeC17D2461fBd968
+        smartWalletByOwner: 0xB7A5bd0345EF1Cc5E66bf61BdeC17D2461fBd968
         smartWalletOwner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-      ✔ Deploy SmartWalletFactory And SmartWallet (435ms)
+      ✔ Deploy SmartWalletFactory And SmartWallet (552ms)
 
 
-  1 passing (436ms)
+  1 passing (553ms)
 

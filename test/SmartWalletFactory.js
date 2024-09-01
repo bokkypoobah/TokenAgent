@@ -86,10 +86,10 @@ describe("SmartWalletFactory", function () {
       //   [ADDRESS0, SELL, ERC1155, erc20Token.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
       // ];
       const offers1 = [
-        [BUY, ERC20, expiry, erc20Token.target, 888, "999999999999999999999999999999999999"],
-        [BUY, ERC721, expiry, erc721Token.target, 888, "999999999999999999999999999999999998"],
-        [SELL, ERC1155, expiry, erc1155Token.target, 888, "999999999999999999999999999999999997"],
-        [SELL, ERC1155, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
+        [BUY, expiry, erc20Token.target, 888, "999999999999999999999999999999999999"],
+        [BUY, expiry, erc721Token.target, 888, "999999999999999999999999999999999998"],
+        [SELL, expiry, erc1155Token.target, 888, "999999999999999999999999999999999997"],
+        [SELL, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
       ];
       const addOffers1Tx = await smartWallet.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();

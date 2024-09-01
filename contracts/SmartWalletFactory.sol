@@ -105,7 +105,7 @@ type Tokens is uint128;
 type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
-enum TokenType { ERC20, ERC721, ERC1155 }
+enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
 
 /// @notice Ownership
 contract Owned {
@@ -152,7 +152,6 @@ contract SmartWallet is Owned {
     struct Offer {
         // Account taker; // 160 bits
         BuySell buySell; // 8 bits
-        TokenType tokenType; // 8 bits
         Unixtime expiry; // 64 bits
         Token token; // 160 bits
         Tokens tokens; // 128 bits // ERC-20
@@ -170,7 +169,7 @@ contract SmartWallet is Owned {
 
     IERC20 public weth;
     bool public active;
-    mapping(Token => NewTokenType) public newTokenTypes;
+    mapping(Token => TokenType) public tokenTypes;
     mapping(OfferKey => Offer) public offers;
 
     event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
@@ -187,61 +186,13 @@ contract SmartWallet is Owned {
         weth = _weth;
     }
 
-    function makeOfferKey(Offer memory offer) internal pure returns (OfferKey offerKey) {
-        // return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
-        return OfferKey.wrap(keccak256(abi.encodePacked(offer.buySell, offer.tokenType, offer.token)));
-    }
-
-    function supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {
-        try IERC165(Token.unwrap(token)).supportsInterface(_interface) returns (bool _b) {
-            b = _b;
-        } catch {
-        }
-    }
-
-    function decimals(Token token) internal view returns (uint8 _decimals) {
-        try IERC20(Token.unwrap(token)).decimals() returns (uint8 _d) {
-            _decimals = _d;
-        } catch {
-            _decimals = type(uint8).max;
-        }
-    }
-
-    enum NewTokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
-
-    function getTokenType(Token token) internal returns (NewTokenType result) {
-        uint startGas = gasleft();
-        result = newTokenTypes[token];
-        if (result == NewTokenType.UNKNOWN) {
-            if (Token.unwrap(token).code.length > 0) {
-                if (supportsInterface(token, ERC721_INTERFACE)) {
-                    result = NewTokenType.ERC721;
-                } else if (supportsInterface(token, ERC1155_INTERFACE)) {
-                    result = NewTokenType.ERC1155;
-                } else {
-                    uint8 _decimals = decimals(token);
-                    if (_decimals != type(uint8).max) {
-                        result = NewTokenType.ERC20;
-                    } else {
-                        result = NewTokenType.NOTTOKEN;
-                    }
-                }
-            } else {
-                result = NewTokenType.NOTTOKEN;
-            }
-            newTokenTypes[token] = result;
-        }
-        uint usedGas = startGas - gasleft();
-        console.log("        > getTokenType()", Token.unwrap(token), uint(result), usedGas);
-    }
-
     function addOffers(Offer[] calldata _offers) external onlyOwner {
         for (uint i = 0; i < _offers.length; i++) {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
 
-            /*NewTokenType newTokenType = */ getTokenType(offer.token);
-            /*NewTokenType newTokenType = */ getTokenType(offer.token);
+            /*TokenType newTokenType = */ getTokenType(offer.token);
+            /*TokenType newTokenType = */ getTokenType(offer.token);
             // console.log("        > newTokenType", Token.unwrap(offer.token), uint(newTokenType));
 
             // Check ERC-20/721/1155
@@ -270,36 +221,83 @@ contract SmartWallet is Owned {
             if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                 revert OfferExpired(offerKey, offer.expiry);
             }
+            TokenType tokenType = getTokenType(offer.token);
             // Transfer from msg.sender first
             if (offer.buySell == BuySell.BUY) {
                 // SmartWallet BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
-                if (offer.tokenType == TokenType.ERC20) {
-                } else if (offer.tokenType == TokenType.ERC721) {
-                } else if (offer.tokenType == TokenType.ERC1155) {
+                if (tokenType == TokenType.ERC20) {
+                } else if (tokenType == TokenType.ERC721) {
+                } else if (tokenType == TokenType.ERC1155) {
                 }
             } else {
                 // SmartWallet SELL, msg.sender BUY - msg.sender transfers WETH
-                if (offer.tokenType == TokenType.ERC20) {
-                } else if (offer.tokenType == TokenType.ERC721) {
-                } else if (offer.tokenType == TokenType.ERC1155) {
+                if (tokenType == TokenType.ERC20) {
+                } else if (tokenType == TokenType.ERC721) {
+                } else if (tokenType == TokenType.ERC1155) {
                 }
             }
             // Transfer to msg.sender last
             if (offer.buySell == BuySell.BUY) {
                 // SmartWallet BUY, msg.sender SELL - SmartWallet transfers WETH
-                if (offer.tokenType == TokenType.ERC20) {
-                } else if (offer.tokenType == TokenType.ERC721) {
-                } else if (offer.tokenType == TokenType.ERC1155) {
+                if (tokenType == TokenType.ERC20) {
+                } else if (tokenType == TokenType.ERC721) {
+                } else if (tokenType == TokenType.ERC1155) {
                 }
             } else {
                 // SmartWallet SELL, msg.sender BUY - SmartWallet transfers ERC-20/721/1155
-                if (offer.tokenType == TokenType.ERC20) {
-                } else if (offer.tokenType == TokenType.ERC721) {
-                } else if (offer.tokenType == TokenType.ERC1155) {
+                if (tokenType == TokenType.ERC20) {
+                } else if (tokenType == TokenType.ERC721) {
+                } else if (tokenType == TokenType.ERC1155) {
                 }
             }
             emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
         }
+    }
+
+    function makeOfferKey(Offer memory offer) internal pure returns (OfferKey offerKey) {
+        // return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
+        return OfferKey.wrap(keccak256(abi.encodePacked(offer.buySell, offer.token)));
+    }
+
+    function supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {
+        try IERC165(Token.unwrap(token)).supportsInterface(_interface) returns (bool _b) {
+            b = _b;
+        } catch {
+        }
+    }
+
+    function decimals(Token token) internal view returns (uint8 _decimals) {
+        try IERC20(Token.unwrap(token)).decimals() returns (uint8 _d) {
+            _decimals = _d;
+        } catch {
+            _decimals = type(uint8).max;
+        }
+    }
+
+    function getTokenType(Token token) internal returns (TokenType result) {
+        uint startGas = gasleft();
+        result = tokenTypes[token];
+        if (result == TokenType.UNKNOWN) {
+            if (Token.unwrap(token).code.length > 0) {
+                if (supportsInterface(token, ERC721_INTERFACE)) {
+                    result = TokenType.ERC721;
+                } else if (supportsInterface(token, ERC1155_INTERFACE)) {
+                    result = TokenType.ERC1155;
+                } else {
+                    uint8 _decimals = decimals(token);
+                    if (_decimals != type(uint8).max) {
+                        result = TokenType.ERC20;
+                    } else {
+                        result = TokenType.NOTTOKEN;
+                    }
+                }
+            } else {
+                result = TokenType.NOTTOKEN;
+            }
+            tokenTypes[token] = result;
+        }
+        uint usedGas = startGas - gasleft();
+        console.log("        > getTokenType()", Token.unwrap(token), uint(result), usedGas);
     }
 }
 

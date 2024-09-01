@@ -4,6 +4,13 @@ const { expect } = require("chai");
 
 const ADDRESS0 = "0x0000000000000000000000000000000000000000";
 
+const BUYSELL_BUY = 0;
+const BUYSELL_SELL = 1;
+
+const TOKENTYPE_ERC20 = 0;
+const TOKENTYPE_ERC721 = 1;
+const TOKENTYPE_ERC1155 = 2;
+
 describe("SmartWalletFactory", function () {
 
   async function deployContracts() {
@@ -58,7 +65,7 @@ describe("SmartWalletFactory", function () {
     });
 
     it.only("Test SmartWallet orders", async function () {
-      const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
+      const { smartWalletFactory, fixedSupplyToken, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address);
@@ -77,10 +84,13 @@ describe("SmartWalletFactory", function () {
       //     Price price; // token/WETH 18dp
       //     Unixtime expiry;
       // }
+
+      // console.log("fixedSupplyToken.address: " + JSON.stringify(fixedSupplyToken, null, 2));
+
       const orders1 = [
-        [accounts[0].address],
-        [accounts[1].address],
-        [accounts[2].address],
+        [accounts[0].address, BUYSELL_BUY, TOKENTYPE_ERC20, fixedSupplyToken.target],
+        [accounts[1].address, BUYSELL_BUY, TOKENTYPE_ERC721, fixedSupplyToken.target],
+        [ADDRESS0, BUYSELL_SELL, TOKENTYPE_ERC1155, fixedSupplyToken.target],
       ];
       const addOrders1Tx = await smartWallet.addOrders(orders1);
       const addOrders1TxReceipt = await addOrders1Tx.wait();

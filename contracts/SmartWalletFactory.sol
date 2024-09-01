@@ -176,6 +176,7 @@ contract SmartWallet is Owned {
     event Traded(Trade trade, Unixtime timestamp);
 
     error InvalidOfferKey(OfferKey offerKey);
+    error InvalidToken(Token token);
     error OfferExpired(OfferKey offerKey, Unixtime expiry);
 
     constructor() {
@@ -191,9 +192,10 @@ contract SmartWallet is Owned {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
 
-            /*TokenType newTokenType = */ getTokenType(offer.token);
-            /*TokenType newTokenType = */ getTokenType(offer.token);
-            // console.log("        > newTokenType", Token.unwrap(offer.token), uint(newTokenType));
+            TokenType tokenType = getTokenType(offer.token);
+            if (tokenType == TokenType.NOTTOKEN) {
+                revert InvalidToken(offer.token);
+            }
 
             // Check ERC-20/721/1155
             // uint startGas = gasleft();

@@ -115,10 +115,15 @@ contract SmartWallet is Owned {
         BuySell buySell;
         TokenType tokenType;
         Token token;
+        Tokens tokens; // ERC-20
         TokenId[] tokenIds; // ERC-721/1155
-        Tokens[] tokenss; // ERC-20/1155
+        Tokens[] tokenss; // ERC-1155
         Price price; // token/WETH 18dp
         Unixtime expiry;
+    }
+
+    struct Trade {
+        OrderKey orderKey;
     }
 
     event OrderAdded(OrderKey indexed orderKey, Order order, Unixtime timestamp);
@@ -136,7 +141,6 @@ contract SmartWallet is Owned {
 
     function makeKey(Order memory order) internal pure returns (OrderKey orderKey) {
         return OrderKey.wrap(keccak256(abi.encodePacked(order.taker, order.buySell, order.tokenType, order.token, order.tokenIds, order.tokenss)));
-        // return OrderKey.wrap(keccak256(abi.encodePacked(order.taker, order.buySell, order.tokenType, order.token, order.tokenIds, order.tokenss)));
     }
 
     function addOrders(Order[] calldata _orders) external onlyOwner {
@@ -149,13 +153,15 @@ contract SmartWallet is Owned {
         }
     }
 
-    function removeOrder(bytes32 orderKey) external {
-
+    function updateOrder(bytes32 orderKey) external onlyOwner {
+        // TODO: Update order.tokenIds, order.tokenss, price, expiry?
     }
 
-    function execute(Order[] calldata _orders) external {
-
-    }
+    // function execute(Trade[] calldata _trades) external {
+    //     for (uint i = 0; i < _trade.length; i++) {
+    //         Trade memory trade = _trades[i];
+    //     }
+    // }
 }
 
 /// @notice SmartWallet factory

@@ -73,10 +73,14 @@ describe("SmartWalletFactory", function () {
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);
 
+      const now = parseInt(new Date().getTime()/1000);
+      const expiry = now + 60 * 1000;
+      console.log("expiry: " + expiry);
+
       const orders1 = [
-        [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", 999],
-        [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999999", 999],
-        [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, [7, 8, 9], [999], "999999999999999999999999999999999999", 999],
+        [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
+        [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
+        [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
       ];
       const addOrders1Tx = await smartWallet.addOrders(orders1);
       const addOrders1TxReceipt = await addOrders1Tx.wait();
@@ -85,17 +89,16 @@ describe("SmartWalletFactory", function () {
         console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
       });
 
-
-      if (false) {
-        await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
-        const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
-        const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
-        acceptOwnershipTxReceipt.logs.forEach((event) => {
-          const log = smartWallet.interface.parseLog(event);
-          console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
-          // console.log("        * log: " + JSON.stringify(log));
-        });
-      }
+      // if (false) {
+      //   await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
+      //   const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
+      //   const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
+      //   acceptOwnershipTxReceipt.logs.forEach((event) => {
+      //     const log = smartWallet.interface.parseLog(event);
+      //     console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
+      //     // console.log("        * log: " + JSON.stringify(log));
+      //   });
+      // }
     });
 
 

@@ -170,6 +170,7 @@ contract SmartWallet is Owned {
 
     IERC20 public weth;
     bool public active;
+    mapping(Token => NewTokenType) public newTokenTypes;
     mapping(OfferKey => Offer) public offers;
 
     event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
@@ -206,21 +207,29 @@ contract SmartWallet is Owned {
         }
     }
 
-    enum NewTokenType { UNKNOWN, ERC20, ERC721, ERC1155 }
+    enum NewTokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
 
-    function getTokenType(Token token) internal view returns (NewTokenType result) {
+    function getTokenType(Token token) internal returns (NewTokenType result) {
         uint startGas = gasleft();
-        if (Token.unwrap(token).code.length > 0) {
-            if (supportsInterface(token, ERC721_INTERFACE)) {
-                result = NewTokenType.ERC721;
-            } else if (supportsInterface(token, ERC1155_INTERFACE)) {
-                result = NewTokenType.ERC1155;
-            } else {
-                uint8 _decimals = decimals(token);
-                if (_decimals != type(uint8).max) {
-                    result = NewTokenType.ERC20;
+        result = newTokenTypes[token];
+        if (result == NewTokenType.UNKNOWN) {
+            if (Token.unwrap(token).code.length > 0) {
+                if (supportsInterface(token, ERC721_INTERFACE)) {
+                    result = NewTokenType.ERC721;
+                } else if (supportsInterface(token, ERC1155_INTERFACE)) {
+                    result = NewTokenType.ERC1155;
+                } else {
+                    uint8 _decimals = decimals(token);
+                    if (_decimals != type(uint8).max) {
+                        result = NewTokenType.ERC20;
+                    } else {
+                        result = NewTokenType.NOTTOKEN;
+                    }
                 }
+            } else {
+                result = NewTokenType.NOTTOKEN;
             }
+            newTokenTypes[token] = result;
         }
         uint usedGas = startGas - gasleft();
         console.log("        > getTokenType()", Token.unwrap(token), uint(result), usedGas);
@@ -231,6 +240,7 @@ contract SmartWallet is Owned {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
 
+            /*NewTokenType newTokenType = */ getTokenType(offer.token);
             /*NewTokenType newTokenType = */ getTokenType(offer.token);
             // console.log("        > newTokenType", Token.unwrap(offer.token), uint(newTokenType));
 

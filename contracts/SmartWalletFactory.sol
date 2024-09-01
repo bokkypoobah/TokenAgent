@@ -1,5 +1,33 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
+// ----------------------------------------------------------------------------
+// SmartWallet
+//
+// https://github.com/bokkypoobah/SmartWallet
+//
+// Deployed to Sepolia
+//
+// SPDX-License-Identifier: MIT
+//
+// Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
+// ----------------------------------------------------------------------------
+
+interface IERC20 {
+    event Transfer(address indexed from, address indexed to, uint tokens);
+    event Approval(address indexed owner, address indexed spender, uint tokens);
+
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+
+    function totalSupply() external view returns (uint);
+    function balanceOf(address owner) external view returns (uint balance);
+    function allowance(address owner, address spender) external view returns (uint remaining);
+    function transfer(address to, uint tokens) external returns (bool success);
+    function approve(address spender, uint tokens) external returns (bool success);
+    function transferFrom(address from, address to, uint tokens) external returns (bool success);
+}
+
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
 /*
@@ -126,6 +154,7 @@ contract SmartWallet is Owned {
         OfferKey offerKey;
     }
 
+    IERC20 public weth;
     bool public active;
     mapping(OfferKey => Offer) public offers;
 
@@ -137,8 +166,9 @@ contract SmartWallet is Owned {
     constructor() {
     }
 
-    function init(address owner) external {
+    function init(IERC20 _weth, address owner) external {
         super.initOwned(owner);
+        weth = _weth;
     }
 
     function makeOfferKey(Offer memory offer) internal pure returns (OfferKey offerKey) {
@@ -204,18 +234,20 @@ contract SmartWallet is Owned {
 contract SmartWalletFactory is CloneFactory {
     SmartWallet public smartWalletTemplate;
 
+    IERC20 public weth;
     SmartWallet[] public smartWallets;
     mapping(address => SmartWallet[]) public smartWalletsByOwners;
 
     event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner, uint indexed index, Unixtime timestamp);
 
-    constructor() {
+    constructor(IERC20 _weth) {
         smartWalletTemplate = new SmartWallet();
+        weth = _weth;
     }
 
     function newSmartWallet() public {
         SmartWallet smartWallet = SmartWallet(createClone(address(smartWalletTemplate)));
-        smartWallet.init(msg.sender);
+        smartWallet.init(weth, msg.sender);
         smartWallets.push(smartWallet);
         smartWalletsByOwners[msg.sender].push(smartWallet);
         emit NewSmartWallet(smartWallet, msg.sender, smartWalletsByOwners[msg.sender].length - 1, Unixtime.wrap(uint64(block.timestamp)));

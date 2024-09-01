@@ -17,14 +17,14 @@ describe("SmartWalletFactory", function () {
     const accounts = await ethers.getSigners();
     console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
 
-    const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
-    const smartWalletFactory = await SmartWalletFactory.deploy();
-
     const WETH9 = await ethers.getContractFactory("WETH9");
     const weth9 = await WETH9.deploy();
 
     const FixedSupplyToken = await ethers.getContractFactory("FixedSupplyToken");
     const fixedSupplyToken = await FixedSupplyToken.deploy();
+
+    const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
+    const smartWalletFactory = await SmartWalletFactory.deploy(weth9);
 
     return { smartWalletFactory, weth9, fixedSupplyToken, accounts };
   }
@@ -46,14 +46,14 @@ describe("SmartWalletFactory", function () {
     });
 
     it("Test SmartWallet ownership", async function () {
-      const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
+      const { smartWalletFactory, weth9, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address, 0, anyValue);
       const smartWalletAddress = await smartWalletFactory.smartWallets(0);
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);
-      await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
+      await expect(smartWallet.connect(accounts[1]).init(weth9, accounts[1]))
         .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
       const smartWalletOwner = await smartWallet.owner();
       await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))

@@ -207,7 +207,7 @@ contract SmartWalletFactory is CloneFactory {
     SmartWallet[] public smartWallets;
     mapping(address => SmartWallet[]) public smartWalletsByOwners;
 
-    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner);
+    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner, uint indexed index, Unixtime timestamp);
 
     constructor() {
         smartWalletTemplate = new SmartWallet();
@@ -218,7 +218,7 @@ contract SmartWalletFactory is CloneFactory {
         smartWallet.init(msg.sender);
         smartWallets.push(smartWallet);
         smartWalletsByOwners[msg.sender].push(smartWallet);
-        emit NewSmartWallet(smartWallet, msg.sender);
+        emit NewSmartWallet(smartWallet, msg.sender, smartWalletsByOwners[msg.sender].length - 1, Unixtime.wrap(uint64(block.timestamp)));
     }
 
 }

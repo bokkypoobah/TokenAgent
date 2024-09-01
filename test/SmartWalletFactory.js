@@ -36,7 +36,7 @@ describe("SmartWalletFactory", function () {
       const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
-        .withArgs(anyValue, accounts[0].address);
+        .withArgs(anyValue, accounts[0].address, 0);
       const smartWalletAddress = await smartWalletFactory.smartWallets(0);
       const smartWalletByOwner = await smartWalletFactory.smartWalletsByOwners(accounts[0].address, 0);
       expect(await smartWalletFactory.smartWalletsByOwners(accounts[0].address, 0)).to.equal(smartWalletAddress);
@@ -49,7 +49,7 @@ describe("SmartWalletFactory", function () {
       const { smartWalletFactory, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
-        .withArgs(anyValue, accounts[0].address);
+        .withArgs(anyValue, accounts[0].address, 0);
       const smartWalletAddress = await smartWalletFactory.smartWallets(0);
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);
@@ -68,7 +68,7 @@ describe("SmartWalletFactory", function () {
       const { smartWalletFactory, fixedSupplyToken, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
-        .withArgs(anyValue, accounts[0].address);
+        .withArgs(anyValue, accounts[0].address, 0, anyValue);
       const smartWalletAddress = await smartWalletFactory.smartWallets(0);
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);

@@ -20,15 +20,32 @@ describe("Lock", function () {
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy();
 
-    const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
-    console.log("smartWalletTemplate: " + smartWalletTemplate);
-
     return { smartWalletFactory, owner, otherAccount };
   }
 
   describe("Deployment", function () {
-    it("Deploy", async function () {
-      const { lock, unlockTime } = await loadFixture(deployOneYearLockFixture);
+    it("Deploy SmartWalletFactory And SmartWallet", async function () {
+      const { smartWalletFactory, owner, otherAccount } = await loadFixture(deployOneYearLockFixture);
+      console.log("        owner: " + owner.address);
+
+      const smartWalletTemplate = await smartWalletFactory.smartWalletTemplate();
+      console.log("        smartWalletTemplate: " + smartWalletTemplate);
+
+      await expect(smartWalletFactory.newSmartWallet())
+        .to.emit(smartWalletFactory, "NewSmartWallet")
+        .withArgs(anyValue, owner.address);
+
+      const smartWallet = await smartWalletFactory.smartWallet();
+      console.log("        smartWallet: " + smartWallet);
+
+      const SmartWallet = await ethers.getContractFactory("SmartWallet");
+      // console.log("        SmartWallet: " + JSON.stringify(SmartWallet));
+
+      const smartWalletContract = SmartWallet.attach(smartWallet);
+      // console.log("        smartWalletContract: " + JSON.stringify(smartWalletContract));
+
+      const smartWalletOwner = await smartWalletContract.owner();
+      console.log("        smartWalletOwner: " + smartWalletOwner);
 
       // expect(await lock.unlockTime()).to.equal(unlockTime);
     });

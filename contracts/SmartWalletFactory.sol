@@ -61,15 +61,57 @@ contract CloneFactory {
 }
 // End CloneFactory.sol
 
-contract SmartWallet {
+/// @notice Ownership
+contract Owned {
+    bool initialised;
+    address public owner;
+    address public newOwner;
 
+    event OwnershipTransferred(address indexed _from, address indexed _to);
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+
+    function initOwned(address _owner) internal {
+        require(!initialised, "Already initialised");
+        owner = address(uint160(_owner));
+        initialised = true;
+    }
+    function transferOwnership(address _newOwner) public onlyOwner {
+        newOwner = _newOwner;
+    }
+    function acceptOwnership() public {
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+        newOwner = address(0);
+    }
+}
+
+contract SmartWallet is Owned {
+    constructor() {
+    }
+
+    function init(address owner) external {
+        super.initOwned(owner);
+    }
 }
 
 contract SmartWalletFactory is CloneFactory {
     SmartWallet public smartWalletTemplate;
+    SmartWallet public smartWallet;
 
-    constructor() public {
+    event NewSmartWallet(SmartWallet smartWallet, address owner);
+
+    constructor() {
         smartWalletTemplate = new SmartWallet();
+    }
+
+    function newSmartWallet() public {
+        smartWallet = SmartWallet(createClone(address(smartWalletTemplate)));
+        smartWallet.init(msg.sender);
+        emit NewSmartWallet(smartWallet, msg.sender);
     }
 
 }

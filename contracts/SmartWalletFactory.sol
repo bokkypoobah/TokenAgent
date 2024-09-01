@@ -96,6 +96,13 @@ contract Owned {
     }
 }
 
+type OrderKey is bytes32;
+type Price is uint128;
+type Token is address;
+type TokenId is uint128;
+type Tokens is uint128;
+type Unixtime is uint64;
+
 /// @notice User owned SmartWallet
 contract SmartWallet is Owned {
 
@@ -104,11 +111,14 @@ contract SmartWallet is Owned {
     struct Order {
         OrderType orderType;
         address token; // ERC-20/721/1155
-        uint tokenId; // ERC-721/1155
-        uint tokens; // ERC-20/1155
-        uint price; // ABC/WETH = 0.00054087 = #quoteToken per unit baseToken
-        uint expiry;
+        TokenId tokenId; // ERC-721/1155
+        Tokens tokens; // ERC-20/1155
+        Price price; // ABC/WETH = 0.00054087 = #quoteToken per unit baseToken
+        Unixtime expiry;
     }
+
+    event OrderAdded(bytes32 indexed orderKey, Order order);
+    event OrderExecuted(bytes32 indexed orderKey);
 
     mapping(bytes32 => Order) orders;
 

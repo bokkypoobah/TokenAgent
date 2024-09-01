@@ -100,9 +100,8 @@ contract SmartWallet is Owned {
 
 contract SmartWalletFactory is CloneFactory {
     SmartWallet public smartWalletTemplate;
-    // SmartWallet public smartWallet;
 
-    event NewSmartWallet(SmartWallet smartWallet, address owner);
+    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner);
     SmartWallet[] public smartWallets;
     mapping(address => SmartWallet[]) public smartWalletsByOwners;
 

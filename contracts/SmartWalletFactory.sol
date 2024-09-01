@@ -201,13 +201,12 @@ contract SmartWallet is Owned {
                 revert CannotOfferWETH();
             }
 
-            // Check ERC-20/721/1155
             // uint startGas = gasleft();
-            // 45833 gas
+            // 45481 gas
             offers[offerKey] = offer;
             // uint usedGas = startGas - gasleft();
             // console.log("usedGas", usedGas);
-            // 4802 gas
+            // 4343 gas
             emit OfferAdded(offerKey, offer, Unixtime.wrap(uint64(block.timestamp)));
         }
     }

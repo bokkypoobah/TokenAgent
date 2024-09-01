@@ -96,6 +96,7 @@ contract Owned {
     }
 }
 
+type Account is address;
 type OrderKey is bytes32;
 type Price is uint128;
 type Token is address;
@@ -103,24 +104,28 @@ type TokenId is uint128;
 type Tokens is uint128;
 type Unixtime is uint64;
 
+enum BuySell { BUY, SELL }
+enum TokenType { ERC20, ERC721, ERC1155 }
+
 /// @notice User owned SmartWallet
 contract SmartWallet is Owned {
 
-    enum OrderType { BUY, SELL }
-
     struct Order {
-        OrderType orderType;
-        address token; // ERC-20/721/1155
+        Account taker;
+        BuySell buySell;
+        TokenType tokenType;
+        Token token;
         TokenId tokenId; // ERC-721/1155
         Tokens tokens; // ERC-20/1155
-        Price price; // ABC/WETH = 0.00054087 = #quoteToken per unit baseToken
+        Price price; // token/WETH 18dp
         Unixtime expiry;
     }
 
-    event OrderAdded(bytes32 indexed orderKey, Order order);
-    event OrderExecuted(bytes32 indexed orderKey);
+    event OrderAdded(OrderKey indexed orderKey, Order order, Unixtime timestamp);
+    event OrderExecuted(OrderKey indexed orderKey, Account taker, BuySell buySell, Token indexed token, TokenId indexed tokenId, Tokens tokens, Price price, Unixtime timestamp);
 
-    mapping(bytes32 => Order) orders;
+    bool public active;
+    mapping(OrderKey => Order) public orders;
 
     constructor() {
     }
@@ -129,8 +134,18 @@ contract SmartWallet is Owned {
         super.initOwned(owner);
     }
 
-    function addOrder() external {
+    function makeKey(Order memory order) internal pure returns (OrderKey orderKey) {
+        return OrderKey.wrap(keccak256(abi.encodePacked(order.buySell, order.tokenType, order.token, order.tokenId, order.tokens)));
+    }
 
+    function addOrders(Order[] calldata _orders) external onlyOwner {
+        for (uint i = 0; i < _orders.length; i++) {
+            Order memory order = _orders[i];
+            OrderKey orderKey = makeKey(order);
+            // Check ERC-20/721/1155
+            orders[orderKey] = order;
+            emit OrderAdded(orderKey, order, Unixtime.wrap(uint64(block.timestamp)));
+        }
     }
 
     function removeOrder(bytes32 orderKey) external {

@@ -4,12 +4,12 @@ const { expect } = require("chai");
 
 const ADDRESS0 = "0x0000000000000000000000000000000000000000";
 
-const BUYSELL_BUY = 0;
-const BUYSELL_SELL = 1;
+const BUY = 0;
+const SELL = 1;
 
-const TOKENTYPE_ERC20 = 0;
-const TOKENTYPE_ERC721 = 1;
-const TOKENTYPE_ERC1155 = 2;
+const ERC20 = 0;
+const ERC721 = 1;
+const ERC1155 = 2;
 
 describe("SmartWalletFactory", function () {
 
@@ -73,49 +73,27 @@ describe("SmartWalletFactory", function () {
       const SmartWallet = await ethers.getContractFactory("SmartWallet");
       const smartWallet = SmartWallet.attach(smartWalletAddress);
 
-
-      // struct Order {
-      //     Account taker;
-      //     BuySell buySell;
-      //     TokenType tokenType;
-      //     Token token;
-      //     TokenId[] tokenIds; // ERC-721/1155
-      //     Tokens[] tokenss; // ERC-20/1155
-      //     Price price; // token/WETH 18dp
-      //     Unixtime expiry;
-      // }
-
-      console.log("fixedSupplyToken: " + JSON.stringify(fixedSupplyToken, null, 2));
-
       const orders1 = [
-        [accounts[0].address, BUYSELL_BUY, TOKENTYPE_ERC20, fixedSupplyToken.target, [1, 2, 3], [11, 22, 33, 44]],
-        [accounts[1].address, BUYSELL_BUY, TOKENTYPE_ERC721, fixedSupplyToken.target, [4, 5, 6], [55, 66, 77, 88]],
-        [ADDRESS0, BUYSELL_SELL, TOKENTYPE_ERC1155, fixedSupplyToken.target, [7, 8, 9], [999]],
+        [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", 999],
+        [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999999", 999],
+        [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, [7, 8, 9], [999], "999999999999999999999999999999999999", 999],
       ];
       const addOrders1Tx = await smartWallet.addOrders(orders1);
       const addOrders1TxReceipt = await addOrders1Tx.wait();
       addOrders1TxReceipt.logs.forEach((event) => {
         const log = smartWallet.interface.parseLog(event);
         console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
-        // console.log("        * log: " + JSON.stringify(log));
       });
 
 
-
       if (false) {
-        // await expect(smartWallet.connect(accounts[1]).init(accounts[1]))
-        //   .to.be.revertedWithCustomError(smartWallet, "AlreadyInitialised");
-        // const smartWalletOwner = await smartWallet.owner();
-        // await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
-        //   .to.be.revertedWithCustomError(smartWallet, "NotOwner");
         await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
-
         const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
         const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
         acceptOwnershipTxReceipt.logs.forEach((event) => {
           const log = smartWallet.interface.parseLog(event);
           console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
-          console.log("        * log: " + JSON.stringify(log));
+          // console.log("        * log: " + JSON.stringify(log));
         });
       }
     });

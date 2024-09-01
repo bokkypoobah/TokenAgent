@@ -117,8 +117,8 @@ contract SmartWallet is Owned {
         Token token;
         TokenId[] tokenIds; // ERC-721/1155
         Tokens[] tokenss; // ERC-20/1155
-        // Price price; // token/WETH 18dp
-        // Unixtime expiry;
+        Price price; // token/WETH 18dp
+        Unixtime expiry;
     }
 
     event OrderAdded(OrderKey indexed orderKey, Order order, Unixtime timestamp);

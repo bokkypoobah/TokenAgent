@@ -97,7 +97,7 @@ contract Owned {
 }
 
 type Account is address;
-type OrderKey is bytes32;
+type OfferKey is bytes32;
 type Price is uint128;
 type Token is address;
 type TokenId is uint128;
@@ -110,7 +110,7 @@ enum TokenType { ERC20, ERC721, ERC1155 }
 /// @notice User owned SmartWallet
 contract SmartWallet is Owned {
 
-    struct Order {
+    struct Offer {
         Account taker;
         BuySell buySell;
         TokenType tokenType;
@@ -123,14 +123,14 @@ contract SmartWallet is Owned {
     }
 
     struct Trade {
-        OrderKey orderKey;
+        OfferKey offerKey;
     }
 
-    event OrderAdded(OrderKey indexed orderKey, Order order, Unixtime timestamp);
+    event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);
 
     bool public active;
-    mapping(OrderKey => Order) public orders;
+    mapping(OfferKey => Offer) public offers;
 
     constructor() {
     }
@@ -139,28 +139,28 @@ contract SmartWallet is Owned {
         super.initOwned(owner);
     }
 
-    function makeKey(Order memory order) internal pure returns (OrderKey orderKey) {
-        return OrderKey.wrap(keccak256(abi.encodePacked(order.taker, order.buySell, order.tokenType, order.token, order.tokenIds, order.tokenss)));
+    function makeOfferKey(Offer memory offer) internal pure returns (OfferKey offerKey) {
+        return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
     }
 
-    function addOrders(Order[] calldata _orders) external onlyOwner {
-        for (uint i = 0; i < _orders.length; i++) {
-            Order memory order = _orders[i];
-            OrderKey orderKey = makeKey(order);
+    function addOffers(Offer[] calldata _offers) external onlyOwner {
+        for (uint i = 0; i < _offers.length; i++) {
+            Offer memory offer = _offers[i];
+            OfferKey offerKey = makeOfferKey(offer);
             // Check ERC-20/721/1155
-            orders[orderKey] = order;
-            emit OrderAdded(orderKey, order, Unixtime.wrap(uint64(block.timestamp)));
+            offers[offerKey] = offer;
+            emit OfferAdded(offerKey, offer, Unixtime.wrap(uint64(block.timestamp)));
         }
     }
 
-    function updateOrder(bytes32 orderKey) external onlyOwner {
-        // TODO: Update order.tokenIds, order.tokenss, price, expiry?
+    function updateOffer(/*OfferUpdate[] calldata _offerOpdates*/) external onlyOwner {
+        // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }
 
-    function execute(Trade[] calldata _trades) external {
+    function trade(Trade[] calldata _trades) external {
         for (uint i = 0; i < _trades.length; i++) {
-            Trade memory trade = _trades[i];
-            emit Traded(trade, Unixtime.wrap(uint64(block.timestamp)));
+            Trade memory _trade = _trades[i];
+            emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
         }
     }
 }

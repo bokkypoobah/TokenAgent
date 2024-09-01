@@ -64,7 +64,7 @@ describe("SmartWalletFactory", function () {
         .withArgs(accounts[0].address, accounts[1].address);
     });
 
-    it.only("Test SmartWallet orders", async function () {
+    it.only("Test SmartWallet offers", async function () {
       const { smartWalletFactory, fixedSupplyToken, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
@@ -75,30 +75,22 @@ describe("SmartWalletFactory", function () {
 
       const now = parseInt(new Date().getTime()/1000);
       const expiry = now + 60 * 1000;
-      console.log("expiry: " + expiry);
 
-      const orders1 = [
+      const offers1 = [
         [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
         [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
         [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
       ];
-      const addOrders1Tx = await smartWallet.addOrders(orders1);
-      const addOrders1TxReceipt = await addOrders1Tx.wait();
-      addOrders1TxReceipt.logs.forEach((event) => {
+      const addOffers1Tx = await smartWallet.addOffers(offers1);
+      const addOffers1TxReceipt = await addOffers1Tx.wait();
+      const offerKeys = [];
+      addOffers1TxReceipt.logs.forEach((event) => {
         const log = smartWallet.interface.parseLog(event);
+        offerKeys.push(log.args[0]);
         console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
       });
+      console.log("        * offerKeys: " + offerKeys.join(','));
 
-      // if (false) {
-      //   await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
-      //   const acceptOwnershipTx = await smartWallet.connect(accounts[1]).acceptOwnership();
-      //   const acceptOwnershipTxReceipt = await acceptOwnershipTx.wait();
-      //   acceptOwnershipTxReceipt.logs.forEach((event) => {
-      //     const log = smartWallet.interface.parseLog(event);
-      //     console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
-      //     // console.log("        * log: " + JSON.stringify(log));
-      //   });
-      // }
     });
 
 

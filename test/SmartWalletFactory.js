@@ -24,6 +24,8 @@ describe("SmartWalletFactory", function () {
     const erc721Token = await ERC721Token.deploy();
     const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
     const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
+    console.log("        * weth: " + weth9.target);
+    console.log("        * 20: " + erc20Token.target + ", 721: "+ erc721Token.target + ", 1155: "+ erc1155Token.target);
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy(weth9);
     return { smartWalletFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts };
@@ -66,8 +68,8 @@ describe("SmartWalletFactory", function () {
         .withArgs(accounts[0].address, accounts[1].address, anyValue);
     });
 
-    it("Test SmartWallet offers", async function () {
-      const { smartWalletFactory, erc20Token, accounts } = await loadFixture(deployContracts);
+    it.only("Test SmartWallet offers", async function () {
+      const { smartWalletFactory, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address, 0, anyValue);
@@ -85,8 +87,9 @@ describe("SmartWalletFactory", function () {
       // ];
       const offers1 = [
         [BUY, ERC20, expiry, erc20Token.target, 888, "999999999999999999999999999999999999"],
-        [BUY, ERC721, expiry, erc20Token.target, 888, "999999999999999999999999999999999998"],
-        [SELL, ERC1155, expiry, erc20Token.target, 888, "999999999999999999999999999999999997"],
+        [BUY, ERC721, expiry, erc721Token.target, 888, "999999999999999999999999999999999998"],
+        [SELL, ERC1155, expiry, erc1155Token.target, 888, "999999999999999999999999999999999997"],
+        [SELL, ERC1155, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
       ];
       const addOffers1Tx = await smartWallet.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();

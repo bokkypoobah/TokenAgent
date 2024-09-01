@@ -191,26 +191,55 @@ contract SmartWallet is Owned {
         return OfferKey.wrap(keccak256(abi.encodePacked(offer.buySell, offer.tokenType, offer.token)));
     }
 
-    function isERC721(address token) internal view returns (bool b) {
-        if (token.code.length > 0) {
-            try IERC165(token).supportsInterface(ERC721_INTERFACE) returns (bool _b) {
-                b = _b;
-            } catch {
-            }
+    function supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {
+        try IERC165(Token.unwrap(token)).supportsInterface(_interface) returns (bool _b) {
+            b = _b;
+        } catch {
         }
     }
 
+    function decimals(Token token) internal view returns (uint8 _decimals) {
+        try IERC20(Token.unwrap(token)).decimals() returns (uint8 _d) {
+            _decimals = _d;
+        } catch {
+            _decimals = type(uint8).max;
+        }
+    }
+
+    enum NewTokenType { UNKNOWN, ERC20, ERC721, ERC1155 }
+
+    function getTokenType(Token token) internal view returns (NewTokenType result) {
+        uint startGas = gasleft();
+        if (Token.unwrap(token).code.length > 0) {
+            if (supportsInterface(token, ERC721_INTERFACE)) {
+                result = NewTokenType.ERC721;
+            } else if (supportsInterface(token, ERC1155_INTERFACE)) {
+                result = NewTokenType.ERC1155;
+            } else {
+                uint8 _decimals = decimals(token);
+                if (_decimals != type(uint8).max) {
+                    result = NewTokenType.ERC20;
+                }
+            }
+        }
+        uint usedGas = startGas - gasleft();
+        console.log("        > getTokenType()", Token.unwrap(token), uint(result), usedGas);
+    }
 
     function addOffers(Offer[] calldata _offers) external onlyOwner {
         for (uint i = 0; i < _offers.length; i++) {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
+
+            /*NewTokenType newTokenType = */ getTokenType(offer.token);
+            // console.log("        > newTokenType", Token.unwrap(offer.token), uint(newTokenType));
+
             // Check ERC-20/721/1155
-            uint startGas = gasleft();
+            // uint startGas = gasleft();
             // 45833 gas
             offers[offerKey] = offer;
-            uint usedGas = startGas - gasleft();
-            console.log("usedGas", usedGas);
+            // uint usedGas = startGas - gasleft();
+            // console.log("usedGas", usedGas);
             // 4802 gas
             emit OfferAdded(offerKey, offer, Unixtime.wrap(uint64(block.timestamp)));
         }

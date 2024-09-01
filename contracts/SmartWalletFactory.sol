@@ -61,13 +61,24 @@ contract CloneFactory {
 }
 // End CloneFactory.sol
 
+type Account is address;
+type OfferKey is bytes32;
+type Price is uint128;
+type Token is address;
+type TokenId is uint128;
+type Tokens is uint128;
+type Unixtime is uint64;
+
+enum BuySell { BUY, SELL }
+enum TokenType { ERC20, ERC721, ERC1155 }
+
 /// @notice Ownership
 contract Owned {
     bool initialised;
     address public owner;
     address public newOwner;
 
-    event OwnershipTransferred(address indexed from, address indexed to);
+    event OwnershipTransferred(address indexed from, address indexed to, Unixtime timestamp);
 
     error NotOwner();
     error AlreadyInitialised();
@@ -90,22 +101,11 @@ contract Owned {
         newOwner = _newOwner;
     }
     function acceptOwnership() public {
-        emit OwnershipTransferred(owner, newOwner);
+        emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint64(block.timestamp)));
         owner = newOwner;
         newOwner = address(0);
     }
 }
-
-type Account is address;
-type OfferKey is bytes32;
-type Price is uint128;
-type Token is address;
-type TokenId is uint128;
-type Tokens is uint128;
-type Unixtime is uint64;
-
-enum BuySell { BUY, SELL }
-enum TokenType { ERC20, ERC721, ERC1155 }
 
 /// @notice User owned SmartWallet
 contract SmartWallet is Owned {

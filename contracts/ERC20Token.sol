@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 //
 // Deployed to Sepolia
 //
-// https://github.com/bokkypoobah/GettingStartedInEthereum
+// https://github.com/bokkypoobah/SmartWallet
 //
 // SPDX-License-Identifier: MIT
 //
@@ -29,7 +29,7 @@ interface IERC20 {
     function transferFrom(address from, address to, uint tokens) external returns (bool success);
 }
 
-contract FixedSupplyToken is IERC20 {
+contract ERC20Token is IERC20 {
     string constant public symbol = "HIHIHI";
     string constant public name = unicode"Hi 👋, Hi 👋, Hi 👋";
     uint8 constant public decimals = 18;

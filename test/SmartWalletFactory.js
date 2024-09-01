@@ -16,17 +16,17 @@ describe("SmartWalletFactory", function () {
   async function deployContracts() {
     const accounts = await ethers.getSigners();
     console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
-
     const WETH9 = await ethers.getContractFactory("WETH9");
     const weth9 = await WETH9.deploy();
-
-    const FixedSupplyToken = await ethers.getContractFactory("FixedSupplyToken");
-    const fixedSupplyToken = await FixedSupplyToken.deploy();
-
+    const ERC20Token = await ethers.getContractFactory("ERC20Token");
+    const erc20Token = await ERC20Token.deploy();
+    const ERC721Token = await ethers.getContractFactory("ERC721Token");
+    const erc721Token = await ERC721Token.deploy();
+    const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
+    const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
     const SmartWalletFactory = await ethers.getContractFactory("SmartWalletFactory");
     const smartWalletFactory = await SmartWalletFactory.deploy(weth9);
-
-    return { smartWalletFactory, weth9, fixedSupplyToken, accounts };
+    return { smartWalletFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts };
   }
 
   describe("Deploy SmartWalletFactory And SmartWallet", function () {
@@ -67,7 +67,7 @@ describe("SmartWalletFactory", function () {
     });
 
     it("Test SmartWallet offers", async function () {
-      const { smartWalletFactory, fixedSupplyToken, accounts } = await loadFixture(deployContracts);
+      const { smartWalletFactory, erc20Token, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address, 0, anyValue);
@@ -79,14 +79,14 @@ describe("SmartWalletFactory", function () {
       const expiry = now + 60 * 1000;
 
       // const offers1 = [
-      //   [accounts[0].address, BUY, ERC20, fixedSupplyToken.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
-      //   [accounts[1].address, BUY, ERC721, fixedSupplyToken.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
-      //   [ADDRESS0, SELL, ERC1155, fixedSupplyToken.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
+      //   [accounts[0].address, BUY, ERC20, erc20Token.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
+      //   [accounts[1].address, BUY, ERC721, erc20Token.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
+      //   [ADDRESS0, SELL, ERC1155, erc20Token.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
       // ];
       const offers1 = [
-        [BUY, ERC20, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999999"],
-        [BUY, ERC721, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999998"],
-        [SELL, ERC1155, expiry, fixedSupplyToken.target, 888, "999999999999999999999999999999999997"],
+        [BUY, ERC20, expiry, erc20Token.target, 888, "999999999999999999999999999999999999"],
+        [BUY, ERC721, expiry, erc20Token.target, 888, "999999999999999999999999999999999998"],
+        [SELL, ERC1155, expiry, erc20Token.target, 888, "999999999999999999999999999999999997"],
       ];
       const addOffers1Tx = await smartWallet.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
@@ -101,100 +101,6 @@ describe("SmartWalletFactory", function () {
       console.log("        * offerKeys: " + offerKeys.join(','));
 
     });
-
-
-    // it("Should set the right owner", async function () {
-    //   const { lock, owner } = await loadFixture(deployContracts);
-    //
-    //   expect(await lock.owner()).to.equal(owner.address);
-    // });
-
-    // it("Should receive and store the funds to lock", async function () {
-    //   const { lock, lockedAmount } = await loadFixture(
-    //     deployContracts
-    //   );
-    //
-    //   expect(await ethers.provider.getBalance(lock.target)).to.equal(
-    //     lockedAmount
-    //   );
-    // });
-
-    // it("Should fail if the unlockTime is not in the future", async function () {
-    //   // We don't use the fixture here because we want a different deployment
-    //   const latestTime = await time.latest();
-    //   const Lock = await ethers.getContractFactory("Lock");
-    //   await expect(Lock.deploy(latestTime, { value: 1 })).to.be.revertedWith(
-    //     "Unlock time should be in the future"
-    //   );
-    // });
-
   });
 
-  describe("Withdrawals", function () {
-
-    // describe("Validations", function () {
-    //   it("Should revert with the right error if called too soon", async function () {
-    //     const { lock } = await loadFixture(deployContracts);
-    //
-    //     await expect(lock.withdraw()).to.be.revertedWith(
-    //       "You can't withdraw yet"
-    //     );
-    //   });
-    //
-    //   it("Should revert with the right error if called from another account", async function () {
-    //     const { lock, unlockTime, otherAccount } = await loadFixture(
-    //       deployContracts
-    //     );
-    //
-    //     // We can increase the time in Hardhat Network
-    //     await time.increaseTo(unlockTime);
-    //
-    //     // We use lock.connect() to send a transaction from another account
-    //     await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-    //       "You aren't the owner"
-    //     );
-    //   });
-    //
-    //   it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-    //     const { lock, unlockTime } = await loadFixture(
-    //       deployContracts
-    //     );
-    //
-    //     // Transactions are sent using the first signer by default
-    //     await time.increaseTo(unlockTime);
-    //
-    //     await expect(lock.withdraw()).not.to.be.reverted;
-    //   });
-    // });
-
-    // describe("Events", function () {
-    //   it("Should emit an event on withdrawals", async function () {
-    //     const { lock, unlockTime, lockedAmount } = await loadFixture(
-    //       deployContracts
-    //     );
-    //
-    //     await time.increaseTo(unlockTime);
-    //
-    //     await expect(lock.withdraw())
-    //       .to.emit(lock, "Withdrawal")
-    //       .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-    //   });
-    // });
-
-    // describe("Transfers", function () {
-    //   it("Should transfer the funds to the owner", async function () {
-    //     const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-    //       deployContracts
-    //     );
-    //
-    //     await time.increaseTo(unlockTime);
-    //
-    //     await expect(lock.withdraw()).to.changeEtherBalances(
-    //       [owner, lock],
-    //       [lockedAmount, -lockedAmount]
-    //     );
-    //   });
-    // });
-
-  });
 });

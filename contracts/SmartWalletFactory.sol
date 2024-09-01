@@ -177,6 +177,7 @@ contract SmartWallet is Owned {
 
     error InvalidOfferKey(OfferKey offerKey);
     error InvalidToken(Token token);
+    error CannotOfferWETH();
     error OfferExpired(OfferKey offerKey, Unixtime expiry);
 
     constructor() {
@@ -195,6 +196,9 @@ contract SmartWallet is Owned {
             TokenType tokenType = getTokenType(offer.token);
             if (tokenType == TokenType.NOTTOKEN) {
                 revert InvalidToken(offer.token);
+            }
+            if (Token.unwrap(offer.token) == address(weth)) {
+                revert CannotOfferWETH();
             }
 
             // Check ERC-20/721/1155

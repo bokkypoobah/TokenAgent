@@ -69,7 +69,7 @@ describe("SmartWalletFactory", function () {
     });
 
     it.only("Test SmartWallet offers", async function () {
-      const { smartWalletFactory, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
+      const { smartWalletFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
       await expect(smartWalletFactory.newSmartWallet())
         .to.emit(smartWalletFactory, "NewSmartWallet")
         .withArgs(anyValue, accounts[0].address, 0, anyValue);
@@ -90,6 +90,7 @@ describe("SmartWalletFactory", function () {
         [BUY, expiry, erc721Token.target, 888, "999999999999999999999999999999999998"],
         [SELL, expiry, erc1155Token.target, 888, "999999999999999999999999999999999997"],
         // [SELL, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
+        // [SELL, expiry, weth9.target, 888, "999999999999999999999999999999999997"],
       ];
       const addOffers1Tx = await smartWallet.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();

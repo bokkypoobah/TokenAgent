@@ -59,6 +59,8 @@ describe("SmartWalletFactory", function () {
       await expect(smartWallet.connect(accounts[1]).transferOwnership(accounts[0]))
         .to.be.revertedWithCustomError(smartWallet, "NotOwner");
       await smartWallet.connect(accounts[0]).transferOwnership(accounts[1]);
+      await expect(smartWallet.connect(accounts[2]).acceptOwnership())
+        .to.be.revertedWithCustomError(smartWallet, "NotNewOwner");
       await expect(smartWallet.connect(accounts[1]).acceptOwnership())
         .to.emit(smartWallet, "OwnershipTransferred")
         .withArgs(accounts[0].address, accounts[1].address, anyValue);

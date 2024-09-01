@@ -108,8 +108,9 @@ contract Owned {
 
     event OwnershipTransferred(address indexed from, address indexed to, Unixtime timestamp);
 
-    error NotOwner();
     error AlreadyInitialised();
+    error NotOwner();
+    error NotNewOwner();
 
     modifier onlyOwner {
         if (msg.sender != owner) {
@@ -122,13 +123,16 @@ contract Owned {
         if (initialised) {
             revert AlreadyInitialised();
         }
-        owner = address(uint160(_owner));
+        owner = _owner;
         initialised = true;
     }
     function transferOwnership(address _newOwner) public onlyOwner {
         newOwner = _newOwner;
     }
     function acceptOwnership() public {
+        if (msg.sender != newOwner) {
+            revert NotNewOwner();
+        }
         emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint64(block.timestamp)));
         owner = newOwner;
         newOwner = address(0);

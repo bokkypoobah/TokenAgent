@@ -68,7 +68,7 @@ describe("TokenAgentFactory", function () {
         .withArgs(accounts[0].address, accounts[1].address, anyValue);
     });
 
-    it.only("Test TokenAgent offers", async function () {
+    it("Test TokenAgent invalid offers", async function () {
       const { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
       await expect(tokenAgentFactory.newTokenAgent())
         .to.emit(tokenAgentFactory, "NewTokenAgent")
@@ -80,19 +80,36 @@ describe("TokenAgentFactory", function () {
       const now = parseInt(new Date().getTime()/1000);
       const expiry = now + 60 * 1000;
 
-      // const offers1 = [
-      //   [accounts[0].address, BUY, ERC20, erc20Token.target, 888, [1, 2, 3], [11, 22, 33, 44], "999999999999999999999999999999999999", expiry],
-      //   [accounts[1].address, BUY, ERC721, erc20Token.target, 888, [4, 5, 6], [55, 66, 77, 88], "999999999999999999999999999999999998", expiry],
-      //   [ADDRESS0, SELL, ERC1155, erc20Token.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
-      // ];
+      const invalidOffer1 = [
+        [accounts[0].address, SELL, expiry, 888, "999999999999999999999999999999999997"],
+      ];
+      await expect(tokenAgent.addOffers(invalidOffer1))
+        .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
+        .withArgs(accounts[0].address);
+      const invalidOffer2 = [
+        [weth9.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
+      ];
+      await expect(tokenAgent.addOffers(invalidOffer2))
+        .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
+    });
+
+    it("Test TokenAgent offers", async function () {
+      const { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
+      await expect(tokenAgentFactory.newTokenAgent())
+        .to.emit(tokenAgentFactory, "NewTokenAgent")
+        .withArgs(anyValue, accounts[0].address, 0, anyValue);
+      const tokenAgentAddress = await tokenAgentFactory.tokenAgents(0);
+      const TokenAgent = await ethers.getContractFactory("TokenAgent");
+      const tokenAgent = TokenAgent.attach(tokenAgentAddress);
+
+      const now = parseInt(new Date().getTime()/1000);
+      const expiry = now + 60 * 1000;
+
       const offers1 = [
         [erc20Token.target, BUY, expiry, 888, "999999999999999999999999999999999999"],
         [erc721Token.target, BUY, expiry, 888, "999999999999999999999999999999999998"],
         [erc1155Token.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
-        // [accounts[0].address, SELL, expiry, 888, "999999999999999999999999999999999997"],
-        // [weth9.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
       ];
-      // TODO: Test EOA and non-token contracts
       const addOffers1Tx = await tokenAgent.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       console.log("        * addOffers1TxReceipt.gasUsed: " + addOffers1TxReceipt.gasUsed);
@@ -104,8 +121,8 @@ describe("TokenAgentFactory", function () {
         console.log("        + log: " + log.name + '(' + log.args.join(',') + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
-
     });
+
   });
 
 });

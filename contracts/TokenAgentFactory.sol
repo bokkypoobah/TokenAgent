@@ -106,7 +106,9 @@ type TokenType is uint16;
 type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
-// enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
+
+TokenType constant TOKENTYPE_UNKNOWN = TokenType.wrap(0);
+TokenType constant TOKENTYPE_INVALID = TokenType.wrap(type(uint16).max);
 
 /// @notice Ownership
 contract Owned {
@@ -228,7 +230,7 @@ contract TokenAgent is Owned {
             OfferKey offerKey = makeOfferKey(offer);
 
             TokenType tokenType = _getTokenType(offer.token);
-            if (TokenType.unwrap(tokenType) == type(uint16).max) {
+            if (TokenType.unwrap(tokenType) == TokenType.unwrap(TOKENTYPE_INVALID)) {
                 revert InvalidToken(offer.token);
             }
             if (Token.unwrap(offer.token) == address(weth)) {
@@ -331,11 +333,11 @@ contract TokenAgent is Owned {
                     if (_decimals(token) != type(uint8).max) {
                         result = TokenType.wrap(20);
                     } else {
-                        result = TokenType.wrap(type(uint16).max);
+                        result = TOKENTYPE_INVALID;
                     }
                 }
             } else {
-                result = TokenType.wrap(type(uint16).max);
+                result = TOKENTYPE_INVALID;
             }
             tokenTypes[token] = result;
         }

@@ -154,6 +154,10 @@ contract Owned {
 /// @notice User owned TokenAgent
 contract TokenAgent is Owned {
 
+    // ints
+    // 2^128 = -170, 141,183,460,469,231,731, 687,303,715,884,105,728 to 170, 141,183,460,469,231,731, 687,303,715,884,105,727
+
+    // uints
     // 2^16 = 65,536
     // 2^32 = 4,294,967,296
     // 2^48 = 281,474,976,710,656
@@ -194,6 +198,7 @@ contract TokenAgent is Owned {
         Unixtime expiry; // 64 bits
         Price price; // 128 bits // token/WETH 18dp
         Tokens tokens; // 128 bits // ERC-20
+        Tokens remaining; // 128 bits // ERC-20
     }
     struct OfferLog {
         BuySell buySell; // 8 bits
@@ -236,9 +241,9 @@ contract TokenAgent is Owned {
     function addOffers(OfferInput[] calldata _offerInputs) external onlyOwner {
         for (uint i = 0; i < _offerInputs.length; i++) {
             OfferInput memory offerInput = _offerInputs[i];
-            OfferKey offerKey = makeOfferKey(offerInput);
-
             TokenType tokenType = _getTokenType(offerInput.token);
+            OfferKey offerKey = makeOfferKey(offerInput, tokenType);
+
             if (TokenType.unwrap(tokenType) == TokenType.unwrap(TOKENTYPE_INVALID)) {
                 revert InvalidToken(offerInput.token);
             }
@@ -252,7 +257,7 @@ contract TokenAgent is Owned {
 
             // uint startGas = gasleft();
             // 45681 gas
-            offers[offerKey] = Offer(offerInput.token, offerInput.buySell, offerInput.expiry, offerInput.price, offerInput.tokens);
+            offers[offerKey] = Offer(offerInput.token, offerInput.buySell, offerInput.expiry, offerInput.price, offerInput.tokens, offerInput.tokens);
             // uint usedGas = startGas - gasleft();
             // console.log("usedGas", usedGas);
             // 4319 gas
@@ -308,9 +313,18 @@ contract TokenAgent is Owned {
         }
     }
 
-    function makeOfferKey(OfferInput memory offerInput) internal pure returns (OfferKey offerKey) {
+    function makeOfferKey(OfferInput memory offerInput, TokenType tokenType) internal pure returns (OfferKey offerKey) {
         // return OfferKey.wrap(keccak256(abi.encodePacked(offer.taker, offer.buySell, offer.tokenType, offer.token, offer.tokenIds, offer.tokenss)));
-        return OfferKey.wrap(keccak256(abi.encodePacked(offerInput.buySell, offerInput.token)));
+        // return OfferKey.wrap(keccak256(abi.encodePacked(offerInput.buySell, offerInput.token)));
+        bytes32 hash = keccak256(abi.encodePacked(offerInput.buySell, offerInput.token));
+        if (TokenType.unwrap(tokenType) == 20) {
+            hash = bytes32(((uint(hash) >> 4) << 4) + 1);
+        } else if (TokenType.unwrap(tokenType) == 721) {
+            hash = bytes32(((uint(hash) >> 4) << 4) + 2);
+        } else if (TokenType.unwrap(tokenType) == 1155) {
+            hash = bytes32(((uint(hash) >> 4) << 4) + 3);
+        }
+        return OfferKey.wrap(hash);
     }
 
     function _supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {

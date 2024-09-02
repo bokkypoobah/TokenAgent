@@ -228,6 +228,7 @@ contract TokenAgent is Owned {
 
     struct Trade {
         OfferKey offerKey;
+        Tokens tokens; // 128 bits // ERC-20
     }
 
     IERC20 public weth;

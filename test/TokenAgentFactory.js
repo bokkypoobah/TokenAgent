@@ -106,9 +106,9 @@ describe("TokenAgentFactory", function () {
       const expiry = now + 60 * 1000;
 
       const offers1 = [
-        [erc20Token.target, BUY, expiry, 888, "999999999999999999999999999999999999"],
-        [erc721Token.target, BUY, expiry, 888, "999999999999999999999999999999999998"],
-        [erc1155Token.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
+        [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1000.1", 18)],
+        [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
+        [erc1155Token.target, SELL, expiry, ethers.parseUnits("0.1234567", 18), ethers.parseUnits("1000.3", 18)],
       ];
       const addOffers1Tx = await tokenAgent.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
@@ -118,12 +118,14 @@ describe("TokenAgentFactory", function () {
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = tokenAgent.interface.parseLog(event);
         offerKeys.push(log.args[0]);
-        console.log("        + log: " + log.name + '(' + log.args.join(',') + ')');
+        console.log("        + " + log.name + '(' + log.args.join(',') + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 
       const trades1 = [
-        [offerKeys[0]], [offerKeys[1]], [offerKeys[2]]
+        [offerKeys[0], ethers.parseUnits("10", 18).toString()],
+        [offerKeys[1], ethers.parseUnits("20", 18).toString()],
+        [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];
       console.log("        * trades1: " + JSON.stringify(trades1));
       const trade1Tx = await tokenAgent.trade(trades1);

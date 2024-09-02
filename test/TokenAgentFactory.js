@@ -165,8 +165,8 @@ describe("TokenAgentFactory", function () {
       const expiry = now + 60 * 1000;
 
       const offers1 = [
-        [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1000.1", 18)],
-        [erc20Token.target, SELL, expiry, ethers.parseUnits("0.23456", 18), ethers.parseUnits("100.2", 18)],
+        [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("100", 18)],
+        [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("10", 18)],
         // [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
         // [erc1155Token.target, SELL, expiry, ethers.parseUnits("0.1234567", 18), ethers.parseUnits("1000.3", 18)],
       ];
@@ -183,16 +183,28 @@ describe("TokenAgentFactory", function () {
       console.log("        * offerKeys: " + offerKeys.join(','));
 
       const trades1 = [
-        [offerKeys[0], ethers.parseUnits("10", 18).toString()],
-        // [offerKeys[1], ethers.parseUnits("20", 18).toString()],
+        // [offerKeys[0], ethers.parseUnits("10", 18).toString()],
+        [offerKeys[1], ethers.parseUnits("10", 18).toString()],
         // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];
       console.log("        * trades1: " + JSON.stringify(trades1));
-      const trade1Tx = await tokenAgent.connect(accounts[2]).trade(trades1);
-      const trade1TxReceipt = await trade1Tx.wait();
-      console.log("        * trade1TxReceipt.gasUsed: " + trade1TxReceipt.gasUsed);
+      const trades1Tx = await tokenAgent.connect(accounts[2]).trade(trades1);
+      const trades1TxReceipt = await trades1Tx.wait();
+      console.log("        * trades1TxReceipt.gasUsed: " + trades1TxReceipt.gasUsed);
 
       await printState(data);
+
+      // const trades2 = [
+      //   // [offerKeys[0], ethers.parseUnits("10", 18).toString()],
+      //   [offerKeys[1], ethers.parseUnits("1", 18).toString()],
+      //   // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
+      // ];
+      // console.log("        * trades2: " + JSON.stringify(trades2));
+      // const trades2Tx = await tokenAgent.connect(accounts[2]).trade(trades2);
+      // const trades2TxReceipt = await trades2Tx.wait();
+      // console.log("        * trades2TxReceipt.gasUsed: " + trades2TxReceipt.gasUsed);
+      //
+      // await printState(data);
 
     });
 

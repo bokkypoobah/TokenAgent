@@ -110,6 +110,8 @@ enum BuySell { BUY, SELL }
 TokenType constant TOKENTYPE_UNKNOWN = TokenType.wrap(0);
 TokenType constant TOKENTYPE_INVALID = TokenType.wrap(type(uint16).max);
 
+Token constant THEDAO = Token.wrap(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
+
 /// @notice Ownership
 contract Owned {
     bool initialised;
@@ -316,7 +318,11 @@ contract TokenAgent is Owned {
         try IERC20(Token.unwrap(token)).decimals() returns (uint8 _d) {
             __d = _d;
         } catch {
-            __d = type(uint8).max;
+            if (Token.unwrap(token) == Token.unwrap(THEDAO)) {
+                return 16;
+            } else {
+                __d = type(uint8).max;
+            }
         }
     }
 

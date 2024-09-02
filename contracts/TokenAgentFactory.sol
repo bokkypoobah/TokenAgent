@@ -107,6 +107,9 @@ type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
 
+bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
+bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
+
 TokenType constant TOKENTYPE_UNKNOWN = TokenType.wrap(0);
 TokenType constant TOKENTYPE_INVALID = TokenType.wrap(type(uint16).max);
 
@@ -230,9 +233,6 @@ contract TokenAgent is Owned {
         OfferKey offerKey;
     }
 
-    bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
-    bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
-
     IERC20 public weth;
     bool public active;
     mapping(OfferKey => Offer20) public offer20s;
@@ -262,11 +262,11 @@ contract TokenAgent is Owned {
             TokenType tokenType = _getTokenType(offerInput.token);
             OfferKey offerKey = makeOfferKey(offerInput, tokenType);
 
-            if (uint(OfferKey.unwrap(offerKey)) % 16 == 1) {
+            if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 1) {
                 console.log("        > ERC-20", Token.unwrap(offerInput.token));
-            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 2) {
+            } else if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 2) {
                 console.log("        > ERC-721", Token.unwrap(offerInput.token));
-            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 3) {
+            } else if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 3) {
                 console.log("        > ERC-1155", Token.unwrap(offerInput.token));
             }
 
@@ -304,18 +304,20 @@ contract TokenAgent is Owned {
             OfferKey offerKey = _trade.offerKey;
             // console.logBytes32(OfferKey.unwrap(offerKey));
 
-            if (uint(OfferKey.unwrap(offerKey)) % 16 == 1) {
+            BuySell buySell = BuySell(uint(OfferKey.unwrap(offerKey)) % 2);
+
+            if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 1) {
                 Offer20 memory offer = offer20s[offerKey];
                 Token token = offer.token;
-                console.log("        > ERC-20", Token.unwrap(token));
-            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 2) {
+                console.log("        > ERC-20", Token.unwrap(token), uint(buySell));
+            } else if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 2) {
                 Offer721 memory offer = offer721s[offerKey];
                 Token token = offer.token;
-                console.log("        > ERC-721", Token.unwrap(token));
-            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 3) {
+                console.log("        > ERC-721", Token.unwrap(token), uint(buySell));
+            } else if ((uint(OfferKey.unwrap(offerKey)) % 16) / 2 == 3) {
                 Offer1155 memory offer = offer1155s[offerKey];
                 Token token = offer.token;
-                console.log("        > ERC-1155", Token.unwrap(token));
+                console.log("        > ERC-1155", Token.unwrap(token), uint(buySell));
             }
 
 
@@ -364,11 +366,11 @@ contract TokenAgent is Owned {
         // return OfferKey.wrap(keccak256(abi.encodePacked(offerInput.buySell, offerInput.token)));
         bytes32 hash = keccak256(abi.encodePacked(offerInput.buySell, offerInput.token));
         if (TokenType.unwrap(tokenType) == 20) {
-            hash = bytes32(((uint(hash) >> 4) << 4) + 1);
+            hash = bytes32(((uint(hash) >> 4) << 4) + 2 + uint(offerInput.buySell));
         } else if (TokenType.unwrap(tokenType) == 721) {
-            hash = bytes32(((uint(hash) >> 4) << 4) + 2);
+            hash = bytes32(((uint(hash) >> 4) << 4) + 4 + uint(offerInput.buySell));
         } else if (TokenType.unwrap(tokenType) == 1155) {
-            hash = bytes32(((uint(hash) >> 4) << 4) + 3);
+            hash = bytes32(((uint(hash) >> 4) << 4) + 6 + uint(offerInput.buySell));
         }
         return OfferKey.wrap(hash);
     }

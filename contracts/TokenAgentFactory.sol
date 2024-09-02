@@ -311,6 +311,8 @@ contract TokenAgent is Owned {
                 console.log("        > ERC-20", Token.unwrap(token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 console.log("        > Tokens, Remaining", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
                 console.log("        > Price", uint(Price.unwrap(offer.price)));
+                uint wethTokens = uint(Tokens.unwrap(_trade.tokens)) * uint(Price.unwrap(offer.price)) / 10**18;
+                console.log("        > wethTokens", wethTokens);
             } else if (tokenType == TokenType.ERC721) {
                 Offer721 memory offer = offer721s[offerKey];
                 Token token = offer.token;
@@ -409,7 +411,7 @@ contract TokenAgent is Owned {
             tokenTypes[token] = _tokenType;
         }
         uint usedGas = startGas - gasleft();
-        console.log("        > _getTokenType()", Token.unwrap(token), uint(_tokenType), usedGas);
+        // console.log("        > _getTokenType()", Token.unwrap(token), uint(_tokenType), usedGas);
     }
 }
 

@@ -169,8 +169,8 @@ contract TokenAgent is Owned {
 
     IERC20 public weth;
     bool public active;
-    mapping(Token => TokenType) public tokenTypes;
     mapping(OfferKey => Offer) public offers;
+    mapping(Token => TokenType) tokenTypes;
 
     event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);

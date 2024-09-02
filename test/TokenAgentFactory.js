@@ -121,6 +121,15 @@ describe("TokenAgentFactory", function () {
         console.log("        + log: " + log.name + '(' + log.args.join(',') + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
+
+      const trades1 = [
+        [offerKeys[0]], [offerKeys[1]], [offerKeys[2]]
+      ];
+      console.log("        * trades1: " + JSON.stringify(trades1));
+      const trade1Tx = await tokenAgent.trade(trades1);
+      const trade1TxReceipt = await trade1Tx.wait();
+      console.log("        * trade1TxReceipt.gasUsed: " + trade1TxReceipt.gasUsed);
+
     });
 
   });

@@ -165,8 +165,9 @@ describe("TokenAgentFactory", function () {
       const expiry = now + 60 * 1000; // 0 ok, 1 fail, <now fail
 
       const offers1 = [
-        [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("10", 18)],
-        [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1", 18)],
+        [erc20Token.target, BUY, expiry, [[ethers.parseUnits("0.11111", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.22222", 18), ethers.parseUnits("9", 18)]]],
+        [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.11111", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.22222", 18), ethers.parseUnits("9", 18)]]],
+        // [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1", 18)],
         // [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
         // [erc1155Token.target, SELL, expiry, ethers.parseUnits("0.1234567", 18), ethers.parseUnits("1000.3", 18)],
       ];
@@ -182,29 +183,29 @@ describe("TokenAgentFactory", function () {
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 
-      const trades1 = [
-        [offerKeys[0], ethers.parseUnits("1", 18).toString()],
-        // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
-        // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
-      ];
-      console.log("        * trades1: " + JSON.stringify(trades1));
-      const trades1Tx = await tokenAgent.connect(accounts[2]).trade(trades1);
-      const trades1TxReceipt = await trades1Tx.wait();
-      console.log("        * trades1TxReceipt.gasUsed: " + trades1TxReceipt.gasUsed);
-      trades1TxReceipt.logs.forEach((event) => {
-        if (event.address == weth9.target) {
-          const log = weth9.interface.parseLog(event);
-          console.log("        + weth9." + log.name + '(' + log.args.join(',') + ')');
-        } else if (event.address == erc20Token.target) {
-          const log = erc20Token.interface.parseLog(event);
-          console.log("        + erc20Token." + log.name + '(' + log.args.join(',') + ')');
-        } else if (event.address == tokenAgent.target) {
-          const log = tokenAgent.interface.parseLog(event);
-          console.log("        + " + log.name + '(' + log.args.join(',') + ')');
-        }
-      });
-
-      await printState(data);
+      // const trades1 = [
+      //   [offerKeys[0], ethers.parseUnits("1", 18).toString()],
+      //   // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
+      //   // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
+      // ];
+      // console.log("        * trades1: " + JSON.stringify(trades1));
+      // const trades1Tx = await tokenAgent.connect(accounts[2]).trade(trades1);
+      // const trades1TxReceipt = await trades1Tx.wait();
+      // console.log("        * trades1TxReceipt.gasUsed: " + trades1TxReceipt.gasUsed);
+      // trades1TxReceipt.logs.forEach((event) => {
+      //   if (event.address == weth9.target) {
+      //     const log = weth9.interface.parseLog(event);
+      //     console.log("        + weth9." + log.name + '(' + log.args.join(',') + ')');
+      //   } else if (event.address == erc20Token.target) {
+      //     const log = erc20Token.interface.parseLog(event);
+      //     console.log("        + erc20Token." + log.name + '(' + log.args.join(',') + ')');
+      //   } else if (event.address == tokenAgent.target) {
+      //     const log = tokenAgent.interface.parseLog(event);
+      //     console.log("        + " + log.name + '(' + log.args.join(',') + ')');
+      //   }
+      // });
+      //
+      // await printState(data);
 
       // const trades2 = [
       //   // [offerKeys[0], ethers.parseUnits("10", 18).toString()],

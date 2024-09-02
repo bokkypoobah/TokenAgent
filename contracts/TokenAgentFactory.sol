@@ -193,7 +193,7 @@ contract TokenAgent is Owned {
             Offer memory offer = _offers[i];
             OfferKey offerKey = makeOfferKey(offer);
 
-            TokenType tokenType = getTokenType(offer.token);
+            TokenType tokenType = _getTokenType(offer.token);
             if (tokenType == TokenType.NOTTOKEN) {
                 revert InvalidToken(offer.token);
             }
@@ -226,7 +226,7 @@ contract TokenAgent is Owned {
             if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                 revert OfferExpired(offerKey, offer.expiry);
             }
-            TokenType tokenType = getTokenType(offer.token);
+            TokenType tokenType = _getTokenType(offer.token);
             // Transfer from msg.sender first
             if (offer.buySell == BuySell.BUY) {
                 // TokenAgent BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
@@ -264,33 +264,32 @@ contract TokenAgent is Owned {
         return OfferKey.wrap(keccak256(abi.encodePacked(offer.buySell, offer.token)));
     }
 
-    function supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {
+    function _supportsInterface(Token token, bytes4 _interface) internal view returns (bool b) {
         try IERC165(Token.unwrap(token)).supportsInterface(_interface) returns (bool _b) {
             b = _b;
         } catch {
         }
     }
 
-    function decimals(Token token) internal view returns (uint8 _decimals) {
+    function _decimals(Token token) internal view returns (uint8 __d) {
         try IERC20(Token.unwrap(token)).decimals() returns (uint8 _d) {
-            _decimals = _d;
+            __d = _d;
         } catch {
-            _decimals = type(uint8).max;
+            __d = type(uint8).max;
         }
     }
 
-    function getTokenType(Token token) internal returns (TokenType result) {
+    function _getTokenType(Token token) internal returns (TokenType result) {
         uint startGas = gasleft();
         result = tokenTypes[token];
         if (result == TokenType.UNKNOWN) {
             if (Token.unwrap(token).code.length > 0) {
-                if (supportsInterface(token, ERC721_INTERFACE)) {
+                if (_supportsInterface(token, ERC721_INTERFACE)) {
                     result = TokenType.ERC721;
-                } else if (supportsInterface(token, ERC1155_INTERFACE)) {
+                } else if (_supportsInterface(token, ERC1155_INTERFACE)) {
                     result = TokenType.ERC1155;
                 } else {
-                    uint8 _decimals = decimals(token);
-                    if (_decimals != type(uint8).max) {
+                    if (_decimals(token) != type(uint8).max) {
                         result = TokenType.ERC20;
                     } else {
                         result = TokenType.NOTTOKEN;

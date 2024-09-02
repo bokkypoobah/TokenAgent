@@ -100,7 +100,7 @@ describe("TokenAgentFactory", function () {
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = tokenAgent.interface.parseLog(event);
         offerKeys.push(log.args[0]);
-        console.log("        * log: " + log.name + '(' + log.args.join(',') + ')');
+        console.log("        + log: " + log.name + '(' + log.args.join(',') + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 

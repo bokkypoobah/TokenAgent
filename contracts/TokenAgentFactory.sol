@@ -194,7 +194,7 @@ contract TokenAgent is Owned {
     }
     struct Offer20 {
         Token token; // 160 bits
-        BuySell buySell; // 8 bits
+        // BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
         Price price; // 128 bits // token/WETH 18dp
         Tokens tokens; // 128 bits // ERC-20
@@ -278,7 +278,7 @@ contract TokenAgent is Owned {
             if (tokenType == TokenType.ERC20) {
                 // uint startGas = gasleft();
                 // 45681 gas
-                offer20s[offerKey] = Offer20(offerInput.token, offerInput.buySell, offerInput.expiry, offerInput.price, offerInput.tokens, offerInput.tokens);
+                offer20s[offerKey] = Offer20(offerInput.token, offerInput.expiry, offerInput.price, offerInput.tokens, offerInput.tokens);
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
                 // 4319 gas

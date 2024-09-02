@@ -313,6 +313,19 @@ contract TokenAgent is Owned {
                 console.log("        > Price", uint(Price.unwrap(offer.price)));
                 uint wethTokens = uint(Tokens.unwrap(_trade.tokens)) * uint(Price.unwrap(offer.price)) / 10**18;
                 console.log("        > wethTokens", wethTokens);
+                if (buySell == BuySell.BUY) {
+                    // owner offering to buy, msg.sender selling
+                    // transfer tokens from msg.sender to owner
+                    IERC20(Token.unwrap(token)).transferFrom(msg.sender, owner, Tokens.unwrap(_trade.tokens));
+                    // transfer WETH from owner to msg.sender
+                    weth.transferFrom(owner, msg.sender, wethTokens);
+                } else {
+                    // owner offering to sell, msg.sender buying
+                    // transfer WETH from msg.sender to owner
+                    weth.transferFrom(msg.sender, owner, wethTokens);
+                    // transfer tokens from owner to msg.sender
+                    IERC20(Token.unwrap(token)).transferFrom(owner, msg.sender, Tokens.unwrap(_trade.tokens));
+                }
             } else if (tokenType == TokenType.ERC721) {
                 Offer721 memory offer = offer721s[offerKey];
                 Token token = offer.token;
@@ -390,7 +403,7 @@ contract TokenAgent is Owned {
     }
 
     function _getTokenType(Token token) internal returns (TokenType _tokenType) {
-        uint startGas = gasleft();
+        // uint startGas = gasleft();
         _tokenType = tokenTypes[token];
         if (_tokenType == TokenType.UNKNOWN) {
             if (Token.unwrap(token).code.length > 0) {
@@ -410,7 +423,7 @@ contract TokenAgent is Owned {
             }
             tokenTypes[token] = _tokenType;
         }
-        uint usedGas = startGas - gasleft();
+        // uint usedGas = startGas - gasleft();
         // console.log("        > _getTokenType()", Token.unwrap(token), uint(_tokenType), usedGas);
     }
 }

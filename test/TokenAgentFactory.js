@@ -28,7 +28,53 @@ describe("TokenAgentFactory", function () {
     console.log("        * 20: " + erc20Token.target + ", 721: "+ erc721Token.target + ", 1155: "+ erc1155Token.target);
     const TokenAgentFactory = await ethers.getContractFactory("TokenAgentFactory");
     const tokenAgentFactory = await TokenAgentFactory.deploy(weth9);
+
+    const amountWeth = ethers.parseUnits("100", 18);
+    await accounts[0].sendTransaction({ to: weth9.target, value: amountWeth });
+    await accounts[1].sendTransaction({ to: weth9.target, value: amountWeth });
+    await accounts[2].sendTransaction({ to: weth9.target, value: amountWeth });
+    await accounts[3].sendTransaction({ to: weth9.target, value: amountWeth });
+    // const weth0Tx = await data.user0Signer.sendTransaction({ to: data.weth.address, value: amountWeth });
+
+    const amountERC20 = ethers.parseUnits("10000", 18);
+    await erc20Token.transfer(accounts[1], amountERC20);
+    await erc20Token.transfer(accounts[2], amountERC20);
+    await erc20Token.transfer(accounts[3], amountERC20);
+    await erc20Token.transfer(ADDRESS0, ethers.parseUnits("960000", 18));
+
     return { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts };
+  }
+
+  function padLeft(s, n) {
+    var o = s.toString();
+    while (o.length < n) {
+      o = " " + o;
+    }
+    return o;
+  }
+  // function padRight(s, n) {
+  //   var o = s;
+  //   while (o.length < n) {
+  //     o = o + " ";
+  //   }
+  //   return o;
+  // }
+
+  async function printState(data) {
+    console.log();
+    console.log("          # Account                               ETH                     WETH                   ERC-20");
+    console.log("          - ---------------- ------------------------ ------------------------ ------------------------");
+    for (let i = 0; i < 4; i++) {
+      const balance = await ethers.provider.getBalance(data.accounts[i].address);
+      const wethBalance = await data.weth9.balanceOf(data.accounts[i].address);
+      const erc20Balance = await data.erc20Token.balanceOf(data.accounts[i].address);
+      console.log("          " + i + " " + data.accounts[i].address.substring(0, 16) + " " +
+        padLeft(ethers.formatEther(balance), 24) + " " +
+        padLeft(ethers.formatEther(wethBalance), 24) + " " +
+        padLeft(ethers.formatEther(erc20Balance), 24)
+      );
+    }
+    console.log();
   }
 
   describe("Deploy TokenAgentFactory And TokenAgent", function () {
@@ -93,24 +139,38 @@ describe("TokenAgentFactory", function () {
         .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
     });
 
-    it("Test TokenAgent offers", async function () {
-      const { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts } = await loadFixture(deployContracts);
-      await expect(tokenAgentFactory.newTokenAgent())
+    it.only("Test TokenAgent offers", async function () {
+      const data = await loadFixture(deployContracts);
+      const { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts } = data;
+      await expect(tokenAgentFactory.connect(accounts[1]).newTokenAgent())
         .to.emit(tokenAgentFactory, "NewTokenAgent")
-        .withArgs(anyValue, accounts[0].address, 0, anyValue);
+        .withArgs(anyValue, accounts[1].address, 0, anyValue);
       const tokenAgentAddress = await tokenAgentFactory.tokenAgents(0);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
+
+      const approveAmount = ethers.parseUnits("10000.00001", 18);
+      await weth9.connect(accounts[0]).approve(tokenAgentAddress, approveAmount);
+      await weth9.connect(accounts[1]).approve(tokenAgentAddress, approveAmount);
+      await weth9.connect(accounts[2]).approve(tokenAgentAddress, approveAmount);
+      await weth9.connect(accounts[3]).approve(tokenAgentAddress, approveAmount);
+      await erc20Token.connect(accounts[0]).approve(tokenAgentAddress, approveAmount);
+      await erc20Token.connect(accounts[1]).approve(tokenAgentAddress, approveAmount);
+      await erc20Token.connect(accounts[2]).approve(tokenAgentAddress, approveAmount);
+      await erc20Token.connect(accounts[3]).approve(tokenAgentAddress, approveAmount);
+
+      await printState(data);
 
       const now = parseInt(new Date().getTime()/1000);
       const expiry = now + 60 * 1000;
 
       const offers1 = [
         [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1000.1", 18)],
-        [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
-        [erc1155Token.target, SELL, expiry, ethers.parseUnits("0.1234567", 18), ethers.parseUnits("1000.3", 18)],
+        [erc20Token.target, SELL, expiry, ethers.parseUnits("0.23456", 18), ethers.parseUnits("100.2", 18)],
+        // [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
+        // [erc1155Token.target, SELL, expiry, ethers.parseUnits("0.1234567", 18), ethers.parseUnits("1000.3", 18)],
       ];
-      const addOffers1Tx = await tokenAgent.addOffers(offers1);
+      const addOffers1Tx = await tokenAgent.connect(accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       console.log("        * addOffers1TxReceipt.gasUsed: " + addOffers1TxReceipt.gasUsed);
       // console.log("        * addOffers1TxReceipt: " + JSON.stringify(addOffers1TxReceipt, null, 2));
@@ -128,9 +188,11 @@ describe("TokenAgentFactory", function () {
         // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];
       console.log("        * trades1: " + JSON.stringify(trades1));
-      const trade1Tx = await tokenAgent.trade(trades1);
+      const trade1Tx = await tokenAgent.connect(accounts[2]).trade(trades1);
       const trade1TxReceipt = await trade1Tx.wait();
       console.log("        * trade1TxReceipt.gasUsed: " + trade1TxReceipt.gasUsed);
+
+      await printState(data);
 
     });
 

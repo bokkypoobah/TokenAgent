@@ -102,10 +102,11 @@ type Price is uint128;
 type Token is address;
 type TokenId is uint128;
 type Tokens is uint128;
+type TokenType is uint16;
 type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
-enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
+// enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, NOTTOKEN }
 
 /// @notice Ownership
 contract Owned {
@@ -149,15 +150,48 @@ contract Owned {
 /// @notice User owned TokenAgent
 contract TokenAgent is Owned {
 
+    // 2^16 = 65,536
+    // 2^32 = 4,294,967,296
+    // 2^48 = 281,474,976,710,656
+    // 2^60 = 1, 152,921,504, 606,846,976
+    // 2^64 = 18, 446,744,073,709,551,616
+    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+    //
+    // ERC-20:
+    // wethAmount = tokens * price / 10^18
+    // 12.3456    = 100 * 0.123456
+    //
+
+    // struct OfferInputItem {
+    //     BuySell buySell; // 8 bits
+    //     Unixtime expiry; // 64 bits
+    //     Tokens tokens; // 128 bits // ERC-20
+    //     Price price; // 128 bits // token/WETH 18dp
+    // }
+    // struct OfferInput {
+    //     Token token; // 160 bits
+    //     OfferInputItem[] items;
+    //     // Account taker; // 160 bits
+    //     // TokenId[] tokenIds; // ERC-721/1155
+    //     // Tokens[] tokenss; // ERC-1155
+    // }
+
     struct Offer {
-        // Account taker; // 160 bits
+        Token token; // 160 bits
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
-        Token token; // 160 bits
+        Price price; // 128 bits // token/WETH 18dp
         Tokens tokens; // 128 bits // ERC-20
+        // Account taker; // 160 bits
         // TokenId[] tokenIds; // ERC-721/1155
         // Tokens[] tokenss; // ERC-1155
+    }
+    struct OfferLog {
+        BuySell buySell; // 8 bits
+        Unixtime expiry; // 64 bits
         Price price; // 128 bits // token/WETH 18dp
+        Tokens tokens; // 128 bits // ERC-20
     }
 
     struct Trade {
@@ -172,7 +206,7 @@ contract TokenAgent is Owned {
     mapping(OfferKey => Offer) public offers;
     mapping(Token => TokenType) tokenTypes;
 
-    event OfferAdded(OfferKey indexed offerKey, Offer offer, Unixtime timestamp);
+    event OfferAdded(OfferKey indexed offerKey, Token indexed token, OfferLog offer, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);
 
     error InvalidOfferKey(OfferKey offerKey);
@@ -194,11 +228,15 @@ contract TokenAgent is Owned {
             OfferKey offerKey = makeOfferKey(offer);
 
             TokenType tokenType = _getTokenType(offer.token);
-            if (tokenType == TokenType.NOTTOKEN) {
+            if (TokenType.unwrap(tokenType) == type(uint16).max) {
                 revert InvalidToken(offer.token);
             }
             if (Token.unwrap(offer.token) == address(weth)) {
                 revert CannotOfferWETH();
+            }
+            if (TokenType.unwrap(tokenType) == 20) {
+            } else if (TokenType.unwrap(tokenType) == 721) {
+            } else if (TokenType.unwrap(tokenType) == 1155) {
             }
 
             // uint startGas = gasleft();
@@ -207,7 +245,8 @@ contract TokenAgent is Owned {
             // uint usedGas = startGas - gasleft();
             // console.log("usedGas", usedGas);
             // 4343 gas
-            emit OfferAdded(offerKey, offer, Unixtime.wrap(uint64(block.timestamp)));
+
+            emit OfferAdded(offerKey, offer.token, OfferLog(offer.buySell, offer.expiry, offer.price, offer.tokens), Unixtime.wrap(uint64(block.timestamp)));
         }
     }
 
@@ -230,29 +269,29 @@ contract TokenAgent is Owned {
             // Transfer from msg.sender first
             if (offer.buySell == BuySell.BUY) {
                 // TokenAgent BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
-                if (tokenType == TokenType.ERC20) {
-                } else if (tokenType == TokenType.ERC721) {
-                } else if (tokenType == TokenType.ERC1155) {
+                if (TokenType.unwrap(tokenType) == 20) {
+                } else if (TokenType.unwrap(tokenType) == 721) {
+                } else if (TokenType.unwrap(tokenType) == 1155) {
                 }
             } else {
                 // TokenAgent SELL, msg.sender BUY - msg.sender transfers WETH
-                if (tokenType == TokenType.ERC20) {
-                } else if (tokenType == TokenType.ERC721) {
-                } else if (tokenType == TokenType.ERC1155) {
+                if (TokenType.unwrap(tokenType) == 20) {
+                } else if (TokenType.unwrap(tokenType) == 721) {
+                } else if (TokenType.unwrap(tokenType) == 1155) {
                 }
             }
             // Transfer to msg.sender last
             if (offer.buySell == BuySell.BUY) {
                 // TokenAgent BUY, msg.sender SELL - TokenAgent transfers WETH
-                if (tokenType == TokenType.ERC20) {
-                } else if (tokenType == TokenType.ERC721) {
-                } else if (tokenType == TokenType.ERC1155) {
+                if (TokenType.unwrap(tokenType) == 20) {
+                } else if (TokenType.unwrap(tokenType) == 721) {
+                } else if (TokenType.unwrap(tokenType) == 1155) {
                 }
             } else {
                 // TokenAgent SELL, msg.sender BUY - TokenAgent transfers ERC-20/721/1155
-                if (tokenType == TokenType.ERC20) {
-                } else if (tokenType == TokenType.ERC721) {
-                } else if (tokenType == TokenType.ERC1155) {
+                if (TokenType.unwrap(tokenType) == 20) {
+                } else if (TokenType.unwrap(tokenType) == 721) {
+                } else if (TokenType.unwrap(tokenType) == 1155) {
                 }
             }
             emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
@@ -282,26 +321,26 @@ contract TokenAgent is Owned {
     function _getTokenType(Token token) internal returns (TokenType result) {
         uint startGas = gasleft();
         result = tokenTypes[token];
-        if (result == TokenType.UNKNOWN) {
+        if (uint(TokenType.unwrap(result)) == 0) {
             if (Token.unwrap(token).code.length > 0) {
                 if (_supportsInterface(token, ERC721_INTERFACE)) {
-                    result = TokenType.ERC721;
+                    result = TokenType.wrap(721);
                 } else if (_supportsInterface(token, ERC1155_INTERFACE)) {
-                    result = TokenType.ERC1155;
+                    result = TokenType.wrap(1155);
                 } else {
                     if (_decimals(token) != type(uint8).max) {
-                        result = TokenType.ERC20;
+                        result = TokenType.wrap(20);
                     } else {
-                        result = TokenType.NOTTOKEN;
+                        result = TokenType.wrap(type(uint16).max);
                     }
                 }
             } else {
-                result = TokenType.NOTTOKEN;
+                result = TokenType.wrap(type(uint16).max);
             }
             tokenTypes[token] = result;
         }
         uint usedGas = startGas - gasleft();
-        console.log("        > _getTokenType()", Token.unwrap(token), uint(result), usedGas);
+        console.log("        > _getTokenType()", Token.unwrap(token), uint(TokenType.unwrap(result)), usedGas);
     }
 }
 

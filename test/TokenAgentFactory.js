@@ -86,11 +86,11 @@ describe("TokenAgentFactory", function () {
       //   [ADDRESS0, SELL, ERC1155, erc20Token.target, 888, [7, 8, 9], [999], "999999999999999999999999999999999997", expiry],
       // ];
       const offers1 = [
-        [BUY, expiry, erc20Token.target, 888, "999999999999999999999999999999999999"],
-        [BUY, expiry, erc721Token.target, 888, "999999999999999999999999999999999998"],
-        [SELL, expiry, erc1155Token.target, 888, "999999999999999999999999999999999997"],
-        // [SELL, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
-        // [SELL, expiry, weth9.target, 888, "999999999999999999999999999999999997"],
+        [erc20Token.target, BUY, expiry, 888, "999999999999999999999999999999999999"],
+        [erc721Token.target, BUY, expiry, 888, "999999999999999999999999999999999998"],
+        [erc1155Token.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
+        // [accounts[0].address, SELL, expiry, 888, "999999999999999999999999999999999997"],
+        // [weth9.target, SELL, expiry, 888, "999999999999999999999999999999999997"],
       ];
       // TODO: Test EOA and non-token contracts
       const addOffers1Tx = await tokenAgent.addOffers(offers1);

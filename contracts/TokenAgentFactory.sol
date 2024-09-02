@@ -301,7 +301,7 @@ contract TokenAgent is Owned {
             tokenTypes[token] = result;
         }
         uint usedGas = startGas - gasleft();
-        console.log("        > getTokenType()", Token.unwrap(token), uint(result), usedGas);
+        console.log("        > _getTokenType()", Token.unwrap(token), uint(result), usedGas);
     }
 }
 

@@ -92,6 +92,7 @@ describe("TokenAgentFactory", function () {
         // [SELL, expiry, accounts[0].address, 888, "999999999999999999999999999999999997"],
         // [SELL, expiry, weth9.target, 888, "999999999999999999999999999999999997"],
       ];
+      // TODO: Test EOA and non-token contracts
       const addOffers1Tx = await tokenAgent.addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       console.log("        * addOffers1TxReceipt.gasUsed: " + addOffers1TxReceipt.gasUsed);

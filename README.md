@@ -38,6 +38,7 @@ TokenAgentFactory
 Or run the test with the output saved in [./testIt.out](./testIt.out).
 
 ```bash
+# chmod 700 ./10_testIt.sh initially
 ./10_testIt.sh
 
   TokenAgentFactory

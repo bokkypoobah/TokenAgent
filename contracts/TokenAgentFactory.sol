@@ -306,12 +306,12 @@ contract TokenAgent is Owned {
 
             if (tokenType == TokenType.ERC20) {
                 Offer20 storage offer = offer20s[offerKey];
-                // if (Token.unwrap(offer.token) == address(0)) {
-                //     revert InvalidOfferKey(offerKey);
-                // }
-                // if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
-                //     revert OfferExpired(offerKey, offer.expiry);
-                // }
+                if (Token.unwrap(offer.token) == address(0)) {
+                    revert InvalidOfferKey(offerKey);
+                }
+                if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
+                    revert OfferExpired(offerKey, offer.expiry);
+                }
                 console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 console.log("        > Tokens, Remaining - before", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
                 console.log("        > Price", uint(Price.unwrap(offer.price)));

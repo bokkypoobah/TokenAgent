@@ -162,7 +162,7 @@ describe("TokenAgentFactory", function () {
       await printState(data);
 
       const now = parseInt(new Date().getTime()/1000);
-      const expiry = now + 60 * 1000;
+      const expiry = now + 60 * 1000; // 0 ok, 1 fail, <now fail
 
       const offers1 = [
         [erc20Token.target, BUY, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("100", 18)],

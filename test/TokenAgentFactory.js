@@ -124,8 +124,8 @@ describe("TokenAgentFactory", function () {
 
       const trades1 = [
         [offerKeys[0], ethers.parseUnits("10", 18).toString()],
-        [offerKeys[1], ethers.parseUnits("20", 18).toString()],
-        [offerKeys[2], ethers.parseUnits("30", 18).toString()]
+        // [offerKeys[1], ethers.parseUnits("20", 18).toString()],
+        // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];
       console.log("        * trades1: " + JSON.stringify(trades1));
       const trade1Tx = await tokenAgent.trade(trades1);

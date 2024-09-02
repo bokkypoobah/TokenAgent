@@ -308,7 +308,9 @@ contract TokenAgent is Owned {
             if (tokenType == TokenType.ERC20) {
                 Offer20 memory offer = offer20s[offerKey];
                 Token token = offer.token;
-                console.log("        > ERC-20", Token.unwrap(token), uint(buySell));
+                console.log("        > ERC-20", Token.unwrap(token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
+                console.log("        > Tokens, Remaining", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
+                console.log("        > Price", uint(Price.unwrap(offer.price)));
             } else if (tokenType == TokenType.ERC721) {
                 Offer721 memory offer = offer721s[offerKey];
                 Token token = offer.token;

@@ -1,9 +1,9 @@
 pragma solidity ^0.8.24;
 
 // ----------------------------------------------------------------------------
-// SmartWallet
+// TokenAgent with factory
 //
-// https://github.com/bokkypoobah/SmartWallet
+// https://github.com/bokkypoobah/TokenAgent
 //
 // Deployed to Sepolia
 //
@@ -146,8 +146,8 @@ contract Owned {
     }
 }
 
-/// @notice User owned SmartWallet
-contract SmartWallet is Owned {
+/// @notice User owned TokenAgent
+contract TokenAgent is Owned {
 
     struct Offer {
         // Account taker; // 160 bits
@@ -229,13 +229,13 @@ contract SmartWallet is Owned {
             TokenType tokenType = getTokenType(offer.token);
             // Transfer from msg.sender first
             if (offer.buySell == BuySell.BUY) {
-                // SmartWallet BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
+                // TokenAgent BUY, msg.sender SELL - msg.sender transfers ERC-20/721/1155
                 if (tokenType == TokenType.ERC20) {
                 } else if (tokenType == TokenType.ERC721) {
                 } else if (tokenType == TokenType.ERC1155) {
                 }
             } else {
-                // SmartWallet SELL, msg.sender BUY - msg.sender transfers WETH
+                // TokenAgent SELL, msg.sender BUY - msg.sender transfers WETH
                 if (tokenType == TokenType.ERC20) {
                 } else if (tokenType == TokenType.ERC721) {
                 } else if (tokenType == TokenType.ERC1155) {
@@ -243,13 +243,13 @@ contract SmartWallet is Owned {
             }
             // Transfer to msg.sender last
             if (offer.buySell == BuySell.BUY) {
-                // SmartWallet BUY, msg.sender SELL - SmartWallet transfers WETH
+                // TokenAgent BUY, msg.sender SELL - TokenAgent transfers WETH
                 if (tokenType == TokenType.ERC20) {
                 } else if (tokenType == TokenType.ERC721) {
                 } else if (tokenType == TokenType.ERC1155) {
                 }
             } else {
-                // SmartWallet SELL, msg.sender BUY - SmartWallet transfers ERC-20/721/1155
+                // TokenAgent SELL, msg.sender BUY - TokenAgent transfers ERC-20/721/1155
                 if (tokenType == TokenType.ERC20) {
                 } else if (tokenType == TokenType.ERC721) {
                 } else if (tokenType == TokenType.ERC1155) {
@@ -306,27 +306,27 @@ contract SmartWallet is Owned {
     }
 }
 
-/// @notice SmartWallet factory
-contract SmartWalletFactory is CloneFactory {
-    SmartWallet public smartWalletTemplate;
+/// @notice TokenAgent factory
+contract TokenAgentFactory is CloneFactory {
+    TokenAgent public tokenAgentTemplate;
 
     IERC20 public weth;
-    SmartWallet[] public smartWallets;
-    mapping(address => SmartWallet[]) public smartWalletsByOwners;
+    TokenAgent[] public tokenAgents;
+    mapping(address => TokenAgent[]) public tokenAgentsByOwners;
 
-    event NewSmartWallet(SmartWallet indexed smartWallet, address indexed owner, uint indexed index, Unixtime timestamp);
+    event NewTokenAgent(TokenAgent indexed tokenAgent, address indexed owner, uint indexed index, Unixtime timestamp);
 
     constructor(IERC20 _weth) {
-        smartWalletTemplate = new SmartWallet();
+        tokenAgentTemplate = new TokenAgent();
         weth = _weth;
     }
 
-    function newSmartWallet() public {
-        SmartWallet smartWallet = SmartWallet(createClone(address(smartWalletTemplate)));
-        smartWallet.init(weth, msg.sender);
-        smartWallets.push(smartWallet);
-        smartWalletsByOwners[msg.sender].push(smartWallet);
-        emit NewSmartWallet(smartWallet, msg.sender, smartWalletsByOwners[msg.sender].length - 1, Unixtime.wrap(uint64(block.timestamp)));
+    function newTokenAgent() public {
+        TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
+        tokenAgent.init(weth, msg.sender);
+        tokenAgents.push(tokenAgent);
+        tokenAgentsByOwners[msg.sender].push(tokenAgent);
+        emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint64(block.timestamp)));
     }
 
 }

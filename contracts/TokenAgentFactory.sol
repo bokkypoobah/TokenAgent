@@ -244,6 +244,14 @@ contract TokenAgent is Owned {
             TokenType tokenType = _getTokenType(offerInput.token);
             OfferKey offerKey = makeOfferKey(offerInput, tokenType);
 
+            if (uint(OfferKey.unwrap(offerKey)) % 16 == 1) {
+                console.log("ERC-20");
+            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 2) {
+                console.log("ERC-721");
+            } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 3) {
+                console.log("ERC-1155");
+            }
+
             if (TokenType.unwrap(tokenType) == TokenType.unwrap(TOKENTYPE_INVALID)) {
                 revert InvalidToken(offerInput.token);
             }

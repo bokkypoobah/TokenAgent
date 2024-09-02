@@ -245,11 +245,11 @@ contract TokenAgent is Owned {
             OfferKey offerKey = makeOfferKey(offerInput, tokenType);
 
             if (uint(OfferKey.unwrap(offerKey)) % 16 == 1) {
-                console.log("ERC-20");
+                console.log("        > ERC-20", Token.unwrap(offerInput.token));
             } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 2) {
-                console.log("ERC-721");
+                console.log("        > ERC-721", Token.unwrap(offerInput.token));
             } else if (uint(OfferKey.unwrap(offerKey)) % 16 == 3) {
-                console.log("ERC-1155");
+                console.log("        > ERC-1155", Token.unwrap(offerInput.token));
             }
 
             if (TokenType.unwrap(tokenType) == TokenType.unwrap(TOKENTYPE_INVALID)) {

@@ -333,11 +333,31 @@ contract TokenAgent is Owned {
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
-                Tokens tokens = _trade.tokens;
+                uint128 tokens = Tokens.unwrap(_trade.tokens);
+                uint128 totalTokens = 0;
+                uint128 totalWethTokens = 0;
                 for (uint j = 0; j < offer.points.length; j++) {
-                    console.log("        > ERC-20", uint(Price.unwrap(offer.points[j].price)), uint(Tokens.unwrap(offer.points[j].tokens)), uint(Tokens.unwrap(offer.points[j].used)));
+                    uint128 _price = Price.unwrap(offer.points[j].price);
+                    uint128 _remaining = Tokens.unwrap(offer.points[j].tokens) - Tokens.unwrap(offer.points[j].used);
+                    console.log("        > ERC-20 price/tokens/used", uint(Price.unwrap(offer.points[j].price)), uint(Tokens.unwrap(offer.points[j].tokens)), uint(Tokens.unwrap(offer.points[j].used)));
+                    console.log("        >        remaining", _remaining);
+                    if (_remaining > 0) {
+                        if (tokens >= _remaining) {
+                            tokens -= _remaining;
+                            totalTokens += _remaining;
+                            offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + _remaining);
+                            totalWethTokens += _remaining * _price / 10**18;
+                        } else {
+                            totalTokens += tokens;
+                            offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + tokens);
+                            totalWethTokens += tokens * _price / 10**18;
+                            tokens = 0;
+                        }
+                    }
+                    console.log("        >        totalTokens/totalWethTokens", totalTokens, totalWethTokens);
                     // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 }
+                console.log("        >        tokens/totalTokens/totalWethTokens", uint(Tokens.unwrap(_trade.tokens)), totalTokens, totalWethTokens);
                 // console.log("        > Tokens, Remaining - before", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
                 // console.log("        > Price", uint(Price.unwrap(offer.price)));
                 // if (Tokens.unwrap(_trade.tokens) > Tokens.unwrap(offer.remaining)) {

@@ -248,7 +248,7 @@ contract TokenAgent is Owned {
     mapping(Token => TokenType) tokenTypes;
 
     event Offer20Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer20Log offer, Unixtime timestamp);
-    event OrdersInvalidated(Nonce newNonce, Unixtime timestamp);
+    event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);
 
     error CannotOfferWETH();
@@ -269,7 +269,7 @@ contract TokenAgent is Owned {
     }
     function invalidateOrders() external onlyOwner {
         nonce = Nonce.wrap(Nonce.unwrap(nonce) + 1);
-        emit OrdersInvalidated(nonce, Unixtime.wrap(uint64(block.timestamp)));
+        emit OffersInvalidated(nonce, Unixtime.wrap(uint64(block.timestamp)));
     }
 
     function addOffers(OfferInput[] calldata _offerInputs) external onlyOwner {
@@ -277,14 +277,6 @@ contract TokenAgent is Owned {
             OfferInput memory offerInput = _offerInputs[i];
             TokenType tokenType = _getTokenType(offerInput.token);
             OfferKey offerKey = makeOfferKey(offerInput, tokenType);
-
-            // if (tokenType == TokenType.ERC20) {
-            //     console.log("        > ERC-20", Token.unwrap(offerInput.token));
-            // } else if (tokenType == TokenType.ERC721) {
-            //     console.log("        > ERC-721", Token.unwrap(offerInput.token));
-            // } else if (tokenType == TokenType.ERC1155) {
-            //     console.log("        > ERC-1155", Token.unwrap(offerInput.token));
-            // }
 
             if (tokenType == TokenType.INVALID) {
                 revert InvalidToken(offerInput.token);

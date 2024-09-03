@@ -369,51 +369,25 @@ contract TokenAgent is Owned {
                 if (totalTokens > 0) {
                     uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
                     if (buySell == BuySell.BUY) {
-                        console.log("        >        BUY averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                        if (averagePrice > Price.unwrap(_trade.averagePrice)) {
-                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
-                        }
-                        // owner offering to buy, msg.sender selling
-                        // transfer tokens from msg.sender to owner
-                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
-                        // transfer WETH from owner to msg.sender
-                        weth.transferFrom(owner, msg.sender, totalWETHTokens);
-                    } else {
-                        console.log("        >        SELL averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                        // msg.sender SELL owner BUY
+                        console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
                         if (averagePrice < Price.unwrap(_trade.averagePrice)) {
                             revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
                         }
-                        // owner offering to sell, msg.sender buying
-                        // transfer WETH from msg.sender to owner
+                        // owner offering to buy, msg.sender selling
+                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
+                        weth.transferFrom(owner, msg.sender, totalWETHTokens);
+                    } else {
+                        // msg.sender BUY owner SELL
+                        console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                        if (averagePrice > Price.unwrap(_trade.averagePrice)) {
+                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                        }
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
-                        // transfer tokens from owner to msg.sender
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
                     emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
                 }
-                // console.log("        > Tokens, Remaining - before", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
-                // console.log("        > Price", uint(Price.unwrap(offer.price)));
-                // if (Tokens.unwrap(_trade.tokens) > Tokens.unwrap(offer.remaining)) {
-                //     revert InsufficentTokensRemaining(_trade.tokens, offer.remaining);
-                // }
-                // uint wethTokens = uint(Tokens.unwrap(_trade.tokens)) * uint(Price.unwrap(offer.price)) / 10**18;
-                // console.log("        > wethTokens", wethTokens);
-                // offer.remaining = Tokens.wrap(Tokens.unwrap(offer.remaining) - Tokens.unwrap(_trade.tokens));
-                // console.log("        > Tokens, Remaining - after", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
-                // if (buySell == BuySell.BUY) {
-                //     // owner offering to buy, msg.sender selling
-                //     // transfer tokens from msg.sender to owner
-                //     IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, Tokens.unwrap(_trade.tokens));
-                //     // transfer WETH from owner to msg.sender
-                //     weth.transferFrom(owner, msg.sender, wethTokens);
-                // } else {
-                //     // owner offering to sell, msg.sender buying
-                //     // transfer WETH from msg.sender to owner
-                //     weth.transferFrom(msg.sender, owner, wethTokens);
-                //     // transfer tokens from owner to msg.sender
-                //     IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, Tokens.unwrap(_trade.tokens));
-                // }
-                // emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // TODO
                 Offer721 memory offer = offer721s[offerKey];

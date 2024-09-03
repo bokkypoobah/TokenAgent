@@ -36,11 +36,11 @@ describe("TokenAgentFactory", function () {
     await accounts[3].sendTransaction({ to: weth9.target, value: amountWeth });
     // const weth0Tx = await data.user0Signer.sendTransaction({ to: data.weth.address, value: amountWeth });
 
-    const amountERC20 = ethers.parseUnits("10000", 18);
+    const amountERC20 = ethers.parseUnits("1000", 18);
     await erc20Token.transfer(accounts[1], amountERC20);
     await erc20Token.transfer(accounts[2], amountERC20);
     await erc20Token.transfer(accounts[3], amountERC20);
-    await erc20Token.transfer(ADDRESS0, ethers.parseUnits("960000", 18));
+    await erc20Token.transfer(ADDRESS0, ethers.parseUnits("996000", 18));
 
     return { tokenAgentFactory, weth9, erc20Token, erc721Token, erc1155Token, accounts };
   }
@@ -165,7 +165,7 @@ describe("TokenAgentFactory", function () {
       const expiry = now + 60 * 1000; // 0 ok, 1 fail, <now fail
 
       const offers1 = [
-        [erc20Token.target, BUY, expiry, [[ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)]]],
+        [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.3", 18), ethers.parseUnits("8", 18)]]],
         // [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.11111", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.22222", 18), ethers.parseUnits("9", 18)]]],
         // [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1", 18)],
         // [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
@@ -185,7 +185,7 @@ describe("TokenAgentFactory", function () {
       console.log("        * offerKeys: " + offerKeys.join(','));
 
       const trades1 = [
-        [offerKeys[0], ethers.parseUnits("3", 18).toString()],
+        [offerKeys[0], ethers.parseUnits("2", 18).toString(), ethers.parseUnits("0.15", 18).toString()],
         // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
         // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];

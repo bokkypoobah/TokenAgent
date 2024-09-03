@@ -249,6 +249,7 @@ contract TokenAgent is Owned {
 
     error CannotOfferWETH();
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
+    error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
     error InvalidOfferKey(OfferKey offerKey);
     error InvalidToken(Token token);
     error OfferExpired(OfferKey offerKey, Unixtime expiry);
@@ -323,6 +324,9 @@ contract TokenAgent is Owned {
                 Offer20 storage offer = offer20s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
+                }
+                if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
+                    revert InvalidOffer(offer.nonce, nonce);
                 }
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);

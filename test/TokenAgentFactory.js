@@ -11,6 +11,9 @@ const ERC20 = 0;
 const ERC721 = 1;
 const ERC1155 = 2;
 
+const FILL = 0;
+const FILLORKILL = 1;
+
 describe("TokenAgentFactory", function () {
 
   async function deployContracts() {
@@ -165,7 +168,7 @@ describe("TokenAgentFactory", function () {
       const expiry = now + 60 * 1000; // 0 ok, 1 fail, <now fail
 
       const offers1 = [
-        [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.3", 18), ethers.parseUnits("8", 18)]]],
+        [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)]]],
         // [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.11111", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.22222", 18), ethers.parseUnits("9", 18)]]],
         // [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1", 18)],
         // [erc721Token.target, BUY, expiry, ethers.parseUnits("0.123456", 18), ethers.parseUnits("1000.2", 18)],
@@ -185,7 +188,7 @@ describe("TokenAgentFactory", function () {
       console.log("        * offerKeys: " + offerKeys.join(','));
 
       const trades1 = [
-        [offerKeys[0], ethers.parseUnits("2", 18).toString(), ethers.parseUnits("0.15", 18).toString()],
+        [offerKeys[0], ethers.parseUnits("2.1", 18).toString(), ethers.parseUnits("0.15", 18).toString(), FILLORKILL],
         // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
         // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
       ];

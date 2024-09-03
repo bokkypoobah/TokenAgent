@@ -107,6 +107,7 @@ type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
 enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
+enum Execution { FILL, FILLORKILL }
 
 bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
 bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
@@ -236,6 +237,7 @@ contract TokenAgent is Owned {
         OfferKey offerKey; // 256 bits
         Tokens tokens; // 128 bits // ERC-20
         Price averagePrice; // 128 bits min average when selling, max average when buying
+        Execution execution; // 8 bits
     }
 
     IERC20 public weth;
@@ -361,17 +363,33 @@ contract TokenAgent is Owned {
                     // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 }
                 console.log("        >        tokens/totalTokens/totalWETHTokens", uint(Tokens.unwrap(_trade.tokens)), totalTokens, totalWETHTokens);
-                uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
-                if (buySell == BuySell.BUY) {
-                    console.log("        >        BUY averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                    if (averagePrice > Price.unwrap(_trade.averagePrice)) {
-                        revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                if (_trade.execution == Execution.FILLORKILL && totalTokens < Tokens.unwrap(_trade.tokens)) {
+                    revert InsufficentTokensRemaining(_trade.tokens, Tokens.wrap(totalTokens));
+                }
+                if (totalTokens > 0) {
+                    uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
+                    if (buySell == BuySell.BUY) {
+                        console.log("        >        BUY averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                        if (averagePrice > Price.unwrap(_trade.averagePrice)) {
+                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                        }
+                        // owner offering to buy, msg.sender selling
+                        // transfer tokens from msg.sender to owner
+                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
+                        // transfer WETH from owner to msg.sender
+                        weth.transferFrom(owner, msg.sender, totalWETHTokens);
+                    } else {
+                        console.log("        >        SELL averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                        if (averagePrice < Price.unwrap(_trade.averagePrice)) {
+                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                        }
+                        // owner offering to sell, msg.sender buying
+                        // transfer WETH from msg.sender to owner
+                        weth.transferFrom(msg.sender, owner, totalWETHTokens);
+                        // transfer tokens from owner to msg.sender
+                        IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                } else {
-                    console.log("        >        SELL averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                    if (averagePrice < Price.unwrap(_trade.averagePrice)) {
-                        revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
-                    }
+                    emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
                 }
                 // console.log("        > Tokens, Remaining - before", uint(Tokens.unwrap(offer.tokens)), uint(Tokens.unwrap(offer.remaining)));
                 // console.log("        > Price", uint(Price.unwrap(offer.price)));

@@ -2,16 +2,30 @@
 
 Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
+#### How It Works - ERC-20 ATM
+
+* `account1` deploys `TokenAgent1`, cloned via `TokenAgentFactory`
+* `account1` approves for `TokenAgent1` to transfer WETH and ERC20
+* `account1` adds orders to `TokenAgent1` to e.g. BUY ERC20: 100 @ 0.1 ERC20/WETH, 200 @ 0.2 ERC20/WETH, ...
+* `account2` interacts with `TokenAgent1` to SELL ERC20 for WETH against the `account1`'s orders
+
+#### How The Dapp Will Work
+
+* Incrementally scrape all `NewTokenAgent(tokenAgent, owner, index, timestamp)` events emitted by `TokenAgentFactory` to create a list of valid `TokenAgent` addresses
+* Incrementally scrape all events emitted by all the deployed `TokenAgent`, filtering by the valid `TokenAgent` addresses
+* When a user wants to view the orders and trades for a particular ERC20, incrementally scrape all the ERC20 events
+* The dapp will have all the data required to compute the token balances and `TokenAgent` states using the events above
+
 ## Testing
 
-### First Install
+#### First Install
 Clone/download this repository, and in the new folder on your computer:
 
 ```bash
 npm install --save-dev hardhat
 ```
 
-### Run Test Script
+#### Run Test Script
 
 Or run the test with the output saved in [./testIt.out](./testIt.out).
 You may initially have to mark the script as executable using the command `chmod 700 ./10_testIt.sh`.

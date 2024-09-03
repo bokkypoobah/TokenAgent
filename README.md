@@ -18,43 +18,49 @@ npx hardhat test
 Compiled 1 Solidity file successfully (evm target: paris).
 
 
-  TokenAgentFactory
-    Deploy TokenAgentFactory And TokenAgent
-        * accounts: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0x70997970C51812dc3A010C7d01b50e0d17dc79C8","0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"]
-        * weth: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-        * 20: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512, 721: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0, 1155: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+TokenAgentFactory
+  Deploy TokenAgentFactory And TokenAgent
+      * accounts: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266","0x70997970C51812dc3A010C7d01b50e0d17dc79C8","0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"]
+      * weth: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+      * 20: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512, 721: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0, 1155: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
-          # Account                               ETH                     WETH                   ERC-20
-          - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.980005791264739344                    100.0                  10000.0
-          1 0x70997970C51812  9899.999588280172286821                    100.0                  10000.0
-          2 0x3C44CdDdB6a900  9899.999835469118505823                    100.0                  10000.0
-          3 0x90F79bf6EB2c4f  9899.999838705231514918                    100.0                  10000.0
+        # Account                               ETH                     WETH                   ERC-20
+        - ---------------- ------------------------ ------------------------ ------------------------
+        0 0xf39Fd6e51aad88  9899.979421724255676385                    100.0                   1000.0
+        1 0x70997970C51812  9899.999588053400571401                    100.0                   1000.0
+        2 0x3C44CdDdB6a900  9899.999835379354986838                    100.0                   1000.0
+        3 0x90F79bf6EB2c4f  9899.999838626654353162                    100.0                   1000.0
 
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-        * addOffers1TxReceipt.gasUsed: 215371
-        + OfferAdded(0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492,0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,0,1725372294,123450000000000000,1000100000000000000000,1725312316)
-        + OfferAdded(0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843,0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,1,1725372294,234560000000000000,100200000000000000000,1725312316)
-        * offerKeys: 0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492,0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843
-        * trades1: [["0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492","10000000000000000000"]]
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512 0 10000000000000000000
-        > Tokens, Remaining 1000100000000000000000 1000100000000000000000
-        > Price 123450000000000000
-        > wethTokens 1234500000000000000
-        * trade1TxReceipt.gasUsed: 92580
+      * addOffers1TxReceipt.gasUsed: 195427
+      + Offer20Added(key:0x2119c1547cc665bfe9, token: 0xe7f1725E77, nonce: 0, info: ["1","1725463353","100000000000000000,1000000000000000000,200000000000000000,1000000000000000000,300000000000000000,100000000000000000"]) @ 9/4/2024, 8:42:56 AM
+      * offerKeys: 0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843
+      * trades1: [["0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843","2100000000000000000","150000000000000000",1]]
+      > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
+      >        remaining 1000000000000000000
+      >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
+      > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 0
+      >        remaining 1000000000000000000
+      >        totalTokens/totalWETHTokens 2000000000000000000 300000000000000000
+      > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
+      >        remaining 100000000000000000
+      >        totalTokens/totalWETHTokens 2100000000000000000 330000000000000000
+      >        tokens/totalTokens/totalWETHTokens 2100000000000000000 2100000000000000000 330000000000000000
+      >        SELL averagePrice/_trade.averagePrice 157142857142857142 150000000000000000
+      * trades1TxReceipt.gasUsed: 190249
+      + weth9.Transfer(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC,0x70997970C51812dc3A010C7d01b50e0d17dc79C8,330000000000000000)
+      + erc20Token.Transfer(0x70997970C51812dc3A010C7d01b50e0d17dc79C8,0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC,2100000000000000000)
+      + Traded(0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843,2100000000000000000,150000000000000000,1,1725403377)
 
-          # Account                               ETH                     WETH                   ERC-20
-          - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.980005791264739344                    100.0                  10000.0
-          1 0x70997970C51812   9899.99936163416424269                  98.7655                  10010.0
-          2 0x3C44CdDdB6a900  9899.999738639550692323                 101.2345                   9990.0
-          3 0x90F79bf6EB2c4f  9899.999838705231514918                    100.0                  10000.0
+        # Account                               ETH                     WETH                   ERC-20
+        - ---------------- ------------------------ ------------------------ ------------------------
+        0 0xf39Fd6e51aad88  9899.979421724255676385                    100.0                   1000.0
+        1 0x70997970C51812  9899.999382360128371642                   100.33                    997.9
+        2 0x3C44CdDdB6a900  9899.999636369102212093                    99.67                   1002.1
+        3 0x90F79bf6EB2c4f  9899.999838626654353162                    100.0                   1000.0
 
-      ✔ Test TokenAgent offers (621ms)
+    ✔ Test TokenAgent offers (643ms)
 
-
-  1 passing (622ms)
+1 passing (644ms)
 ```
 
 ### Run Test Script
@@ -64,8 +70,6 @@ You may initially have to mark the script as executable using the command `chmod
 
 ```bash
 $ ./10_testIt.sh
-Compiled 1 Solidity file successfully (evm target: paris).
-
 
   TokenAgentFactory
     Deploy TokenAgentFactory And TokenAgent
@@ -75,33 +79,39 @@ Compiled 1 Solidity file successfully (evm target: paris).
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.980005791264739344                    100.0                  10000.0
-          1 0x70997970C51812  9899.999588280172286821                    100.0                  10000.0
-          2 0x3C44CdDdB6a900  9899.999835469118505823                    100.0                  10000.0
-          3 0x90F79bf6EB2c4f  9899.999838705231514918                    100.0                  10000.0
+          0 0xf39Fd6e51aad88  9899.979421724255676385                    100.0                   1000.0
+          1 0x70997970C51812  9899.999588053400571401                    100.0                   1000.0
+          2 0x3C44CdDdB6a900  9899.999835379354986838                    100.0                   1000.0
+          3 0x90F79bf6EB2c4f  9899.999838626654353162                    100.0                   1000.0
 
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-        * addOffers1TxReceipt.gasUsed: 215371
-        + OfferAdded(0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492,0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,0,1725372294,123450000000000000,1000100000000000000000,1725312316)
-        + OfferAdded(0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843,0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,1,1725372294,234560000000000000,100200000000000000000,1725312316)
-        * offerKeys: 0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492,0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843
-        * trades1: [["0x8aa9dc1b9e5913098df98f3c9740043e98b0d082fa62837ed4207fd59393d492","10000000000000000000"]]
-        > ERC-20 0xe7f1725e7734ce288f8367e1bb143e90bb3f0512 0 10000000000000000000
-        > Tokens, Remaining 1000100000000000000000 1000100000000000000000
-        > Price 123450000000000000
-        > wethTokens 1234500000000000000
-        * trade1TxReceipt.gasUsed: 92580
+        * addOffers1TxReceipt.gasUsed: 195427
+        + Offer20Added(key:0x2119c1547cc665bfe9, token: 0xe7f1725E77, nonce: 0, info: ["1","1725463353","100000000000000000,1000000000000000000,200000000000000000,1000000000000000000,300000000000000000,100000000000000000"]) @ 9/4/2024, 8:42:56 AM
+        * offerKeys: 0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843
+        * trades1: [["0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843","2100000000000000000","150000000000000000",1]]
+        > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
+        >        remaining 1000000000000000000
+        >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
+        > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 0
+        >        remaining 1000000000000000000
+        >        totalTokens/totalWETHTokens 2000000000000000000 300000000000000000
+        > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
+        >        remaining 100000000000000000
+        >        totalTokens/totalWETHTokens 2100000000000000000 330000000000000000
+        >        tokens/totalTokens/totalWETHTokens 2100000000000000000 2100000000000000000 330000000000000000
+        >        SELL averagePrice/_trade.averagePrice 157142857142857142 150000000000000000
+        * trades1TxReceipt.gasUsed: 190249
+        + weth9.Transfer(0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC,0x70997970C51812dc3A010C7d01b50e0d17dc79C8,330000000000000000)
+        + erc20Token.Transfer(0x70997970C51812dc3A010C7d01b50e0d17dc79C8,0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC,2100000000000000000)
+        + Traded(0x2119c1547cc665bfe99ddf627a536c54f5c6e15869dc263b03aa27d3c4f20843,2100000000000000000,150000000000000000,1,1725403377)
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.980005791264739344                    100.0                  10000.0
-          1 0x70997970C51812   9899.99936163416424269                  98.7655                  10010.0
-          2 0x3C44CdDdB6a900  9899.999738639550692323                 101.2345                   9990.0
-          3 0x90F79bf6EB2c4f  9899.999838705231514918                    100.0                  10000.0
+          0 0xf39Fd6e51aad88  9899.979421724255676385                    100.0                   1000.0
+          1 0x70997970C51812  9899.999382360128371642                   100.33                    997.9
+          2 0x3C44CdDdB6a900  9899.999636369102212093                    99.67                   1002.1
+          3 0x90F79bf6EB2c4f  9899.999838626654353162                    100.0                   1000.0
 
-      ✔ Test TokenAgent offers (621ms)
+      ✔ Test TokenAgent offers (643ms)
 
-
-  1 passing (622ms)
+  1 passing (644ms)
 ```

@@ -245,6 +245,7 @@ contract TokenAgent is Owned {
     mapping(Token => TokenType) tokenTypes;
 
     event Offer20Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer20Log offer, Unixtime timestamp);
+    event OrdersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded(Trade trade, Unixtime timestamp);
 
     error CannotOfferWETH();
@@ -263,6 +264,7 @@ contract TokenAgent is Owned {
     }
     function invalidateOrders() external onlyOwner {
         nonce = Nonce.wrap(Nonce.unwrap(nonce) + 1);
+        emit OrdersInvalidated(nonce, Unixtime.wrap(uint64(block.timestamp)));
     }
 
     function addOffers(OfferInput[] calldata _offerInputs) external onlyOwner {

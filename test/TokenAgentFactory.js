@@ -253,12 +253,69 @@ describe("TokenAgentFactory", function () {
       await printState(d);
 
       const offers1 = [
-        [ d.erc20Token.target,
+        [
+          d.erc20Token.target,
           SELL,
           d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
+        ],
+        [
+          d.erc721Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18)],
+          [],
+          [],
+        ],
+        [
+          d.erc721Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18)],
+          [4, 5, 6, 7],
+          [],
+        ],
+        [
+          d.erc721Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
+          [4, 5, 6, 7],
+          [],
+        ],
+        [
+          d.erc1155Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18)],
+          [],
+          [],
+        ],
+        [
+          d.erc1155Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18)],
+          [0, 1, 2, 3],
+          [],
+        ],
+        [
+          d.erc1155Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
+          [0, 1, 2, 3],
+          [5, 5, 5, 5],
+        ],
+        [
+          d.erc1155Token.target,
+          SELL,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
+          [0, 1, 2, 3],
+          [1],
         ],
       ];
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);

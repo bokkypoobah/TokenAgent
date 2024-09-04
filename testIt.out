@@ -1,4 +1,3 @@
-Compiled 1 Solidity file successfully (evm target: paris).
 
 
   TokenAgentFactory
@@ -7,10 +6,10 @@ Compiled 1 Solidity file successfully (evm target: paris).
         + erc20Token.Transfer(from:0x0000000000, to:0xf39Fd6e51a, tokens: 1000000.0)
         * weth: 0x5FbDB2315678afecb367f032d93F642f64180aa3
         * 20: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512, 721: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0, 1155: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xb0279Db6a2, owner: 0xf39Fd6e51a, index: 0, timestamp: 12:43:19 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0x3dE2Da43d4, owner: 0x70997970C5, index: 0, timestamp: 12:43:20 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xddEA3d6750, owner: 0x3C44CdDdB6, index: 0, timestamp: 12:43:21 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xAbB608121F, owner: 0x90F79bf6EB, index: 0, timestamp: 12:43:22 AM)
+        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xb0279Db6a2, owner: 0xf39Fd6e51a, index: 0, timestamp: 7:41:37 AM)
+        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0x3dE2Da43d4, owner: 0x70997970C5, index: 0, timestamp: 7:41:38 AM)
+        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xddEA3d6750, owner: 0x3C44CdDdB6, index: 0, timestamp: 7:41:39 AM)
+        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xAbB608121F, owner: 0x90F79bf6EB, index: 0, timestamp: 7:41:40 AM)
         + weth.Deposit(dst:0xf39Fd6e51a, wad: 100.0)
         + weth.Deposit(dst:0x70997970C5, wad: 100.0)
         + weth.Deposit(dst:0x3C44CdDdB6, wad: 100.0)
@@ -99,25 +98,25 @@ Compiled 1 Solidity file successfully (evm target: paris).
         + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0x3dE2Da43d4, approved: true
         + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xddEA3d6750, approved: true
         + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xAbB608121F, approved: true
-        * now: 12:43:14 AM
-        * expiry: 12:45:14 AM
+        * now: 7:41:32 AM
+        * expiry: 7:43:32 AM
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.976160854572614876                    100.0                   1000.0
-          1 0x70997970C51812  9899.998900662793447303                    100.0                   1000.0
-          2 0x3C44CdDdB6a900  9899.998920613735969518                    100.0                   1000.0
-          3 0x90F79bf6EB2c4f  9899.998935783473880457                    100.0                   1000.0
+          0 0xf39Fd6e51aad88  9899.975799413290096983                    100.0                   1000.0
+          1 0x70997970C51812  9899.998900417292535382                    100.0                   1000.0
+          2 0x3C44CdDdB6a900  9899.998920410438613299                    100.0                   1000.0
+          3 0x90F79bf6EB2c4f  9899.998935612265718831                    100.0                   1000.0
 
         > erc20Token.inputs.length 6
-        * addOffers1TxReceipt.gasUsed: 857013
-        + tokenAgents[1].Offer20Added(offerKey:0x9ed5...cd63, token: 0xe7f1725E77, nonce: 0, buySell: 1, expiry: 12:45:14 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 12:44:51 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x2ce3...7c74, token: 0x9fE4673667, nonce: 0, buySell: 0, expiry: 12:45:14 AM, prices: ["0.1"], tokenIds: [], timestamp: 12:44:51 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x20ee...a205, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 12:45:14 AM, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 12:44:51 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x27c8...f0c5, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 12:45:14 AM, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 12:44:51 AM)
-        * offerKeys: 0x9ed5354c942bf90acca6d9780d8cfb33806f9b9df56ba88c06ed9ebf9059cd63,0x2ce38eff83769bf4d80e62bfc6f3da55c688b7d15c62794da571c02e3aa77c74,0x20eea0daf843b9e63bd43ea227de7797426a29646134fbda19d203ba5b6da205,0x27c8c9ba6c0a13bc6307863d959cfe61d247bedea02d1e1658435b4c66acf0c5
-        * trades1: [["0x9ed5354c942bf90acca6d9780d8cfb33806f9b9df56ba88c06ed9ebf9059cd63","2100000000000000000","157142857142857142",1]]
-        >        expiry/timestamp 1725461114 1725461092
+        * addOffers1TxReceipt.gasUsed: 861716
+        + tokenAgents[1].Offer20Added(offerKey:0xc22d...7e73, token: 0xe7f1725E77, nonce: 0, buySell: 1, expiry: 7:43:32 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 7:43:09 AM)
+        + tokenAgents[1].Offer721Added(offerKey:0xd7d8...8a84, token: 0x9fE4673667, nonce: 0, buySell: 0, expiry: 7:43:32 AM, count: 5, prices: ["0.1"], tokenIds: [], timestamp: 7:43:09 AM)
+        + tokenAgents[1].Offer721Added(offerKey:0x025c...16f5, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 7:43:32 AM, count: 6, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 7:43:09 AM)
+        + tokenAgents[1].Offer721Added(offerKey:0xd786...e7b5, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 7:43:32 AM, count: 65535, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 7:43:09 AM)
+        * offerKeys: 0xc22d01978b3dad7cb54ed0b443e5acc95589d383ccd1ac78f928423294ab7e73,0xd7d8dfdac52f7f1cfb254d229898b6e5e3fd403e1cf6751b6befad79ab448a84,0x025c440d7a090dbcf201098beb5046f126090c40fc7b6880ba1665e7842e16f5,0xd7865c5db3b809bcd95bfa6866533ed593326b4e040c683095e9b6b861e0e7b5
+        * trades1: [["0xc22d01978b3dad7cb54ed0b443e5acc95589d383ccd1ac78f928423294ab7e73","2100000000000000000","157142857142857142",1]]
+        >        expiry/timestamp 1725486212 1725486190
         > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
         >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
@@ -132,17 +131,17 @@ Compiled 1 Solidity file successfully (evm target: paris).
         * trades1TxReceipt.gasUsed: 176621
         + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.33)
         + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 2.1)
-        + Traded(0x9ed5354c942bf90acca6d9780d8cfb33806f9b9df56ba88c06ed9ebf9059cd63,2100000000000000000,157142857142857142,1,1725461092)
+        + Traded(0xc22d01978b3dad7cb54ed0b443e5acc95589d383ccd1ac78f928423294ab7e73,2100000000000000000,157142857142857142,1,1725486190)
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.976160854572614876                    100.0                   1000.0
-          1 0x70997970C51812  9899.998043647679196232                   100.33                    997.9
-          2 0x3C44CdDdB6a900  9899.998743992351465601                    99.67                   1002.1
-          3 0x90F79bf6EB2c4f  9899.998935783473880457                    100.0                   1000.0
+          0 0xf39Fd6e51aad88  9899.975799413290096983                    100.0                   1000.0
+          1 0x70997970C51812  9899.998038699161511714                   100.33                    997.9
+          2 0x3C44CdDdB6a900  9899.998743789053226277                    99.67                   1002.1
+          3 0x90F79bf6EB2c4f  9899.998935612265718831                    100.0                   1000.0
 
-      ✔ Test TokenAgent offers (823ms)
+      ✔ Test TokenAgent offers (836ms)
 
 
-  1 passing (823ms)
+  1 passing (837ms)
 

@@ -97,6 +97,7 @@ interface IERC165 {
 }
 
 type Account is address;
+type Count is uint16;
 type Nonce is uint32;
 type OfferKey is bytes32;
 type Price is uint128;
@@ -202,6 +203,7 @@ contract TokenAgent is Owned {
         Nonce nonce; // 32 bits
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
+        Count count; // 16 bits
         Price[] prices;
         TokenId[] tokenIds;
     }
@@ -222,6 +224,7 @@ contract TokenAgent is Owned {
     struct Offer721Log {
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
+        Count count;
         Price[] prices;
         TokenId[] tokenIds;
     }
@@ -257,7 +260,7 @@ contract TokenAgent is Owned {
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
     error ExecutedAveragePriceLessThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
-    error InvalidInputData();
+    error InvalidInputData(string reason);
     error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
     error InvalidOfferKey(OfferKey offerKey);
     error InvalidToken(Token token);
@@ -289,36 +292,31 @@ contract TokenAgent is Owned {
                 revert CannotOfferWETH();
             }
             if (tokenType == TokenType.ERC20) {
-                // prices [one, two, ...], tokens [one, two, ...]
-                // - new [price0, tokens0, price1, tokens1, ...]
+                // All: [price0, tokens0, price1, tokens1, ...]
+                // -> prices [one, two, ...], tokens [one, two, ...]
                 // uint startGas = gasleft();
                 offer20s[offerKey].token = offerInput.token;
                 offer20s[offerKey].nonce = nonce;
                 offer20s[offerKey].expiry = offerInput.expiry;
                 console.log("        > erc20Token.inputs.length", offerInput.inputs.length);
                 if (offerInput.inputs.length == 0 || (offerInput.inputs.length % 2) != 0) {
-                    revert InvalidInputData();
+                    revert InvalidInputData("length");
                 }
-                // for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                //     offer20s[offerKey].points.push(Offer20Points(Price.wrap(uint128(offerInput.inputs[j])), Tokens.wrap(uint128(offerInput.inputs[j+1])), Tokens.wrap(0)));
-                // }
-
                 for (uint j = 0; j < offerInput.inputs.length; j += 2) {
                     offer20s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
                     offer20s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j + 1])));
                     offer20s[offerKey].useds.push(Tokens.wrap(0));
                 }
-
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
                 emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offer20s[offerKey].prices, offer20s[offerKey].tokenss), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
-                // prices [one], tokenIds []
-                // - new single price - [price0]
-                // prices [one], tokenIds [one, two, ...]
-                // - new single price - [price0, tokenId0, tokenId1, ...]
-                // prices [one, two, ...], tokenIds [one, two, ...]
-                // - new multiple prices - [price0, tokenId0, price1, tokenId1, ...]
+                // Single price: [count, price0] - b/s count @ price0 with any tokenId
+                // -> prices[price0], tokenIds[], count
+                // Single price: [count, price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
+                // -> prices[price0], tokenIds[tokenId0, tokenId1], count
+                // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
+                // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                 offer721s[offerKey].token = offerInput.token;
                 offer721s[offerKey].nonce = nonce;
                 offer721s[offerKey].expiry = offerInput.expiry;
@@ -327,17 +325,25 @@ contract TokenAgent is Owned {
                 //     revert InvalidInputData();
                 // }
                 if (offerInput.inputs.length == 0) {
-                    revert InvalidInputData();
+                    revert InvalidInputData("zero length");
                 }
                 if (offerInput.pricing == Pricing.SINGLE) {
-                    offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
-                    for (uint j = 1; j < offerInput.inputs.length; j++) {
+                    if (offerInput.inputs[0] >= type(uint16).max) {
+                        revert InvalidInputData("count must be < 65535");
+                    }
+                    if (offerInput.inputs.length < 2) {
+                        revert InvalidInputData("length < 2");
+                    }
+                    offer721s[offerKey].count = Count.wrap(uint16(offerInput.inputs[0]));
+                    offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[1])));
+                    for (uint j = 2; j < offerInput.inputs.length; j++) {
                         offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
                     }
                 } else {
                     if ((offerInput.inputs.length % 2) != 0) {
-                        revert InvalidInputData();
+                        revert InvalidInputData("length not even");
                     }
+                    offer721s[offerKey].count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < offerInput.inputs.length; j += 2) {
                         offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
                         offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
@@ -350,7 +356,7 @@ contract TokenAgent is Owned {
                         }
                     }
                 }
-                emit Offer721Added(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offer721Added(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // prices [one], tokenIds [], tokenss []
                 // - new single price - [price0]

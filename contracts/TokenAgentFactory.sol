@@ -240,6 +240,14 @@ contract TokenAgent is Owned {
         Execution execution; // 8 bits
     }
 
+    // TODO - buy/sell or -ve / +ve flows
+    struct TradeLog {
+        OfferKey offerKey; // 256 bits
+        Tokens tokens; // 128 bits // ERC-20
+        Price averagePrice; // 128 bits min average when selling, max average when buying
+        Execution execution; // 8 bits
+    }
+
     IERC20 public weth;
     Nonce public nonce;
     mapping(OfferKey => Offer20) public offer20s;
@@ -249,7 +257,7 @@ contract TokenAgent is Owned {
 
     event Offer20Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer20Log offer, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-    event Traded(Trade trade, Unixtime timestamp);
+    event Traded(TradeLog trade, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
@@ -378,7 +386,7 @@ contract TokenAgent is Owned {
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(_trade, Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.averagePrice, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 // TODO

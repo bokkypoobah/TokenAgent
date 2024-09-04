@@ -14,6 +14,17 @@ const ERC1155 = 2;
 const FILL = 0;
 const FILLORKILL = 1;
 
+// const DATE_FORMAT_OPTIONS = {
+//   year: "numeric",
+//   month: "numeric",
+//   day: "numeric",
+//   hour: "numeric",
+//   minute: "numeric",
+//   second: "numeric",
+//   hour12: false,
+//   timeZone: "utc",
+// };
+
 describe("TokenAgentFactory", function () {
 
   function padLeft(s, n) {
@@ -183,9 +194,13 @@ describe("TokenAgentFactory", function () {
     }
 
     const now = parseInt(new Date().getTime()/1000);
-    const expiry60s = now + 60 * 1000;
+    const expiry = parseInt(now) + 120;
 
-    return { tokenAgentFactory, tokenAgents, weth, erc20Token, erc721Token, erc1155Token, accounts, now, expiry60s };
+    // console.log("        * now: " + now + ' ' + new Intl.DateTimeFormat(undefined, DATE_FORMAT_OPTIONS).format(parseInt(now) * 1000));
+    console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleString());
+    console.log("        * expiry: " + new Date(parseInt(expiry) * 1000).toLocaleString());
+
+    return { tokenAgentFactory, tokenAgents, weth, erc20Token, erc721Token, erc1155Token, accounts, now, expiry };
   }
 
   describe("Deploy TokenAgentFactory And TokenAgent", function () {
@@ -220,12 +235,12 @@ describe("TokenAgentFactory", function () {
       const tokenAgentAddress = await d.tokenAgentFactory.tokenAgents(4);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
-      const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry60s, [[888, "999999999999999999999999999999999997"]]]];
+      const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry, [[888, "999999999999999999999999999999999997"]]]];
       await expect(tokenAgent.addOffers(invalidOffer1))
         .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
         .withArgs(d.accounts[0].address);
       const invalidOffer2 = [
-        [d.weth.target, SELL, d.expiry60s, [[888, "999999999999999999999999999999999997"]]],
+        [d.weth.target, SELL, d.expiry, [[888, "999999999999999999999999999999999997"]]],
       ];
       await expect(tokenAgent.addOffers(invalidOffer2))
         .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
@@ -240,7 +255,7 @@ describe("TokenAgentFactory", function () {
       const offers1 = [
         [ d.erc20Token.target,
           SELL,
-          d.expiry60s,
+          d.expiry,
           [
             [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)],
             [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)],
@@ -260,7 +275,7 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
         // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-        console.log("        + " + log.name + '(offerKey:' + log.args[0].substring(0, 10) + '...' + log.args[0].slice(-8) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + log.args[3][1] + ', points: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e[0]) + ', ' + ethers.formatEther(e[1]))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
+        console.log("        + " + log.name + '(offerKey:' + log.args[0].substring(0, 10) + '...' + log.args[0].slice(-8) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleString() + ', points: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e[0]) + ', ' + ethers.formatEther(e[1]))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 

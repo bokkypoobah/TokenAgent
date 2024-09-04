@@ -335,6 +335,7 @@ contract TokenAgent is Owned {
                 if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
                     revert InvalidOffer(offer.nonce, nonce);
                 }
+                console.log("        >        expiry/timestamp", Unixtime.unwrap(offer.expiry), block.timestamp);
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }

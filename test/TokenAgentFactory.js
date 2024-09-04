@@ -97,8 +97,7 @@ describe("TokenAgentFactory", function () {
         const mintTxReceipt = await mintTx.wait();
         mintTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-          console.log("        + " + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
+          // console.log("        + " + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
         });
       }
     }
@@ -109,10 +108,31 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
+          // console.log("        + " + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+        });
+      }
+    }
+
+    for (let i = 1; i < 4; i++) {
+        const mintTx = await erc1155Token.mint(accounts[i], i, 1, "0x");
+        const mintTxReceipt = await mintTx.wait();
+        mintTxReceipt.logs.forEach((event) => {
+          const log = erc1155Token.interface.parseLog(event);
+          console.log("        + " + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
+        });
+    }
+
+    for (let i = 1; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const setApprovalForAllTx = await erc1155Token.connect(accounts[i]).setApprovalForAll(tokenAgents[j], true);
+        const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
+        setApprovalForAllTxReceipt.logs.forEach((event) => {
+          const log = erc1155Token.interface.parseLog(event);
           console.log("        + " + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }
+
     const now = parseInt(new Date().getTime()/1000);
     const expiry60s = now + 60 * 1000;
 

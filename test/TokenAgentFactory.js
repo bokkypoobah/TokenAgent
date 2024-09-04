@@ -14,6 +14,9 @@ const ERC1155 = 2;
 const FILL = 0;
 const FILLORKILL = 1;
 
+const SINGLE = 0;
+const MULTIPLE = 1;
+
 // const DATE_FORMAT_OPTIONS = {
 //   year: "numeric",
 //   month: "numeric",
@@ -256,66 +259,11 @@ describe("TokenAgentFactory", function () {
         [
           d.erc20Token.target,
           SELL,
+          MULTIPLE,
           d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
-          [],
-          [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
-        ],
-        [
-          d.erc721Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18)],
-          [],
-          [],
-        ],
-        [
-          d.erc721Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18)],
-          [4, 5, 6, 7],
-          [],
-        ],
-        [
-          d.erc721Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
-          [4, 5, 6, 7],
-          [],
-        ],
-        [
-          d.erc1155Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18)],
-          [],
-          [],
-        ],
-        [
-          d.erc1155Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18)],
-          [0, 1, 2, 3],
-          [],
-        ],
-        [
-          d.erc1155Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
-          [0, 1, 2, 3],
-          [5, 5, 5, 5],
-        ],
-        [
-          d.erc1155Token.target,
-          SELL,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
-          [0, 1, 2, 3],
-          [1],
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
+           ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
+           ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
         ],
       ];
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
@@ -325,8 +273,8 @@ describe("TokenAgentFactory", function () {
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
-        // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-        console.log("        + " + log.name + '(offerKey:' + log.args[0].substring(0, 10) + '...' + log.args[0].slice(-8) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokenss: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
+        console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
+        console.log("        + " + log.name + '(offerKey:' + log.args[0].substring(0, 10) + '...' + log.args[0].slice(-8) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleString() + ', inputs: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 

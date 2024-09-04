@@ -106,8 +106,9 @@ type Tokens is uint128;
 type Unixtime is uint64;
 
 enum BuySell { BUY, SELL }
-enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
 enum Execution { FILL, FILLORKILL }
+enum Pricing { SINGLE, MULTIPLE }
+enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
 
 bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
 bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
@@ -194,11 +195,13 @@ contract TokenAgent is Owned {
     struct OfferInput {
         Token token; // 160 bits
         BuySell buySell; // 8 bits
+        Pricing pricing; // 8 bits
         Unixtime expiry; // 64 bits
-        // OfferInputPoints[] points;
-        Price[] prices;
-        TokenId[] tokenIds;
-        Tokens[] tokenss;
+        uint256[] inputs;
+        // // OfferInputPoints[] points;
+        // Price[] prices;
+        // TokenId[] tokenIds;
+        // Tokens[] tokenss;
     }
     struct Offer20Points {
         Price price; // 128 bits // token/WETH 18dp
@@ -231,9 +234,10 @@ contract TokenAgent is Owned {
     struct Offer20Log {
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
+        uint256[] inputs;
         // OfferInputPoints[] points;
-        Price[] prices;
-        Tokens[] tokenss;
+        // Price[] prices;
+        // Tokens[] tokenss;
     }
     // Account taker; // 160 bits
     // TokenId[] tokenIds; // ERC-721/1155
@@ -301,49 +305,49 @@ contract TokenAgent is Owned {
             }
             if (tokenType == TokenType.ERC20) {
                 // prices [one, two, ...], tokens [one, two, ...]
+                // - new [price0, tokens0, price1, tokens1, ...]
                 // uint startGas = gasleft();
                 offer20s[offerKey].token = offerInput.token;
                 offer20s[offerKey].nonce = nonce;
                 offer20s[offerKey].expiry = offerInput.expiry;
-                console.log("        >        erc20Token.prices/tokenIds.length", offerInput.prices.length, offerInput.tokenss.length);
-                if (offerInput.prices.length == 0 || offerInput.prices.length != offerInput.tokenss.length) {
+                console.log("        > erc20Token.inputs.length", offerInput.inputs.length);
+                if (offerInput.inputs.length == 0 || offerInput.inputs.length %2 != 0) {
                     revert InvalidInputData();
                 }
-                for (uint j = 0; j < offerInput.prices.length; j++) {
-                    offer20s[offerKey].points.push(Offer20Points(offerInput.prices[j], offerInput.tokenss[j], Tokens.wrap(0)));
+                for (uint j = 0; j < offerInput.inputs.length; j += 2) {
+                    offer20s[offerKey].points.push(Offer20Points(Price.wrap(uint128(offerInput.inputs[j])), Tokens.wrap(uint128(offerInput.inputs[j+1])), Tokens.wrap(0)));
                 }
-                // for (uint j = 0; j < offerInput.points.length; j++) {
-                //     offer20s[offerKey].points.push(Offer20Points(offerInput.points[j].price, offerInput.points[j].tokens, Tokens.wrap(0)));
-                // }
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offerInput.prices, offerInput.tokenss), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offerInput.inputs), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // prices [one], tokenIds []
-                // prices [one], tokenIds [one]
+                // - new single price - [price0, tokenId0]
                 // prices [one], tokenIds [one, two, ...]
+                // - new single price - [price0, tokenId0, tokenId1, ...]
                 // prices [one, two, ...], tokenIds [one, two, ...]
+                // - new multiple prices - [price0, price1, ..., tokenId0, tokenId1, ...]
                 offer721s[offerKey].token = offerInput.token;
                 offer721s[offerKey].nonce = nonce;
                 offer721s[offerKey].expiry = offerInput.expiry;
-                console.log("        >        erc721Token.prices/tokenIds.length", offerInput.prices.length, offerInput.tokenIds.length);
-                if (offerInput.prices.length == 0 || (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length)) {
-                    revert InvalidInputData();
-                }
+                // console.log("        > erc721Token.prices/tokenIds.length", offerInput.prices.length, offerInput.tokenIds.length);
+                // if (offerInput.prices.length == 0 || (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length)) {
+                //     revert InvalidInputData();
+                // }
             } else if (tokenType == TokenType.ERC1155) {
                 // prices [one], tokenIds [], tokenss []
-                // prices [one], tokenIds [one, two, ...], tokenss []
+                // - new single price - [price0]
                 // prices [one], tokenIds [one, two, ...], tokenss [one, two, ...]
-                // prices [one, two, ...], tokenIds [one, two, ...], tokenss []
+                // - new single price - [price0, tokenId0, tokens0, tokenId1, tokens1, ...]
                 // prices [one, two, ...], tokenIds [one, two, ...], tokenss [one, two, ...]
-                console.log("        >        erc1155Token.prices/tokenIds/tokenss.length", offerInput.prices.length, offerInput.tokenIds.length, offerInput.tokenss.length);
-                // TODO: Not complete for the last 2 cases
-                if (offerInput.prices.length == 0 ||
-                    (offerInput.prices.length == 1 && offerInput.tokenss.length != 0 && offerInput.tokenIds.length != offerInput.tokenss.length) ||
-                    (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length && offerInput.tokenIds.length != offerInput.tokenss.length)) {
-                    revert InvalidInputData();
-                }
-
+                // - new multiple prices - [price0, price1, ..., tokenId0, tokenId1, ..., tokens0, tokens1, ...]
+                // console.log("        > erc1155Token.prices/tokenIds/tokenss.length", offerInput.prices.length, offerInput.tokenIds.length, offerInput.tokenss.length);
+                // // TODO: Not complete for the last 2 cases
+                // if (offerInput.prices.length == 0 ||
+                //     (offerInput.prices.length == 1 && offerInput.tokenss.length != 0 && offerInput.tokenIds.length != offerInput.tokenss.length) ||
+                //     (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length && offerInput.tokenIds.length != offerInput.tokenss.length)) {
+                //     revert InvalidInputData();
+                // }
             }
         }
     }

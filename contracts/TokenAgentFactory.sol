@@ -212,7 +212,10 @@ contract TokenAgent is Owned {
         Token token; // 160 bits
         Nonce nonce; // 32 bits
         Unixtime expiry; // 64 bits
-        Offer20Points[] points;
+        // Offer20Points[] points;
+        Price[] prices; // 128 bits // token/WETH 18dp
+        Tokens[] tokenss; // 128 bits // ERC-20
+        Tokens[] useds; // 128 bits // ERC-20
     }
     struct Offer721 {
         Token token; // 160 bits
@@ -233,7 +236,9 @@ contract TokenAgent is Owned {
     struct Offer20Log {
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
-        uint256[] inputs;
+        Price[] prices; // 128 bits // token/WETH 18dp
+        Tokens[] tokenss; // 128 bits // ERC-20
+        // uint256[] inputs;
         // OfferInputPoints[] points;
         // Price[] prices;
         // Tokens[] tokenss;
@@ -284,6 +289,7 @@ contract TokenAgent is Owned {
     error InvalidOfferKey(OfferKey offerKey);
     error InvalidToken(Token token);
     error OfferExpired(OfferKey offerKey, Unixtime expiry);
+    error TokenIdsMustBeSortedWithNoDuplicates();
 
     constructor() {
     }
@@ -320,12 +326,18 @@ contract TokenAgent is Owned {
                 if (offerInput.inputs.length == 0 || (offerInput.inputs.length % 2) != 0) {
                     revert InvalidInputData();
                 }
+                // for (uint j = 0; j < offerInput.inputs.length; j += 2) {
+                //     offer20s[offerKey].points.push(Offer20Points(Price.wrap(uint128(offerInput.inputs[j])), Tokens.wrap(uint128(offerInput.inputs[j+1])), Tokens.wrap(0)));
+                // }
+
                 for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                    offer20s[offerKey].points.push(Offer20Points(Price.wrap(uint128(offerInput.inputs[j])), Tokens.wrap(uint128(offerInput.inputs[j+1])), Tokens.wrap(0)));
+                    offer20s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
+                    offer20s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j + 1])));
                 }
+
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offerInput.inputs), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offer20s[offerKey].prices, offer20s[offerKey].tokenss), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // prices [one], tokenIds []
                 // - new single price - [price0]
@@ -353,8 +365,15 @@ contract TokenAgent is Owned {
                         revert InvalidInputData();
                     }
                     for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                        offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[i])));
+                        offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
                         offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
+                    }
+                }
+                if (offer721s[offerKey].tokenIds.length > 0) {
+                    for (uint j = 1; j < offer721s[offerKey].tokenIds.length; j++) {
+                        if (TokenId.unwrap(offer721s[offerKey].tokenIds[j - 1]) >= TokenId.unwrap(offer721s[offerKey].tokenIds[j])) {
+                            revert TokenIdsMustBeSortedWithNoDuplicates();
+                        }
                     }
                 }
                 emit Offer721Added(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
@@ -399,56 +418,56 @@ contract TokenAgent is Owned {
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
-                uint128 tokens = Tokens.unwrap(_trade.tokens);
-                uint128 totalTokens = 0;
-                uint128 totalWETHTokens = 0;
-                for (uint j = 0; j < offer.points.length && tokens > 0; j++) {
-                    uint128 _price = Price.unwrap(offer.points[j].price);
-                    uint128 _remaining = Tokens.unwrap(offer.points[j].tokens) - Tokens.unwrap(offer.points[j].used);
-                    console.log("        > ERC-20 price/tokens/used", uint(Price.unwrap(offer.points[j].price)), uint(Tokens.unwrap(offer.points[j].tokens)), uint(Tokens.unwrap(offer.points[j].used)));
-                    console.log("        >        remaining", _remaining);
-                    if (_remaining > 0) {
-                        if (tokens >= _remaining) {
-                            tokens -= _remaining;
-                            totalTokens += _remaining;
-                            offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + _remaining);
-                            totalWETHTokens += _remaining * _price / 10**18;
-                        } else {
-                            totalTokens += tokens;
-                            offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + tokens);
-                            totalWETHTokens += tokens * _price / 10**18;
-                            tokens = 0;
-                        }
-                    }
-                    console.log("        >        totalTokens/totalWETHTokens", totalTokens, totalWETHTokens);
-                    // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
-                }
-                console.log("        >        tokens/totalTokens/totalWETHTokens", uint(Tokens.unwrap(_trade.tokens)), totalTokens, totalWETHTokens);
-                if (_trade.execution == Execution.FILLORKILL && totalTokens < Tokens.unwrap(_trade.tokens)) {
-                    revert InsufficentTokensRemaining(_trade.tokens, Tokens.wrap(totalTokens));
-                }
-                if (totalTokens > 0) {
-                    uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
-                    if (buySell == BuySell.BUY) {
-                        // msg.sender SELL owner BUY
-                        console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                        if (averagePrice < Price.unwrap(_trade.averagePrice)) {
-                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
-                        }
-                        // owner offering to buy, msg.sender selling
-                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
-                        weth.transferFrom(owner, msg.sender, totalWETHTokens);
-                    } else {
-                        // msg.sender BUY owner SELL
-                        console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                        if (averagePrice > Price.unwrap(_trade.averagePrice)) {
-                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
-                        }
-                        weth.transferFrom(msg.sender, owner, totalWETHTokens);
-                        IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
-                    }
-                    emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.averagePrice, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
-                }
+                // uint128 tokens = Tokens.unwrap(_trade.tokens);
+                // uint128 totalTokens = 0;
+                // uint128 totalWETHTokens = 0;
+                // for (uint j = 0; j < offer.points.length && tokens > 0; j++) {
+                //     uint128 _price = Price.unwrap(offer.points[j].price);
+                //     uint128 _remaining = Tokens.unwrap(offer.points[j].tokens) - Tokens.unwrap(offer.points[j].used);
+                //     console.log("        > ERC-20 price/tokens/used", uint(Price.unwrap(offer.points[j].price)), uint(Tokens.unwrap(offer.points[j].tokens)), uint(Tokens.unwrap(offer.points[j].used)));
+                //     console.log("        >        remaining", _remaining);
+                //     if (_remaining > 0) {
+                //         if (tokens >= _remaining) {
+                //             tokens -= _remaining;
+                //             totalTokens += _remaining;
+                //             offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + _remaining);
+                //             totalWETHTokens += _remaining * _price / 10**18;
+                //         } else {
+                //             totalTokens += tokens;
+                //             offer.points[j].used = Tokens.wrap(Tokens.unwrap(offer.points[j].used) + tokens);
+                //             totalWETHTokens += tokens * _price / 10**18;
+                //             tokens = 0;
+                //         }
+                //     }
+                //     console.log("        >        totalTokens/totalWETHTokens", totalTokens, totalWETHTokens);
+                //     // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
+                // }
+                // console.log("        >        tokens/totalTokens/totalWETHTokens", uint(Tokens.unwrap(_trade.tokens)), totalTokens, totalWETHTokens);
+                // if (_trade.execution == Execution.FILLORKILL && totalTokens < Tokens.unwrap(_trade.tokens)) {
+                //     revert InsufficentTokensRemaining(_trade.tokens, Tokens.wrap(totalTokens));
+                // }
+                // if (totalTokens > 0) {
+                //     uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
+                //     if (buySell == BuySell.BUY) {
+                //         // msg.sender SELL owner BUY
+                //         console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                //         if (averagePrice < Price.unwrap(_trade.averagePrice)) {
+                //             revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                //         }
+                //         // owner offering to buy, msg.sender selling
+                //         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
+                //         weth.transferFrom(owner, msg.sender, totalWETHTokens);
+                //     } else {
+                //         // msg.sender BUY owner SELL
+                //         console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
+                //         if (averagePrice > Price.unwrap(_trade.averagePrice)) {
+                //             revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                //         }
+                //         weth.transferFrom(msg.sender, owner, totalWETHTokens);
+                //         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
+                //     }
+                //     emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.averagePrice, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
+                // }
             } else if (tokenType == TokenType.ERC721) {
                 // TODO
                 Offer721 memory offer = offer721s[offerKey];

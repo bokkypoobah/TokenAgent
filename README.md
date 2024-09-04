@@ -32,7 +32,6 @@ You may initially have to mark the script as executable using the command `chmod
 
 ```bash
 $ ./10_testIt.sh
-Compiled 1 Solidity file successfully (evm target: paris).
 
 
   TokenAgentFactory
@@ -41,144 +40,70 @@ Compiled 1 Solidity file successfully (evm target: paris).
         + erc20Token.Transfer(from:0x0000000000, to:0xf39Fd6e51a, tokens: 1000000.0)
         * weth: 0x5FbDB2315678afecb367f032d93F642f64180aa3
         * 20: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512, 721: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0, 1155: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xb0279Db6a2, owner: 0xf39Fd6e51a, index: 0, timestamp: 7:42:42 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0x3dE2Da43d4, owner: 0x70997970C5, index: 0, timestamp: 7:42:43 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xddEA3d6750, owner: 0x3C44CdDdB6, index: 0, timestamp: 7:42:44 AM)
-        + tokenAgentFactory.NewTokenAgent(tokenAgent: 0xAbB608121F, owner: 0x90F79bf6EB, index: 0, timestamp: 7:42:45 AM)
-        + weth.Deposit(dst:0xf39Fd6e51a, wad: 100.0)
-        + weth.Deposit(dst:0x70997970C5, wad: 100.0)
-        + weth.Deposit(dst:0x3C44CdDdB6, wad: 100.0)
-        + weth.Deposit(dst:0x90F79bf6EB, wad: 100.0)
-        + erc20Token.Transfer(from:0xf39Fd6e51a, to:0x70997970C5, tokens: 1000.0)
-        + erc20Token.Transfer(from:0xf39Fd6e51a, to:0x3C44CdDdB6, tokens: 1000.0)
-        + erc20Token.Transfer(from:0xf39Fd6e51a, to:0x90F79bf6EB, tokens: 1000.0)
-        + erc20Token.Transfer(from:0xf39Fd6e51a, to:0x0000000000, tokens: 996000.0)
-        + weth.Approval(owner:0x70997970C5, spender:0xb0279Db6a2, tokens: 12.345)
-        + weth.Approval(owner:0x70997970C5, spender:0x3dE2Da43d4, tokens: 12.345)
-        + weth.Approval(owner:0x70997970C5, spender:0xddEA3d6750, tokens: 12.345)
-        + weth.Approval(owner:0x70997970C5, spender:0xAbB608121F, tokens: 12.345)
-        + weth.Approval(owner:0x3C44CdDdB6, spender:0xb0279Db6a2, tokens: 12.345)
-        + weth.Approval(owner:0x3C44CdDdB6, spender:0x3dE2Da43d4, tokens: 12.345)
-        + weth.Approval(owner:0x3C44CdDdB6, spender:0xddEA3d6750, tokens: 12.345)
-        + weth.Approval(owner:0x3C44CdDdB6, spender:0xAbB608121F, tokens: 12.345)
-        + weth.Approval(owner:0x90F79bf6EB, spender:0xb0279Db6a2, tokens: 12.345)
-        + weth.Approval(owner:0x90F79bf6EB, spender:0x3dE2Da43d4, tokens: 12.345)
-        + weth.Approval(owner:0x90F79bf6EB, spender:0xddEA3d6750, tokens: 12.345)
-        + weth.Approval(owner:0x90F79bf6EB, spender:0xAbB608121F, tokens: 12.345)
-        + erc20Token.Approval(owner:0x70997970C5, spender:0xb0279Db6a2, tokens: 12.345)
-        + erc20Token.Approval(owner:0x70997970C5, spender:0x3dE2Da43d4, tokens: 12.345)
-        + erc20Token.Approval(owner:0x70997970C5, spender:0xddEA3d6750, tokens: 12.345)
-        + erc20Token.Approval(owner:0x70997970C5, spender:0xAbB608121F, tokens: 12.345)
-        + erc20Token.Approval(owner:0x3C44CdDdB6, spender:0xb0279Db6a2, tokens: 12.345)
-        + erc20Token.Approval(owner:0x3C44CdDdB6, spender:0x3dE2Da43d4, tokens: 12.345)
-        + erc20Token.Approval(owner:0x3C44CdDdB6, spender:0xddEA3d6750, tokens: 12.345)
-        + erc20Token.Approval(owner:0x3C44CdDdB6, spender:0xAbB608121F, tokens: 12.345)
-        + erc20Token.Approval(owner:0x90F79bf6EB, spender:0xb0279Db6a2, tokens: 12.345)
-        + erc20Token.Approval(owner:0x90F79bf6EB, spender:0x3dE2Da43d4, tokens: 12.345)
-        + erc20Token.Approval(owner:0x90F79bf6EB, spender:0xddEA3d6750, tokens: 12.345)
-        + erc20Token.Approval(owner:0x90F79bf6EB, spender:0xAbB608121F, tokens: 12.345)
-        + erc721Token.Transfer(from:0x0000000000, to: 0x70997970C5, tokenId: 0
-        + erc721Token.Transfer(from:0x0000000000, to: 0x70997970C5, tokenId: 1
-        + erc721Token.Transfer(from:0x0000000000, to: 0x70997970C5, tokenId: 2
-        + erc721Token.Transfer(from:0x0000000000, to: 0x70997970C5, tokenId: 3
-        + erc721Token.Transfer(from:0x0000000000, to: 0x3C44CdDdB6, tokenId: 4
-        + erc721Token.Transfer(from:0x0000000000, to: 0x3C44CdDdB6, tokenId: 5
-        + erc721Token.Transfer(from:0x0000000000, to: 0x3C44CdDdB6, tokenId: 6
-        + erc721Token.Transfer(from:0x0000000000, to: 0x3C44CdDdB6, tokenId: 7
-        + erc721Token.Transfer(from:0x0000000000, to: 0x90F79bf6EB, tokenId: 8
-        + erc721Token.Transfer(from:0x0000000000, to: 0x90F79bf6EB, tokenId: 9
-        + erc721Token.Transfer(from:0x0000000000, to: 0x90F79bf6EB, tokenId: 10
-        + erc721Token.Transfer(from:0x0000000000, to: 0x90F79bf6EB, tokenId: 11
-        + erc721Token.ApprovalForAll(owner:0x70997970C5, operator: 0xb0279Db6a2, approved: true
-        + erc721Token.ApprovalForAll(owner:0x70997970C5, operator: 0x3dE2Da43d4, approved: true
-        + erc721Token.ApprovalForAll(owner:0x70997970C5, operator: 0xddEA3d6750, approved: true
-        + erc721Token.ApprovalForAll(owner:0x70997970C5, operator: 0xAbB608121F, approved: true
-        + erc721Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xb0279Db6a2, approved: true
-        + erc721Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0x3dE2Da43d4, approved: true
-        + erc721Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xddEA3d6750, approved: true
-        + erc721Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xAbB608121F, approved: true
-        + erc721Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xb0279Db6a2, approved: true
-        + erc721Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0x3dE2Da43d4, approved: true
-        + erc721Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xddEA3d6750, approved: true
-        + erc721Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xAbB608121F, approved: true
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0xf39Fd6e51a, id: 0, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0xf39Fd6e51a, id: 0, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0xf39Fd6e51a, id: 0, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0xf39Fd6e51a, id: 0, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x70997970C5, id: 1, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x70997970C5, id: 1, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x70997970C5, id: 1, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x70997970C5, id: 1, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x3C44CdDdB6, id: 2, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x3C44CdDdB6, id: 2, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x3C44CdDdB6, id: 2, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x3C44CdDdB6, id: 2, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x90F79bf6EB, id: 3, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x90F79bf6EB, id: 3, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x90F79bf6EB, id: 3, amount: 10
-        + erc1155Token.TransferSingle(operator:0xf39Fd6e51a, from: 0x0000000000, to: 0x90F79bf6EB, id: 3, amount: 10
-        + erc1155Token.ApprovalForAll(owner:0xf39Fd6e51a, operator: 0xb0279Db6a2, approved: true
-        + erc1155Token.ApprovalForAll(owner:0xf39Fd6e51a, operator: 0x3dE2Da43d4, approved: true
-        + erc1155Token.ApprovalForAll(owner:0xf39Fd6e51a, operator: 0xddEA3d6750, approved: true
-        + erc1155Token.ApprovalForAll(owner:0xf39Fd6e51a, operator: 0xAbB608121F, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x70997970C5, operator: 0xb0279Db6a2, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x70997970C5, operator: 0x3dE2Da43d4, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x70997970C5, operator: 0xddEA3d6750, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x70997970C5, operator: 0xAbB608121F, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xb0279Db6a2, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0x3dE2Da43d4, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xddEA3d6750, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x3C44CdDdB6, operator: 0xAbB608121F, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xb0279Db6a2, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0x3dE2Da43d4, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xddEA3d6750, approved: true
-        + erc1155Token.ApprovalForAll(owner:0x90F79bf6EB, operator: 0xAbB608121F, approved: true
-        * now: 7:42:37 AM
-        * expiry: 7:44:37 AM
+        * now: 8:23:56 AM
+        * expiry: 8:25:56 AM
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.975799413290096983                    100.0                   1000.0
-          1 0x70997970C51812  9899.998900417292535382                    100.0                   1000.0
-          2 0x3C44CdDdB6a900  9899.998920410438613299                    100.0                   1000.0
-          3 0x90F79bf6EB2c4f  9899.998935612265718831                    100.0                   1000.0
+          0 0xf39Fd6e51aad88   9899.97582399045650029                    100.0                   1000.0
+          1 0x70997970C51812  9899.998900433986039052                    100.0                   1000.0
+          2 0x3C44CdDdB6a900  9899.998920424262229125                    100.0                   1000.0
+          3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
 
-        > erc20Token.inputs.length 6
-        * addOffers1TxReceipt.gasUsed: 861716
-        + tokenAgents[1].Offer20Added(offerKey:0x5095...fc53, token: 0xe7f1725E77, nonce: 0, buySell: 1, expiry: 7:44:37 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 7:44:14 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x7ea7...03a4, token: 0x9fE4673667, nonce: 0, buySell: 0, expiry: 7:44:37 AM, count: 5, prices: ["0.1"], tokenIds: [], timestamp: 7:44:14 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x8f28...9245, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 7:44:37 AM, count: 6, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 7:44:14 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x1b29...2285, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 7:44:37 AM, count: 65535, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 7:44:14 AM)
-        * offerKeys: 0x5095501a7448cc40c346a599f5240b16ec18c938c1240919aba12c1f96b8fc53,0x7ea7ff6f173d717913d6b2c1034931e07b4ea36c5771ef98a749e5dd4d9703a4,0x8f28435c2f6df2bff71a6bae55b900313fbb3b168b1691aed50a737d618f9245,0x1b2946bdfd58a8017ba4c711e1433ac35ccd51b328a033fde7f8db2a5eb72285
-        * trades1: [["0x5095501a7448cc40c346a599f5240b16ec18c938c1240919aba12c1f96b8fc53","2100000000000000000","157142857142857142",1]]
-        >        expiry/timestamp 1725486277 1725486255
+        * addOffers1TxReceipt.gasUsed: 266509
+        + tokenAgents[1].Offer20Added(offerKey:0x591a...4b83, token: 0xe7f1725E77, nonce: 0, buySell: 1 (SELL), expiry: 8:25:56 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 8:25:34 AM)
+        * offerKeys: 0x591a25a8ec67b72466f4c58dc9a4f319d693b3420a979b897fffe22864724b83
+        * trades1: [["0x591a25a8ec67b72466f4c58dc9a4f319d693b3420a979b897fffe22864724b83","1050000000000000000","105000000000000000",1]]
+        >        expiry/timestamp 1725488756 1725488735
         > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
         >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
         > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
-        >        totalTokens/totalWETHTokens 2000000000000000000 300000000000000000
-        > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
-        >        remaining 100000000000000000
-        >        totalTokens/totalWETHTokens 2100000000000000000 330000000000000000
-        >        tokens/totalTokens/totalWETHTokens 2100000000000000000 2100000000000000000 330000000000000000
-        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 157142857142857142 157142857142857142
-        * trades1TxReceipt.gasUsed: 176621
-        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.33)
-        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 2.1)
-        + Traded(0x5095501a7448cc40c346a599f5240b16ec18c938c1240919aba12c1f96b8fc53,2100000000000000000,157142857142857142,1,1725486255)
+        >        totalTokens/totalWETHTokens 1050000000000000000 110000000000000000
+        >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 110000000000000000
+        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 104761904761904761 105000000000000000
+        * trades1TxReceipt.gasUsed: 141938
+        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.11)
+        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
+        + tokenAgents[1].Traded(0x591a25a8ec67b72466f4c58dc9a4f319d693b3420a979b897fffe22864724b83,1050000000000000000,105000000000000000,1,1725488735)
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
-          0 0xf39Fd6e51aad88  9899.975799413290096983                    100.0                   1000.0
-          1 0x70997970C51812  9899.998038699161511714                   100.33                    997.9
-          2 0x3C44CdDdB6a900  9899.998743789053226277                    99.67                   1002.1
-          3 0x90F79bf6EB2c4f  9899.998935612265718831                    100.0                   1000.0
+          0 0xf39Fd6e51aad88   9899.97582399045650029                    100.0                   1000.0
+          1 0x70997970C51812  9899.998633924326962295                   100.11                   998.95
+          2 0x3C44CdDdB6a900  9899.998778485954223665                    99.89                  1001.05
+          3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
 
-      ✔ Test TokenAgent offers (775ms)
+        * trades2: [["0x591a25a8ec67b72466f4c58dc9a4f319d693b3420a979b897fffe22864724b83","1050000000000000000","209523809523809523",1]]
+        >        expiry/timestamp 1725488756 1725488736
+        > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 1000000000000000000
+        >        remaining 0
+        >        totalTokens/totalWETHTokens 0 0
+        > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 50000000000000000
+        >        remaining 950000000000000000
+        >        totalTokens/totalWETHTokens 950000000000000000 190000000000000000
+        > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
+        >        remaining 100000000000000000
+        >        totalTokens/totalWETHTokens 1050000000000000000 220000000000000000
+        >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 220000000000000000
+        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 209523809523809523 209523809523809523
+        * trades2TxReceipt.gasUsed: 157358
+        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.22)
+        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
+        + tokenAgents[1].Traded(0x591a25a8ec67b72466f4c58dc9a4f319d693b3420a979b897fffe22864724b83,1050000000000000000,209523809523809523,1,1725488736)
+
+          # Account                               ETH                     WETH                   ERC-20
+          - ---------------- ------------------------ ------------------------ ------------------------
+          0 0xf39Fd6e51aad88   9899.97582399045650029                    100.0                   1000.0
+          1 0x70997970C51812  9899.998633924326962295                   100.33                    997.9
+          2 0x3C44CdDdB6a900  9899.998621127654928749                    99.67                   1002.1
+          3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
+
+      ✔ Test TokenAgent ERC-20 offers and trades (750ms)
 
 
-  1 passing (776ms)
+  1 passing (752ms)
 ```
 
 <br />

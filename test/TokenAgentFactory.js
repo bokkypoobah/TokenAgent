@@ -267,6 +267,88 @@ describe("TokenAgentFactory", function () {
            ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
            ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
         ],
+      ];
+      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
+      const addOffers1TxReceipt = await addOffers1Tx.wait();
+      console.log("        * addOffers1TxReceipt.gasUsed: " + addOffers1TxReceipt.gasUsed);
+      const offerKeys = [];
+      addOffers1TxReceipt.logs.forEach((event) => {
+        const log = d.tokenAgents[1].interface.parseLog(event);
+        offerKeys.push(log.args[0]);
+        if (log.name == "Offer20Added") {
+          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+        } else if (log.name == "Offer721Added") {
+          // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
+          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+        }
+      });
+      console.log("        * offerKeys: " + offerKeys.join(','));
+
+      if (true) {
+        const trades1 = [
+          [offerKeys[0], ethers.parseUnits("1.05", 18).toString(), ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL],
+        ];
+        console.log("        * trades1: " + JSON.stringify(trades1));
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
+        const trades1TxReceipt = await trades1Tx.wait();
+        console.log("        * trades1TxReceipt.gasUsed: " + trades1TxReceipt.gasUsed);
+        trades1TxReceipt.logs.forEach((event) => {
+          if (event.address == d.weth.target) {
+            const log = d.weth.interface.parseLog(event);
+            console.log("        + weth." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          } else if (event.address == d.erc20Token.target) {
+            const log = d.erc20Token.interface.parseLog(event);
+            console.log("        + erc20Token." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          } else if (event.address == d.tokenAgents[1].target) {
+            const log = d.tokenAgents[1].interface.parseLog(event);
+            // TODO
+            console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(',') + ')');
+            // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
+          }
+        });
+
+        await printState(d);
+
+        const trades2 = [
+          [offerKeys[0], ethers.parseUnits("1.05", 18).toString(), ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL],
+        ];
+        console.log("        * trades2: " + JSON.stringify(trades2));
+        const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
+        const trades2TxReceipt = await trades2Tx.wait();
+        console.log("        * trades2TxReceipt.gasUsed: " + trades2TxReceipt.gasUsed);
+        trades2TxReceipt.logs.forEach((event) => {
+          if (event.address == d.weth.target) {
+            const log = d.weth.interface.parseLog(event);
+            console.log("        + weth." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          } else if (event.address == d.erc20Token.target) {
+            const log = d.erc20Token.interface.parseLog(event);
+            console.log("        + erc20Token." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          } else if (event.address == d.tokenAgents[1].target) {
+            const log = d.tokenAgents[1].interface.parseLog(event);
+            // TODO
+            console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(',') + ')');
+            // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
+          }
+        });
+
+        await printState(d);
+      }
+    });
+
+    it("Test TokenAgent ERC-20 offers and trades", async function () {
+      const d = await loadFixture(deployContracts);
+      await printState(d);
+
+      const offers1 = [
+        [
+          d.erc20Token.target,
+          SELL,
+          MULTIPLE,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
+           ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
+           ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
+        ],
         [
           d.erc721Token.target,
           BUY,

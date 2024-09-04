@@ -6,8 +6,8 @@
         + erc20Token.Transfer(from:0x0000000000, to:0xf39Fd6e51a, tokens: 1000000.0)
         * weth: 0x5FbDB2315678afecb367f032d93F642f64180aa3
         * 20: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512, 721: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0, 1155: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
-        * now: 8:12:54 AM
-        * expiry: 8:14:54 AM
+        * now: 8:17:07 AM
+        * expiry: 8:19:07 AM
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
@@ -16,39 +16,58 @@
           2 0x3C44CdDdB6a900  9899.998920424262229125                    100.0                   1000.0
           3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
 
-        * addOffers1TxReceipt.gasUsed: 858067
-        + tokenAgents[1].Offer20Added(offerKey:0x6994...8593, token: 0xe7f1725E77, nonce: 0, buySell: 1, expiry: 8:14:54 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 8:14:31 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x6c89...4364, token: 0x9fE4673667, nonce: 0, buySell: 0, expiry: 8:14:54 AM, count: 5, prices: ["0.1"], tokenIds: [], timestamp: 8:14:31 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0xdfee...25b5, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 8:14:54 AM, count: 6, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 8:14:31 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x2509...1315, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 8:14:54 AM, count: 65535, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 8:14:31 AM)
-        * offerKeys: 0x69946fd38b91b952efaf860fb423184bea107cb99a08b4ac9689d9b3f4878593,0x6c89e5e7acfb357bf423661fcbab21f4989ccc0c1aebbb1882c932d6a02f4364,0xdfeea434043b6a11d8b6564fb288ccc41d16b41c6b7537d4cedb7949b76525b5,0x2509fa5e411b2819066058d883b9df9cfa26b92214951308bdd1976b887a1315
-        * trades1: [["0x69946fd38b91b952efaf860fb423184bea107cb99a08b4ac9689d9b3f4878593","2100000000000000000","157142857142857142",1]]
-        >        expiry/timestamp 1725488094 1725488072
+        * addOffers1TxReceipt.gasUsed: 266509
+        + tokenAgents[1].Offer20Added(offerKey:0x9db4...35a3, token: 0xe7f1725E77, nonce: 0, buySell: 1, expiry: 8:19:07 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 8:18:44 AM)
+        * offerKeys: 0x9db4bb6e78923d66b6bb1235300d406949de08a1521b88df816da7e022b135a3
+        * trades1: [["0x9db4bb6e78923d66b6bb1235300d406949de08a1521b88df816da7e022b135a3","1050000000000000000","105000000000000000",1]]
+        >        expiry/timestamp 1725488347 1725488325
         > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
         >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
         > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
-        >        totalTokens/totalWETHTokens 2000000000000000000 300000000000000000
-        > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
-        >        remaining 100000000000000000
-        >        totalTokens/totalWETHTokens 2100000000000000000 330000000000000000
-        >        tokens/totalTokens/totalWETHTokens 2100000000000000000 2100000000000000000 330000000000000000
-        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 157142857142857142 157142857142857142
-        * trades1TxReceipt.gasUsed: 176621
-        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.33)
-        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 2.1)
-        + tokenAgents[1].Traded(0x69946fd38b91b952efaf860fb423184bea107cb99a08b4ac9689d9b3f4878593,2100000000000000000,157142857142857142,1,1725488072)
+        >        totalTokens/totalWETHTokens 1050000000000000000 110000000000000000
+        >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 110000000000000000
+        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 104761904761904761 105000000000000000
+        * trades1TxReceipt.gasUsed: 141938
+        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.11)
+        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
+        + tokenAgents[1].Traded(0x9db4bb6e78923d66b6bb1235300d406949de08a1521b88df816da7e022b135a3,1050000000000000000,105000000000000000,1,1725488325)
 
           # Account                               ETH                     WETH                   ERC-20
           - ---------------- ------------------------ ------------------------ ------------------------
           0 0xf39Fd6e51aad88   9899.97582399045650029                    100.0                   1000.0
-          1 0x70997970C51812  9899.998042364864039361                   100.33                    997.9
-          2 0x3C44CdDdB6a900  9899.998743802876842103                    99.67                   1002.1
+          1 0x70997970C51812  9899.998633924326962295                   100.11                   998.95
+          2 0x3C44CdDdB6a900  9899.998778485954223665                    99.89                  1001.05
           3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
 
-      ✔ Test TokenAgent ERC-20 offers and trades (843ms)
+        * trades2: [["0x9db4bb6e78923d66b6bb1235300d406949de08a1521b88df816da7e022b135a3","1050000000000000000","209523809523809523",1]]
+        >        expiry/timestamp 1725488347 1725488326
+        > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 1000000000000000000
+        >        remaining 0
+        >        totalTokens/totalWETHTokens 0 0
+        > ERC-20 price/tokens/used 200000000000000000 1000000000000000000 50000000000000000
+        >        remaining 950000000000000000
+        >        totalTokens/totalWETHTokens 950000000000000000 190000000000000000
+        > ERC-20 price/tokens/used 300000000000000000 100000000000000000 0
+        >        remaining 100000000000000000
+        >        totalTokens/totalWETHTokens 1050000000000000000 220000000000000000
+        >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 220000000000000000
+        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice 209523809523809523 209523809523809523
+        * trades2TxReceipt.gasUsed: 157358
+        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.22)
+        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
+        + tokenAgents[1].Traded(0x9db4bb6e78923d66b6bb1235300d406949de08a1521b88df816da7e022b135a3,1050000000000000000,209523809523809523,1,1725488326)
+
+          # Account                               ETH                     WETH                   ERC-20
+          - ---------------- ------------------------ ------------------------ ------------------------
+          0 0xf39Fd6e51aad88   9899.97582399045650029                    100.0                   1000.0
+          1 0x70997970C51812  9899.998633924326962295                   100.33                    997.9
+          2 0x3C44CdDdB6a900  9899.998621127654928749                    99.67                   1002.1
+          3 0x90F79bf6EB2c4f  9899.998935623907350608                    100.0                   1000.0
+
+      ✔ Test TokenAgent ERC-20 offers and trades (810ms)
 
 
-  1 passing (845ms)
+  1 passing (813ms)
 

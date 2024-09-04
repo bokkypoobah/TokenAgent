@@ -46,18 +46,28 @@ describe("TokenAgentFactory", function () {
     }
     return o;
   }
-  async function printState(data) {
+  async function printState(d) {
     console.log();
-    console.log("          # Account                               ETH                     WETH                   ERC-20");
-    console.log("          - ---------------- ------------------------ ------------------------ ------------------------");
+    console.log("          # Account                               ETH                     WETH                   ERC-20                  ERC-721");
+    console.log("          - ---------------- ------------------------ ------------------------ ------------------------ ------------------------");
+    const erc721Balances = {};
+    for (let tokenId = 0; tokenId < 16; tokenId++) {
+      const owner = await d.erc721Token.ownerOf(tokenId);
+      if (!(owner in erc721Balances)) {
+        erc721Balances[owner] = [];
+      }
+      erc721Balances[owner].push(tokenId);
+    }
     for (let i = 0; i < 4; i++) {
-      const balance = await ethers.provider.getBalance(data.accounts[i].address);
-      const wethBalance = await data.weth.balanceOf(data.accounts[i].address);
-      const erc20Balance = await data.erc20Token.balanceOf(data.accounts[i].address);
-      console.log("          " + i + " " + data.accounts[i].address.substring(0, 16) + " " +
+      const balance = await ethers.provider.getBalance(d.accounts[i].address);
+      const wethBalance = await d.weth.balanceOf(d.accounts[i].address);
+      const erc20Balance = await d.erc20Token.balanceOf(d.accounts[i].address);
+      const erc721TokenIds = erc721Balances[d.accounts[i].address];
+      console.log("          " + i + " " + d.accounts[i].address.substring(0, 16) + " " +
         padLeft(ethers.formatEther(balance), 24) + " " +
         padLeft(ethers.formatEther(wethBalance), 24) + " " +
-        padLeft(ethers.formatEther(erc20Balance), 24)
+        padLeft(ethers.formatEther(erc20Balance), 24) + " " +
+        padLeft(erc721TokenIds.join(","), 24)
       );
     }
     console.log();
@@ -152,7 +162,7 @@ describe("TokenAgentFactory", function () {
       }
     }
 
-    for (let i = 1; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         const mintTx = await erc721Token.mint(accounts[i]);
         const mintTxReceipt = await mintTx.wait();

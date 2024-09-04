@@ -91,6 +91,28 @@ describe("TokenAgentFactory", function () {
       }
     }
 
+    for (let i = 1; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const mintTx = await erc721Token.mint(accounts[i]);
+        const mintTxReceipt = await mintTx.wait();
+        mintTxReceipt.logs.forEach((event) => {
+          const log = erc721Token.interface.parseLog(event);
+          // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
+          console.log("        + " + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
+        });
+      }
+    }
+
+    for (let i = 1; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const setApprovalForAllTx = await erc721Token.connect(accounts[i]).setApprovalForAll(tokenAgents[j], true);
+        const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
+        setApprovalForAllTxReceipt.logs.forEach((event) => {
+          const log = erc721Token.interface.parseLog(event);
+          console.log("        + " + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+        });
+      }
+    }
     const now = parseInt(new Date().getTime()/1000);
     const expiry60s = now + 60 * 1000;
 

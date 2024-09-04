@@ -956,6 +956,12 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
 
 
 contract ERC721Token is ERC721 {
+    uint public counter;
+
     constructor() ERC721("ERC-721 Token", "ERC721Token") {
+    }
+
+    function mint(address to) public {
+        _mint(to, counter++);
     }
 }

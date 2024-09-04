@@ -48,7 +48,7 @@ describe("TokenAgentFactory", function () {
   }
   async function printState(d) {
     console.log();
-    console.log("          # Account                               ETH                     WETH                   ERC-20                  ERC-721                 ERC-1155");
+    console.log("          # Account                               ETH          " + d.weth.target.substring(0, 10) + " WETH        " + d.erc20Token.target.substring(0, 10) + " ERC-20       " + d.erc721Token.target.substring(0, 10) + " ERC-721      " + d.erc1155Token.target.substring(0, 10) + " ERC-1155");
     console.log("          - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------");
     const erc721Balances = {};
     for (let tokenId = 0; tokenId < 16; tokenId++) {
@@ -95,7 +95,7 @@ describe("TokenAgentFactory", function () {
 
   async function deployContracts() {
     const accounts = await ethers.getSigners();
-    console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
+    // console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
     const WETH9 = await ethers.getContractFactory("WETH9");
     const weth = await WETH9.deploy();
     const ERC20Token = await ethers.getContractFactory("ERC20Token");
@@ -105,7 +105,7 @@ describe("TokenAgentFactory", function () {
     const erc20TokenTxReceipt = await erc20TokenTx.wait();
     erc20TokenTxReceipt.logs.forEach((event) => {
       const log = erc20Token.interface.parseLog(event);
-      console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
     // const erc20TokenTxReceipt = await erc20TokenTxBlah.wait();
@@ -113,8 +113,8 @@ describe("TokenAgentFactory", function () {
     const erc721Token = await ERC721Token.deploy();
     const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
     const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
-    console.log("        * weth: " + weth.target);
-    console.log("        * 20: " + erc20Token.target + ", 721: "+ erc721Token.target + ", 1155: "+ erc1155Token.target);
+    // console.log("        * weth: " + weth.target);
+    // console.log("        * 20: " + erc20Token.target + ", 721: "+ erc721Token.target + ", 1155: "+ erc1155Token.target);
     const TokenAgentFactory = await ethers.getContractFactory("TokenAgentFactory");
     const tokenAgentFactory = await TokenAgentFactory.deploy(weth);
 
@@ -230,8 +230,7 @@ describe("TokenAgentFactory", function () {
     const expiry = parseInt(now) + 120;
 
     // console.log("        * now: " + now + ' ' + new Intl.DateTimeFormat(undefined, DATE_FORMAT_OPTIONS).format(parseInt(now) * 1000));
-    console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleTimeString());
-    console.log("        * expiry: " + new Date(parseInt(expiry) * 1000).toLocaleTimeString());
+    console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleTimeString() + ", expiry: " + new Date(parseInt(expiry) * 1000).toLocaleTimeString());
 
     return { tokenAgentFactory, tokenAgents, weth, erc20Token, erc721Token, erc1155Token, accounts, now, expiry };
   }
@@ -268,12 +267,12 @@ describe("TokenAgentFactory", function () {
       const tokenAgentAddress = await d.tokenAgentFactory.tokenAgents(4);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
-      const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry, [[888, "999999999999999999999999999999999997"]]]];
+      const invalidOffer1 = [[d.accounts[0].address, SELL, SINGLE, d.expiry, [888, "999999999999999999999999999999999997"]]];
       await expect(tokenAgent.addOffers(invalidOffer1))
         .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
         .withArgs(d.accounts[0].address);
       const invalidOffer2 = [
-        [d.weth.target, SELL, d.expiry, [[888, "999999999999999999999999999999999997"]]],
+        [d.weth.target, SELL, SINGLE, d.expiry, [888, "999999999999999999999999999999999997"]],
       ];
       await expect(tokenAgent.addOffers(invalidOffer2))
         .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
@@ -281,7 +280,7 @@ describe("TokenAgentFactory", function () {
 
     // TODO: Test TokenAgent error conditions
 
-    it.only("Test TokenAgent ERC-20 offers and trades", async function () {
+    it("Test TokenAgent ERC-20 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
@@ -363,20 +362,11 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-20 offers and trades", async function () {
+    it("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
       const offers1 = [
-        [
-          d.erc20Token.target,
-          SELL,
-          MULTIPLE,
-          d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
-           ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
-           ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
-        ],
         [
           d.erc721Token.target,
           BUY,
@@ -415,7 +405,7 @@ describe("TokenAgentFactory", function () {
       });
       console.log("        * offerKeys: " + offerKeys.join(','));
 
-      if (true) {
+      if (false) {
         const trades1 = [
           [offerKeys[0], ethers.parseUnits("2.1", 18).toString(), ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL],
           // [offerKeys[1], ethers.parseUnits("10", 18).toString()],

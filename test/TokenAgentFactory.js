@@ -94,7 +94,7 @@ describe("TokenAgentFactory", function () {
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
-        console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleString() + ')');
+        console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
       });
 
       const tokenAgentAddress = await tokenAgentFactory.tokenAgentsByOwners(accounts[i].address, 0);
@@ -200,8 +200,8 @@ describe("TokenAgentFactory", function () {
     const expiry = parseInt(now) + 120;
 
     // console.log("        * now: " + now + ' ' + new Intl.DateTimeFormat(undefined, DATE_FORMAT_OPTIONS).format(parseInt(now) * 1000));
-    console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleString());
-    console.log("        * expiry: " + new Date(parseInt(expiry) * 1000).toLocaleString());
+    console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleTimeString());
+    console.log("        * expiry: " + new Date(parseInt(expiry) * 1000).toLocaleTimeString());
 
     return { tokenAgentFactory, tokenAgents, weth, erc20Token, erc721Token, erc1155Token, accounts, now, expiry };
   }
@@ -295,10 +295,10 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
         if (log.name == "Offer20Added") {
-          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
+          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offer721Added") {
           // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][3].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleString() + ')');
+          console.log("        + tokenAgents[1]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][3].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         }
       });
       console.log("        * offerKeys: " + offerKeys.join(','));

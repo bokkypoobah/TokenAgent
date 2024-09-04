@@ -17,6 +17,8 @@ const FILLORKILL = 1;
 const SINGLE = 0;
 const MULTIPLE = 1;
 
+const SETUPEVENTS = false;
+
 // const DATE_FORMAT_OPTIONS = {
 //   year: "numeric",
 //   month: "numeric",
@@ -94,7 +96,7 @@ describe("TokenAgentFactory", function () {
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
-        console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
+        SETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
       });
 
       const tokenAgentAddress = await tokenAgentFactory.tokenAgentsByOwners(accounts[i].address, 0);
@@ -108,7 +110,7 @@ describe("TokenAgentFactory", function () {
       const mintTxReceipt = await mintTx.wait();
       mintTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        console.log("        + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
+        SETUPEVENTS && console.log("        + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
       });
     }
 
@@ -118,14 +120,14 @@ describe("TokenAgentFactory", function () {
       const transferTxReceipt = await transferTx.wait();
       transferTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        SETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       });
     }
     const transfer1Tx = await erc20Token.transfer(ADDRESS0, ethers.parseUnits("996000", 18));
     const transfer1TxReceipt = await transfer1Tx.wait();
     transfer1TxReceipt.logs.forEach((event) => {
       const log = weth.interface.parseLog(event);
-      console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      SETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
     const approveAmount = ethers.parseUnits("12.345", 18);
@@ -135,7 +137,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          console.log("        + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          SETUPEVENTS && console.log("        + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -145,7 +147,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          console.log("        + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          SETUPEVENTS && console.log("        + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -156,7 +158,7 @@ describe("TokenAgentFactory", function () {
         const mintTxReceipt = await mintTx.wait();
         mintTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          console.log("        + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
+          SETUPEVENTS && console.log("        + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
         });
       }
     }
@@ -167,7 +169,7 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          console.log("        + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          SETUPEVENTS && console.log("        + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }
@@ -179,7 +181,7 @@ describe("TokenAgentFactory", function () {
           const mintTxReceipt = await mintTx.wait();
           mintTxReceipt.logs.forEach((event) => {
             const log = erc1155Token.interface.parseLog(event);
-            console.log("        + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
+            SETUPEVENTS && console.log("        + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
           });
         }
         tokenId++;
@@ -191,7 +193,7 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc1155Token.interface.parseLog(event);
-          console.log("        + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          SETUPEVENTS && console.log("        + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }
@@ -251,7 +253,7 @@ describe("TokenAgentFactory", function () {
 
     // TODO: Test TokenAgent error conditions
 
-    it.only("Test TokenAgent offers", async function () {
+    it.only("Test TokenAgent ERC-20 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
@@ -322,7 +324,8 @@ describe("TokenAgentFactory", function () {
             console.log("        + erc20Token." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
           } else if (event.address == d.tokenAgents[1].target) {
             const log = d.tokenAgents[1].interface.parseLog(event);
-            console.log("        + " + log.name + '(' + log.args.join(',') + ')');
+            // TODO
+            console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(',') + ')');
             // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
 
             // event Traded(Trade trade, Unixtime timestamp);

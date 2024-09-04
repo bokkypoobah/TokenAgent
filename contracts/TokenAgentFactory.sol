@@ -298,7 +298,6 @@ contract TokenAgent is Owned {
                 offer20s[offerKey].token = offerInput.token;
                 offer20s[offerKey].nonce = nonce;
                 offer20s[offerKey].expiry = offerInput.expiry;
-                console.log("        > erc20Token.inputs.length", offerInput.inputs.length);
                 if (offerInput.inputs.length == 0 || (offerInput.inputs.length % 2) != 0) {
                     revert InvalidInputData("length");
                 }
@@ -320,10 +319,6 @@ contract TokenAgent is Owned {
                 offer721s[offerKey].token = offerInput.token;
                 offer721s[offerKey].nonce = nonce;
                 offer721s[offerKey].expiry = offerInput.expiry;
-                // console.log("        > erc721Token.prices/tokenIds.length", offerInput.prices.length, offerInput.tokenIds.length);
-                // if (offerInput.prices.length == 0 || (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length)) {
-                //     revert InvalidInputData();
-                // }
                 if (offerInput.inputs.length == 0) {
                     revert InvalidInputData("zero length");
                 }

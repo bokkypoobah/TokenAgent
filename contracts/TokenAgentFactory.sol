@@ -232,8 +232,8 @@ contract TokenAgent is Owned {
     struct Trade {
         OfferKey offerKey; // 256 bits
         Tokens tokens; // 128 bits // ERC-20
-        Price averagePrice; // 128 bits min average when selling, max average when buying
-        Execution execution; // 8 bits
+        Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721 max total price when buying, min total price when selling
+        Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
     }
 
     // TODO - buy/sell or -ve / +ve flows
@@ -425,23 +425,23 @@ contract TokenAgent is Owned {
                     uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
                     if (buySell == BuySell.BUY) {
                         // msg.sender SELL owner BUY
-                        console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                        if (averagePrice < Price.unwrap(_trade.averagePrice)) {
-                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                        console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.price", averagePrice, Price.unwrap(_trade.price));
+                        if (averagePrice < Price.unwrap(_trade.price)) {
+                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.price);
                         }
                         // owner offering to buy, msg.sender selling
                         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
                         weth.transferFrom(owner, msg.sender, totalWETHTokens);
                     } else {
                         // msg.sender BUY owner SELL
-                        console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.averagePrice", averagePrice, Price.unwrap(_trade.averagePrice));
-                        if (averagePrice > Price.unwrap(_trade.averagePrice)) {
-                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.averagePrice);
+                        console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.price", averagePrice, Price.unwrap(_trade.price));
+                        if (averagePrice > Price.unwrap(_trade.price)) {
+                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.price);
                         }
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.averagePrice, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 // TODO

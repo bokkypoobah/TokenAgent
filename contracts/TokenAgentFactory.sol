@@ -101,7 +101,7 @@ type Nonce is uint32;
 type OfferKey is bytes32;
 type Price is uint128;
 type Token is address;
-type TokenId is uint128;
+type TokenId is uint256;
 type Tokens is uint128;
 type Unixtime is uint64;
 
@@ -196,6 +196,9 @@ contract TokenAgent is Owned {
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
         OfferInputPoints[] points;
+        // TokenId[] tokenIds;
+        // Tokens[] tokenss;
+        // Price[] prices;
     }
     struct Offer20Points {
         Price price; // 128 bits // token/WETH 18dp

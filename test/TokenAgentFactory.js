@@ -259,8 +259,8 @@ describe("TokenAgentFactory", function () {
           [
             [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18)],
             [ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18)],
-            [ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)]
-          ]
+            [ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
+          ],
         ],
         // [erc20Token.target, SELL, expiry, [[ethers.parseUnits("0.11111", 18), ethers.parseUnits("1", 18)], [ethers.parseUnits("0.22222", 18), ethers.parseUnits("9", 18)]]],
         // [erc20Token.target, SELL, expiry, ethers.parseUnits("0.12345", 18), ethers.parseUnits("1", 18)],

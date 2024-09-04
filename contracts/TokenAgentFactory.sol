@@ -349,7 +349,7 @@ contract TokenAgent is Owned {
                         offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
                     }
                 }
-                if (offer721s[offerKey].tokenIds.length > 0) {
+                if (offer721s[offerKey].tokenIds.length > 1) {
                     for (uint j = 1; j < offer721s[offerKey].tokenIds.length; j++) {
                         if (TokenId.unwrap(offer721s[offerKey].tokenIds[j - 1]) >= TokenId.unwrap(offer721s[offerKey].tokenIds[j])) {
                             revert TokenIdsMustBeSortedWithNoDuplicates();

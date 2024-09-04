@@ -174,3 +174,11 @@ $ ./10_testIt.sh
 
   3 passing (802ms)
 ```
+
+<br />
+
+<br />
+
+Enjoy!
+
+(c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.

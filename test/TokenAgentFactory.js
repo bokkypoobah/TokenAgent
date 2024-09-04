@@ -2,6 +2,8 @@ const { time, loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
+const DEBUGSETUPEVENTS = false;
+
 const ADDRESS0 = "0x0000000000000000000000000000000000000000";
 
 const BUY = 0;
@@ -16,8 +18,6 @@ const FILLORKILL = 1;
 
 const SINGLE = 0;
 const MULTIPLE = 1;
-
-const SETUPEVENTS = false;
 
 // const DATE_FORMAT_OPTIONS = {
 //   year: "numeric",
@@ -48,8 +48,8 @@ describe("TokenAgentFactory", function () {
   }
   async function printState(d) {
     console.log();
-    console.log("          # Account                               ETH                     WETH                   ERC-20                  ERC-721");
-    console.log("          - ---------------- ------------------------ ------------------------ ------------------------ ------------------------");
+    console.log("          # Account                               ETH                     WETH                   ERC-20                  ERC-721                 ERC-1155");
+    console.log("          - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------");
     const erc721Balances = {};
     for (let tokenId = 0; tokenId < 16; tokenId++) {
       const owner = await d.erc721Token.ownerOf(tokenId);
@@ -58,16 +58,36 @@ describe("TokenAgentFactory", function () {
       }
       erc721Balances[owner].push(tokenId);
     }
+
+    const erc1155Balances = {};
+    for (let tokenId = 0; tokenId < 4; tokenId++) {
+      for (let i = 0; i < 4; i++) {
+        const count = await d.erc1155Token.balanceOf(d.accounts[i].address, tokenId);
+        // console.log(d.accounts[i].address + " tokenId: " + tokenId + " " + count);
+        if (!(d.accounts[i].address in erc1155Balances)) {
+          erc1155Balances[d.accounts[i].address] = {};
+        }
+        if (!(tokenId in erc1155Balances[d.accounts[i].address])) {
+          erc1155Balances[d.accounts[i].address][tokenId] = parseInt(count);
+        }
+      }
+    }
     for (let i = 0; i < 4; i++) {
       const balance = await ethers.provider.getBalance(d.accounts[i].address);
       const wethBalance = await d.weth.balanceOf(d.accounts[i].address);
       const erc20Balance = await d.erc20Token.balanceOf(d.accounts[i].address);
       const erc721TokenIds = erc721Balances[d.accounts[i].address];
+      const erc1155TokenIds = erc1155Balances[d.accounts[i].address];
+      const erc1155Info = [];
+      for (const [tokenId, count] of Object.entries(erc1155TokenIds)) {
+        erc1155Info.push(tokenId + ':' + count);
+      }
       console.log("          " + i + " " + d.accounts[i].address.substring(0, 16) + " " +
         padLeft(ethers.formatEther(balance), 24) + " " +
         padLeft(ethers.formatEther(wethBalance), 24) + " " +
         padLeft(ethers.formatEther(erc20Balance), 24) + " " +
-        padLeft(erc721TokenIds.join(","), 24)
+        padLeft(erc721TokenIds.join(","), 24) + " " +
+        padLeft(erc1155Info.join(","), 24)
       );
     }
     console.log();
@@ -106,7 +126,7 @@ describe("TokenAgentFactory", function () {
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
-        SETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
+        DEBUGSETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
       });
 
       const tokenAgentAddress = await tokenAgentFactory.tokenAgentsByOwners(accounts[i].address, 0);
@@ -120,7 +140,7 @@ describe("TokenAgentFactory", function () {
       const mintTxReceipt = await mintTx.wait();
       mintTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        SETUPEVENTS && console.log("        + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
+        DEBUGSETUPEVENTS && console.log("        + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
       });
     }
 
@@ -130,14 +150,14 @@ describe("TokenAgentFactory", function () {
       const transferTxReceipt = await transferTx.wait();
       transferTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        SETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       });
     }
     const transfer1Tx = await erc20Token.transfer(ADDRESS0, ethers.parseUnits("996000", 18));
     const transfer1TxReceipt = await transfer1Tx.wait();
     transfer1TxReceipt.logs.forEach((event) => {
       const log = weth.interface.parseLog(event);
-      SETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
     const approveAmount = ethers.parseUnits("12.345", 18);
@@ -147,7 +167,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          SETUPEVENTS && console.log("        + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          DEBUGSETUPEVENTS && console.log("        + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -157,7 +177,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          SETUPEVENTS && console.log("        + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -168,7 +188,7 @@ describe("TokenAgentFactory", function () {
         const mintTxReceipt = await mintTx.wait();
         mintTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          SETUPEVENTS && console.log("        + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("        + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
         });
       }
     }
@@ -179,22 +199,20 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          SETUPEVENTS && console.log("        + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("        + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }
 
-    let tokenId = 0;
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-          const mintTx = await erc1155Token.mint(accounts[i], tokenId, 10, "0x");
+    for (let tokenId = 0; tokenId < 4; tokenId++) {
+        for (let i = 0; i < 4; i++) {
+          const mintTx = await erc1155Token.mint(accounts[i], tokenId, 10 * (i + 1), "0x");
           const mintTxReceipt = await mintTx.wait();
           mintTxReceipt.logs.forEach((event) => {
             const log = erc1155Token.interface.parseLog(event);
-            SETUPEVENTS && console.log("        + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
+            DEBUGSETUPEVENTS && console.log("        + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
           });
         }
-        tokenId++;
     }
 
     for (let i = 0; i < 4; i++) {
@@ -203,7 +221,7 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc1155Token.interface.parseLog(event);
-          SETUPEVENTS && console.log("        + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("        + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }

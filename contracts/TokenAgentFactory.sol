@@ -12,7 +12,7 @@ pragma solidity ^0.8.24;
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
 // ----------------------------------------------------------------------------
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
@@ -216,10 +216,6 @@ contract TokenAgent is Owned, NonReentrancy {
     // wethAmount = tokens * price / 10^18
     // 12.3456    = 100 * 0.123456
 
-    struct OfferInputPoints {
-        Price price; // 128 bits // token/WETH 18dp
-        Tokens tokens; // 128 bits // ERC-20
-    }
     struct OfferInput {
         Token token; // 160 bits
         BuySell buySell; // 8 bits
@@ -275,6 +271,7 @@ contract TokenAgent is Owned, NonReentrancy {
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
     event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
+    event Traded1155(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price totalPrice, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
@@ -524,7 +521,7 @@ contract TokenAgent is Owned, NonReentrancy {
                 for (uint j = 0; j < _trade.inputs.length; j++) {
                     uint256 tokenId = _trade.inputs[j];
                     // - prices[price0], tokenIds[]
-                    // - prices[price0], tokenIds[tokenId0, tokenId1]
+                    // - prices[price0], tokenIds[tokenId0, tokenId1, ...]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                     uint price;
                     if (offer.tokenIds.length > 0) {
@@ -567,10 +564,52 @@ contract TokenAgent is Owned, NonReentrancy {
                 }
                 emit Traded721(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
-                // TODO
                 Offer1155 memory offer = offer1155s[offerKey];
-                Token token = offer.token;
-                console.log("        > ERC-1155", Token.unwrap(token), uint(buySell));
+                if (Token.unwrap(offer.token) == address(0)) {
+                    revert InvalidOfferKey(offerKey);
+                }
+                if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
+                    revert InvalidOffer(offer.nonce, nonce);
+                }
+                if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
+                    revert OfferExpired(offerKey, offer.expiry);
+                }
+                if (Count.unwrap(offer.count) < _trade.inputs.length) {
+                    revert InsufficentCountRemaining(Count.wrap(uint16(_trade.inputs.length)), offer.count);
+                }
+                if (Count.unwrap(offer.count) != type(uint16).max) {
+                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
+                }
+                uint totalPrice;
+                uint[] memory prices_ = new uint[](_trade.inputs.length / 2);
+                uint[] memory tokenIds_ = new uint[](_trade.inputs.length / 2);
+                uint[] memory tokenss_ = new uint[](_trade.inputs.length / 2);
+                for (uint j = 0; j < _trade.inputs.length; j += 2) {
+                    uint256 tokenId = _trade.inputs[j];
+                    // - prices[price0], tokenIds[], tokenss[]
+                    // - prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
+                    // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
+                    uint price;
+                    if (offer.tokenIds.length > 0) {
+                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(tokenId));
+                        // console.log("        >        tokenId/index", tokenId, index);
+                        if (index == type(uint).max) {
+                            revert InvalidTokenId(TokenId.wrap(tokenId));
+                        }
+                        if (offer.prices.length == offer.tokenIds.length) {
+                            price = Price.unwrap(offer.prices[index]);
+                        } else {
+                            price = Price.unwrap(offer.prices[0]);
+                        }
+                    } else {
+                        price = Price.unwrap(offer.prices[0]);
+                    }
+                    prices_[j/2] = price;
+                    tokenIds_[j/2] = tokenId;
+                    tokenss_[j/2] = _trade.inputs[j+1];
+                    totalPrice += price;
+                }
+                emit Traded1155(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
             }
         }
     }

@@ -62,10 +62,10 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         // console.log(JSON.stringify(log.map(e => e.toString())));
         if (log.name == "Offer20Added") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? ' SELL' : ' BUY') + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offer721Added") {
           // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? ' SELL' : ' BUY')+ ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY')+ ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(' + log.args.join(',') + ')');
         }
@@ -88,8 +88,8 @@ describe("TokenAgentFactory", function () {
   }
   async function printState(d) {
     console.log();
-    console.log("          # Account                               ETH          " + d.weth.target.substring(0, 10) + " WETH        " + d.erc20Token.target.substring(0, 10) + " ERC-20       " + d.erc721Token.target.substring(0, 10) + " ERC-721      " + d.erc1155Token.target.substring(0, 10) + " ERC-1155");
-    console.log("          - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------");
+    console.log("          # Account                         ETH          WETH " + d.weth.target.substring(0, 10) + "        ERC-20 " + d.erc20Token.target.substring(0, 10) + "                 ERC-721 " + d.erc721Token.target.substring(0, 10) + "                ERC-1155 " + d.erc1155Token.target.substring(0, 10));
+    console.log("          - ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------");
     const erc721Balances = {};
     for (let tokenId = 0; tokenId < 16; tokenId++) {
       const owner = await d.erc721Token.ownerOf(tokenId);
@@ -121,12 +121,12 @@ describe("TokenAgentFactory", function () {
       for (const [tokenId, count] of Object.entries(erc1155TokenIds)) {
         erc1155Info.push(tokenId + ':' + count);
       }
-      console.log("          " + i + " " + d.accounts[i].address.substring(0, 16) + " " +
+      console.log("          " + i + " " + d.accounts[i].address.substring(0, 10) + " " +
         padLeft(ethers.formatEther(balance), 24) + " " +
         padLeft(ethers.formatEther(wethBalance), 24) + " " +
         padLeft(ethers.formatEther(erc20Balance), 24) + " " +
-        padLeft(erc721TokenIds.join(","), 24) + " " +
-        padLeft(erc1155Info.join(","), 24)
+        padLeft(erc721TokenIds.join(", "), 34) + " " +
+        padLeft(erc1155Info.join(", "), 34)
       );
     }
     console.log();
@@ -369,7 +369,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it.only("Test TokenAgent ERC-721 offers and trades", async function () {
+    it("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 

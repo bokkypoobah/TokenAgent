@@ -463,11 +463,15 @@ contract TokenAgent is Owned {
                 }
                 for (uint j = 0; j < _trade.inputs.length; j++) {
                     uint256 tokenId = _trade.inputs[j];
+
+                    // TODO: Check trade valid and accumulate WETH
+
+
                     if (buySell == BuySell.BUY) {
-                        console.log("        >        msg.sender SELL/owner BUY tokenId", tokenId);
+                        console.log("        >        msg.sender SELL/owner BUY tokenId/count", tokenId, uint256(Count.unwrap(offer.count)));
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, tokenId);
                     } else {
-                        console.log("        >        msg.sender BUY/owner SELL tokenId", tokenId);
+                        console.log("        >        msg.sender BUY/owner SELL tokenId/count", tokenId, uint256(Count.unwrap(offer.count)));
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, tokenId);
                     }
                 }

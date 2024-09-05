@@ -75,6 +75,9 @@ describe("TokenAgentFactory", function () {
       } else if (event.address == d.erc20Token.target) {
         const log = d.erc20Token.interface.parseLog(event);
         console.log("        + erc20Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      } else if (event.address == d.erc721Token.target) {
+        const log = d.erc721Token.interface.parseLog(event);
+        console.log("        + erc721Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokenId: ' + log.args[2] + ')');
       } else if (event.address == d.tokenAgents[1].target) {
         const log = d.tokenAgents[1].interface.parseLog(event);
         // TODO
@@ -112,7 +115,7 @@ describe("TokenAgentFactory", function () {
       const balance = await ethers.provider.getBalance(d.accounts[i].address);
       const wethBalance = await d.weth.balanceOf(d.accounts[i].address);
       const erc20Balance = await d.erc20Token.balanceOf(d.accounts[i].address);
-      const erc721TokenIds = erc721Balances[d.accounts[i].address];
+      const erc721TokenIds = erc721Balances[d.accounts[i].address] || [];
       const erc1155TokenIds = erc1155Balances[d.accounts[i].address];
       const erc1155Info = [];
       for (const [tokenId, count] of Object.entries(erc1155TokenIds)) {
@@ -366,7 +369,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-721 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
@@ -383,7 +386,7 @@ describe("TokenAgentFactory", function () {
           SELL,
           SINGLE,
           d.expiry,
-          [6, ethers.parseUnits("0.1", 18), 1, 2, 3, 4],
+          [6, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
         ],
         [
           d.erc721Token.target,
@@ -405,7 +408,8 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [ethers.parseUnits("2.1", 18).toString()]],
+          [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          [offerKeys[1], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
           // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
           // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
         ];

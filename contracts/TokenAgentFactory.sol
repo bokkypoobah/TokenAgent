@@ -96,6 +96,10 @@ interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
+interface IERC721Partial {
+    function transferFrom(address from, address to, uint256 tokenId) external;
+}
+
 type Account is address;
 type Count is uint16;
 type Nonce is uint32;
@@ -392,7 +396,7 @@ contract TokenAgent is Owned {
                 if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
                     revert InvalidOffer(offer.nonce, nonce);
                 }
-                console.log("        >        expiry/timestamp", Unixtime.unwrap(offer.expiry), block.timestamp);
+                // console.log("        >        expiry/timestamp", Unixtime.unwrap(offer.expiry), block.timestamp);
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
@@ -421,7 +425,6 @@ contract TokenAgent is Owned {
                         }
                     }
                     console.log("        >        totalTokens/totalWETHTokens", totalTokens, totalWETHTokens);
-                    // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 }
                 console.log("        >        tokens/totalTokens/totalWETHTokens", _trade.inputs[0], totalTokens, totalWETHTokens);
                 if (_trade.execution == Execution.FILLORKILL && totalTokens < _trade.inputs[0]) {
@@ -430,16 +433,13 @@ contract TokenAgent is Owned {
                 if (totalTokens > 0) {
                     uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
                     if (buySell == BuySell.BUY) {
-                        // msg.sender SELL owner BUY
                         console.log("        >        msg.sender SELL/owner BUY - averagePrice/_trade.price", averagePrice, Price.unwrap(_trade.price));
                         if (averagePrice < Price.unwrap(_trade.price)) {
                             revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), _trade.price);
                         }
-                        // owner offering to buy, msg.sender selling
                         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
                         weth.transferFrom(owner, msg.sender, totalWETHTokens);
                     } else {
-                        // msg.sender BUY owner SELL
                         console.log("        >        msg.sender BUY/owner SELL - averagePrice/_trade.price", averagePrice, Price.unwrap(_trade.price));
                         if (averagePrice > Price.unwrap(_trade.price)) {
                             revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), _trade.price);
@@ -452,8 +452,27 @@ contract TokenAgent is Owned {
             } else if (tokenType == TokenType.ERC721) {
                 // TODO
                 Offer721 memory offer = offer721s[offerKey];
-                Token token = offer.token;
-                console.log("        > ERC-721", Token.unwrap(token), uint(buySell));
+                if (Token.unwrap(offer.token) == address(0)) {
+                    revert InvalidOfferKey(offerKey);
+                }
+                if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
+                    revert InvalidOffer(offer.nonce, nonce);
+                }
+                if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
+                    revert OfferExpired(offerKey, offer.expiry);
+                }
+                for (uint j = 0; j < _trade.inputs.length; j++) {
+                    uint256 tokenId = _trade.inputs[j];
+                    if (buySell == BuySell.BUY) {
+                        console.log("        >        msg.sender SELL/owner BUY tokenId", tokenId);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, tokenId);
+                    } else {
+                        console.log("        >        msg.sender BUY/owner SELL tokenId", tokenId);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, tokenId);
+                    }
+                }
+                // Token token = offer.token;
+                // console.log("        > ERC-721", Token.unwrap(token), uint(buySell));
             } else if (tokenType == TokenType.ERC1155) {
                 // TODO
                 Offer1155 memory offer = offer1155s[offerKey];

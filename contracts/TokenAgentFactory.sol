@@ -257,9 +257,7 @@ contract TokenAgent is Owned, NonReentrancy {
     mapping(OfferKey => Offer) public offers;
     mapping(Token => TokenType) tokenTypes;
 
-    event Offered20(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, Tokens[] tokenss, Unixtime timestamp);
-    event Offered721(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Unixtime timestamp);
-    event Offered1155(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event Offered    (OfferKey offerKey, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
     event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
@@ -321,7 +319,7 @@ contract TokenAgent is Owned, NonReentrancy {
                 }
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].prices, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(offerKey, Account.wrap(msg.sender), offerInput.token, tokenType, offerInput.buySell, offerInput.expiry, nonce, Count.wrap(0), offers[offerKey].prices, offers[offerKey].tokenIds, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId
                 // -> prices[price0], tokenIds[], count
@@ -364,7 +362,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         }
                     }
                 }
-                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(offerKey, Account.wrap(msg.sender), offerInput.token, tokenType, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
                 // -> prices[price0], tokenIds[], tokenss [], count
@@ -405,7 +403,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         offers[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
                     }
                 }
-                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(offerKey, Account.wrap(msg.sender), offerInput.token, tokenType, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }

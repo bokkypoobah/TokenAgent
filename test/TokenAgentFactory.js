@@ -515,7 +515,7 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [offerKeys[1], ethers.parseUnits("2", 18).toString(), FILLORKILL, [0, 5, 1, 5, 2, 5, 3, 5]],
+          [offerKeys[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
           // [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));

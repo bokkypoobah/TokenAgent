@@ -283,6 +283,7 @@ contract TokenAgent is Owned {
     error ExecutedTotalPriceGreaterThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error ExecutedTotalPriceLessThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
+    error InsufficentCountRemaining(Count requested, Count remaining);
     error InvalidInputData(string reason);
     error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
     error InvalidOfferKey(OfferKey offerKey);
@@ -475,7 +476,7 @@ contract TokenAgent is Owned {
                     emit Traded20(_trade.offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokens_, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
-                Offer721 memory offer = offer721s[offerKey];
+                Offer721 storage offer = offer721s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
                 }
@@ -484,6 +485,12 @@ contract TokenAgent is Owned {
                 }
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
+                }
+                if (Count.unwrap(offer.count) < _trade.inputs.length) {
+                    revert InsufficentCountRemaining(Count.wrap(uint16(_trade.inputs.length)), offer.count);
+                }
+                if (Count.unwrap(offer.count) != type(uint16).max) {
+                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
                 }
                 uint totalPrice;
                 uint[] memory prices_ = new uint[](_trade.inputs.length);

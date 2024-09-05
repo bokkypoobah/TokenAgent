@@ -405,14 +405,14 @@ describe("TokenAgentFactory", function () {
           BUY,
           SINGLE,
           d.expiry,
-          [5, ethers.parseUnits("0.1", 18)],
+          [4, ethers.parseUnits("0.1", 18)],
         ],
         [
           d.erc721Token.target,
           SELL,
           SINGLE,
           d.expiry,
-          [6, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
+          [4, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
         ],
         [
           d.erc721Token.target,
@@ -434,8 +434,8 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          // [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
-          [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          // [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);

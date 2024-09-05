@@ -231,9 +231,10 @@ contract TokenAgent is Owned {
 
     struct TradeInput {
         OfferKey offerKey; // 256 bits
-        Tokens tokens; // 128 bits // ERC-20
         Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721 max total price when buying, min total price when selling
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
+        // Tokens tokens; // 128 bits // ERC-20
+        uint256[] inputs;
     }
 
     // TODO - buy/sell or -ve / +ve flows, move offerKey and taker out of struct for indexing
@@ -383,6 +384,7 @@ contract TokenAgent is Owned {
             TokenType tokenType = TokenType((uint(OfferKey.unwrap(offerKey)) % 16) / 2);
 
             if (tokenType == TokenType.ERC20) {
+                // All: inputs[price]
                 Offer20 storage offer = offer20s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
@@ -394,7 +396,10 @@ contract TokenAgent is Owned {
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
-                uint128 tokens = Tokens.unwrap(_trade.tokens);
+                if (_trade.inputs.length != 1) {
+                    revert InvalidInputData("Expecting single price input");
+                }
+                uint128 tokens = uint128(_trade.inputs[0]);
                 uint128 totalTokens = 0;
                 uint128 totalWETHTokens = 0;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
@@ -418,9 +423,9 @@ contract TokenAgent is Owned {
                     console.log("        >        totalTokens/totalWETHTokens", totalTokens, totalWETHTokens);
                     // console.log("        > ERC-20", Token.unwrap(offer.token), uint(buySell), uint(Tokens.unwrap(_trade.tokens)));
                 }
-                console.log("        >        tokens/totalTokens/totalWETHTokens", uint(Tokens.unwrap(_trade.tokens)), totalTokens, totalWETHTokens);
-                if (_trade.execution == Execution.FILLORKILL && totalTokens < Tokens.unwrap(_trade.tokens)) {
-                    revert InsufficentTokensRemaining(_trade.tokens, Tokens.wrap(totalTokens));
+                console.log("        >        tokens/totalTokens/totalWETHTokens", _trade.inputs[0], totalTokens, totalWETHTokens);
+                if (_trade.execution == Execution.FILLORKILL && totalTokens < _trade.inputs[0]) {
+                    revert InsufficentTokensRemaining(Tokens.wrap(uint128(_trade.inputs[0])), Tokens.wrap(totalTokens));
                 }
                 if (totalTokens > 0) {
                     uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
@@ -442,7 +447,7 @@ contract TokenAgent is Owned {
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(TradeLog(_trade.offerKey, Account.wrap(msg.sender), _trade.tokens, _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded(TradeLog(_trade.offerKey, Account.wrap(msg.sender), Tokens.wrap(uint128(_trade.inputs[0])), _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 // TODO

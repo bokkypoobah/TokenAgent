@@ -347,7 +347,7 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          [offerKeys[0], ethers.parseUnits("1.05", 18).toString(), ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL],
+          [offerKeys[0], ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
@@ -356,7 +356,7 @@ describe("TokenAgentFactory", function () {
         await printState(d);
 
         const trades2 = [
-          [offerKeys[0], ethers.parseUnits("1.05", 18).toString(), ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL],
+          [offerKeys[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades2: " + JSON.stringify(trades2));
         const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
@@ -405,7 +405,7 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          [offerKeys[0], ethers.parseUnits("2.1", 18).toString(), ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL],
+          [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [ethers.parseUnits("2.1", 18).toString()]],
           // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
           // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
         ];

@@ -60,12 +60,38 @@ describe("TokenAgentFactory", function () {
     txReceipt.logs.forEach((event) => {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
-        // console.log(JSON.stringify(log.map(e => e.toString())));
         if (log.name == "Offer20Added") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+            ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY') +
+            ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() +
+            ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) +
+            ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) +
+            ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offer721Added") {
-          // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY')+ ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+            ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY')+
+            ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] +
+            ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) +
+            ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) +
+            ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+        } else if (log.name == "Traded20") {
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+            ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
+            ', token: ' + log.args[3].substring(0, 10) +
+            ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
+            ', prices: ' + JSON.stringify(log.args[5].map(e => ethers.formatEther(e))) +
+            ', tokens: ' + JSON.stringify(log.args[6].map(e => ethers.formatEther(e))) +
+            ', averagePrice: ' + ethers.formatEther(log.args[7]) +
+            ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
+        } else if (log.name == "Traded721") {
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+            ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
+            ', token: ' + log.args[3].substring(0, 10) +
+            ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
+            ', prices: ' + JSON.stringify(log.args[5].map(e => ethers.formatEther(e))) +
+            ', tokenIds: ' + JSON.stringify(log.args[6].map(e => e.toString())) +
+            ', totalPrice: ' + ethers.formatEther(log.args[7]) +
+            ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(' + log.args.join(', ') + ')');
         }
@@ -78,11 +104,11 @@ describe("TokenAgentFactory", function () {
       } else if (event.address == d.erc721Token.target) {
         const log = d.erc721Token.interface.parseLog(event);
         console.log("        + erc721Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokenId: ' + log.args[2] + ')');
-      } else if (event.address == d.tokenAgents[1].target) {
-        const log = d.tokenAgents[1].interface.parseLog(event);
-        // TODO
-        console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(', ') + ')');
-        // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
+      // } else if (event.address == d.tokenAgents[1].target) {
+      //   const log = d.tokenAgents[1].interface.parseLog(event);
+      //   // TODO
+      //   console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(', ') + ')');
+      //   // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
       }
     });
   }

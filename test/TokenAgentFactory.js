@@ -6,6 +6,9 @@ const DEBUGSETUPEVENTS = false;
 
 const ADDRESS0 = "0x0000000000000000000000000000000000000000";
 
+const GASPRICE = ethers.parseUnits("1", "gwei");
+const ETHUSD = 2500.0;
+
 const BUY = 0;
 const SELL = 1;
 
@@ -51,7 +54,9 @@ describe("TokenAgentFactory", function () {
     for (let i = 0; i < 4; i++) {
       tokenAgentAdresses[d.tokenAgents[i].target] = i;
     }
-    console.log("        * " + label + " gasUsed: " + txReceipt.gasUsed);
+    const fee = BigInt(txReceipt.gasUsed) * GASPRICE;
+    const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
+    console.log("        * " + label + " gasUsed: " + txReceipt.gasUsed + ", fee(Ξ): " + ethers.formatEther(fee) + ", fee(USD): " + feeUsd + " @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei gasPrice");
     txReceipt.logs.forEach((event) => {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
@@ -320,9 +325,10 @@ describe("TokenAgentFactory", function () {
            ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
         ],
       ];
+      console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      printLogs(d, "addOffers", addOffers1TxReceipt);
+      printLogs(d, "tokenAgents[1].addOffers(offers1)", addOffers1TxReceipt);
       const offerKeys = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
@@ -337,7 +343,7 @@ describe("TokenAgentFactory", function () {
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "trades1", trades1TxReceipt);
+        printLogs(d, "tokenAgents[1].trade(trades1)", trades1TxReceipt);
         await printState(d);
 
         const trades2 = [
@@ -346,7 +352,7 @@ describe("TokenAgentFactory", function () {
         console.log("        * trades2: " + JSON.stringify(trades2));
         const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
         const trades2TxReceipt = await trades2Tx.wait();
-        printLogs(d, "trades2", trades2TxReceipt);
+        printLogs(d, "tokenAgents[1].trade(trades2)", trades2TxReceipt);
         await printState(d);
       }
     });

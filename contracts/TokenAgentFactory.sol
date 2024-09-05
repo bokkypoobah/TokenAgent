@@ -229,7 +229,7 @@ contract TokenAgent is Owned {
         TokenId[] tokenIds;
     }
 
-    struct Trade {
+    struct TradeInput {
         OfferKey offerKey; // 256 bits
         Tokens tokens; // 128 bits // ERC-20
         Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721 max total price when buying, min total price when selling
@@ -374,9 +374,9 @@ contract TokenAgent is Owned {
         // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }
 
-    function trade(Trade[] calldata _trades) external {
+    function trade(TradeInput[] calldata _trades) external {
         for (uint i = 0; i < _trades.length; i++) {
-            Trade memory _trade = _trades[i];
+            TradeInput memory _trade = _trades[i];
             OfferKey offerKey = _trade.offerKey;
             BuySell buySell = BuySell(uint(OfferKey.unwrap(offerKey)) % 2);
             TokenType tokenType = TokenType((uint(OfferKey.unwrap(offerKey)) % 16) / 2);

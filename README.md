@@ -36,8 +36,8 @@ $ ./10_testIt.sh
 
   TokenAgentFactory
     Deploy TokenAgentFactory And TokenAgent
-        * now: 9:28:50 AM, expiry: 9:30:50 AM
-      ✔ Test TokenAgent secondary functions (805ms)
+        * now: 10:40:14 AM, expiry: 10:42:14 AM
+      ✔ Test TokenAgent secondary functions (816ms)
       ✔ Test TokenAgent invalid offers
 
           # Account                               ETH          0x5FbDB231 WETH        0xe7f1725E ERC-20       0x9fE46736 ERC-721      0xCf7Ed3Ac ERC-1155
@@ -47,11 +47,12 @@ $ ./10_testIt.sh
           2 0x3C44CdDdB6a900  9899.998920459678408956                    100.0                   1000.0                8,9,10,11      0:30,1:30,2:30,3:30
           3 0x90F79bf6EB2c4f  9899.998935645383800735                    100.0                   1000.0              12,13,14,15      0:40,1:40,2:40,3:40
 
-        * addOffers gasUsed: 266509
-        + tokenAgents[1].Offer20Added(offerKey:0x6cca...5bb3, token: 0xe7f1725E77, nonce: 0, buySell: 1 (SELL), expiry: 9:30:50 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 9:30:32 AM)
-        * offerKeys: 0x6ccad1733143a2926ce58ff87ed8e67064b3e26cde64ded7742bfcfd47555bb3
-        * trades1: [["0x6ccad1733143a2926ce58ff87ed8e67064b3e26cde64ded7742bfcfd47555bb3","1050000000000000000","105000000000000000",1]]
-        >        expiry/timestamp 1725492650 1725492633
+        * offers1: ["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,1,1,1725496934,100000000000000000,1000000000000000000,200000000000000000,1000000000000000000,300000000000000000,100000000000000000"]
+        * tokenAgents[1].addOffers(offers1) gasUsed: 266509, fee(Ξ): 0.000266509, fee(USD): 0.6662725 @ 1.0 gwei gasPrice
+        + tokenAgents[1].Offer20Added(offerKey:0xd016...74e3, token: 0xe7f1725E77, nonce: 0, buySell:  SELL, expiry: 10:42:14 AM, prices: ["0.1","0.2","0.3"], tokens: ["1.0","1.0","0.1"], timestamp: 10:41:55 AM)
+        * offerKeys: 0xd016263dc2e212c1c84bdd1434306f6ae471d738e96d6a719e08709214b774e3
+        * trades1: [["0xd016263dc2e212c1c84bdd1434306f6ae471d738e96d6a719e08709214b774e3","1050000000000000000","105000000000000000",1]]
+        >        expiry/timestamp 1725496934 1725496916
         > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 0
         >        remaining 1000000000000000000
         >        totalTokens/totalWETHTokens 1000000000000000000 100000000000000000
@@ -60,10 +61,10 @@ $ ./10_testIt.sh
         >        totalTokens/totalWETHTokens 1050000000000000000 110000000000000000
         >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 110000000000000000
         >        msg.sender BUY/owner SELL - averagePrice/_trade.price 104761904761904761 105000000000000000
-        * trades1 gasUsed: 141938
-        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.11)
-        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
-        + tokenAgents[1].Traded(0x6ccad1733143a2926ce58ff87ed8e67064b3e26cde64ded7742bfcfd47555bb3,1050000000000000000,105000000000000000,1,1725492633)
+        * tokenAgents[1].trade(trades1) gasUsed: 141938, fee(Ξ): 0.000141938, fee(USD): 0.354845 @ 1.0 gwei gasPrice
+        + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 0.11)
+        + erc20Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokens: 1.05)
+        + tokenAgents[1].Traded(0xd016263dc2e212c1c84bdd1434306f6ae471d738e96d6a719e08709214b774e3,1050000000000000000,105000000000000000,1,1725496916)
 
           # Account                               ETH          0x5FbDB231 WETH        0xe7f1725E ERC-20       0x9fE46736 ERC-721      0xCf7Ed3Ac ERC-1155
           - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------
@@ -72,8 +73,8 @@ $ ./10_testIt.sh
           2 0x3C44CdDdB6a900  9899.998778521496870254                    99.89                  1001.05                8,9,10,11      0:30,1:30,2:30,3:30
           3 0x90F79bf6EB2c4f  9899.998935645383800735                    100.0                   1000.0              12,13,14,15      0:40,1:40,2:40,3:40
 
-        * trades2: [["0x6ccad1733143a2926ce58ff87ed8e67064b3e26cde64ded7742bfcfd47555bb3","1050000000000000000","209523809523809523",1]]
-        >        expiry/timestamp 1725492650 1725492634
+        * trades2: [["0xd016263dc2e212c1c84bdd1434306f6ae471d738e96d6a719e08709214b774e3","1050000000000000000","209523809523809523",1]]
+        >        expiry/timestamp 1725496934 1725496917
         > ERC-20 price/tokens/used 100000000000000000 1000000000000000000 1000000000000000000
         >        remaining 0
         >        totalTokens/totalWETHTokens 0 0
@@ -85,10 +86,10 @@ $ ./10_testIt.sh
         >        totalTokens/totalWETHTokens 1050000000000000000 220000000000000000
         >        tokens/totalTokens/totalWETHTokens 1050000000000000000 1050000000000000000 220000000000000000
         >        msg.sender BUY/owner SELL - averagePrice/_trade.price 209523809523809523 209523809523809523
-        * trades2 gasUsed: 157358
-        + weth.Transfer(from: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, to: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, tokens: 0.22)
-        + erc20Token.Transfer(from: 0x70997970C51812dc3A010C7d01b50e0d17dc79C8, to: 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC, tokens: 1.05)
-        + tokenAgents[1].Traded(0x6ccad1733143a2926ce58ff87ed8e67064b3e26cde64ded7742bfcfd47555bb3,1050000000000000000,209523809523809523,1,1725492634)
+        * tokenAgents[1].trade(trades2) gasUsed: 157358, fee(Ξ): 0.000157358, fee(USD): 0.393395 @ 1.0 gwei gasPrice
+        + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 0.22)
+        + erc20Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokens: 1.05)
+        + tokenAgents[1].Traded(0xd016263dc2e212c1c84bdd1434306f6ae471d738e96d6a719e08709214b774e3,1050000000000000000,209523809523809523,1,1725496917)
 
           # Account                               ETH          0x5FbDB231 WETH        0xe7f1725E ERC-20       0x9fE46736 ERC-721      0xCf7Ed3Ac ERC-1155
           - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------
@@ -97,7 +98,7 @@ $ ./10_testIt.sh
           2 0x3C44CdDdB6a900  9899.998621163320471936                    99.67                   1002.1                8,9,10,11      0:30,1:30,2:30,3:30
           3 0x90F79bf6EB2c4f  9899.998935645383800735                    100.0                   1000.0              12,13,14,15      0:40,1:40,2:40,3:40
 
-      ✔ Test TokenAgent ERC-20 offers and trades (61ms)
+      ✔ Test TokenAgent ERC-20 offers and trades (63ms)
 
           # Account                               ETH          0x5FbDB231 WETH        0xe7f1725E ERC-20       0x9fE46736 ERC-721      0xCf7Ed3Ac ERC-1155
           - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------
@@ -106,14 +107,14 @@ $ ./10_testIt.sh
           2 0x3C44CdDdB6a900  9899.998920459678408956                    100.0                   1000.0                8,9,10,11      0:30,1:30,2:30,3:30
           3 0x90F79bf6EB2c4f  9899.998935645383800735                    100.0                   1000.0              12,13,14,15      0:40,1:40,2:40,3:40
 
-        * addOffers1 gasUsed: 620448
-        + tokenAgents[1].Offer721Added(offerKey:0x741d...9414, token: 0x9fE4673667, nonce: 0, buySell: 0, expiry: 9:30:50 AM, count: 5, prices: ["0.1"], tokenIds: [], timestamp: 9:30:32 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0xe99e...c425, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 9:30:50 AM, count: 6, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 9:30:32 AM)
-        + tokenAgents[1].Offer721Added(offerKey:0x7a53...9015, token: 0x9fE4673667, nonce: 0, buySell: 1, expiry: 9:30:50 AM, count: 65535, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 9:30:32 AM)
-        * offerKeys: 0x741d01265b8c4191a04311471182ffd90732a84854da741ffc00967834a09414,0xe99e4dfe30a2d72a3579390bd98dccbb0ed12d7fccefaaa3c15c0cd54b90c425,0x7a53abf1534bb85e841e06c35f805a2db57b7e32ebea46d0b5237fe92fe09015
-        * trades1: [["0x741d01265b8c4191a04311471182ffd90732a84854da741ffc00967834a09414","2100000000000000000","157142857142857142",1]]
+        * addOffers1 gasUsed: 620448, fee(Ξ): 0.000620448, fee(USD): 1.55112 @ 1.0 gwei gasPrice
+        + tokenAgents[1].Offer721Added(offerKey:0xaa19...3974, token: 0x9fE4673667, nonce: 0, buySell:  BUY, expiry: 10:42:14 AM, count: 5, prices: ["0.1"], tokenIds: [], timestamp: 10:41:55 AM)
+        + tokenAgents[1].Offer721Added(offerKey:0x75aa...f205, token: 0x9fE4673667, nonce: 0, buySell:  SELL, expiry: 10:42:14 AM, count: 6, prices: ["0.1"], tokenIds: ["1","2","3","4"], timestamp: 10:41:55 AM)
+        + tokenAgents[1].Offer721Added(offerKey:0x7b14...f2d5, token: 0x9fE4673667, nonce: 0, buySell:  SELL, expiry: 10:42:14 AM, count: 65535, prices: ["0.1","0.2","0.3"], tokenIds: ["1","2","3"], timestamp: 10:41:55 AM)
+        * offerKeys: 0xaa1944eb09d6f188481580ba240d9000342724eb1a39f22cb49adde8126b3974,0x75aafa2f1dbdd673557f0d7ae4cc1d034fd041853ce0c34fe784a16c2a57f205,0x7b143438021412afd214a497639eef7af8664aea1a2a0bcc654ab4562dd9f2d5
+        * trades1: [["0xaa1944eb09d6f188481580ba240d9000342724eb1a39f22cb49adde8126b3974","2100000000000000000","157142857142857142",1]]
         > ERC-721 0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0 0
-        * trades1 gasUsed: 43628
+        * trades1 gasUsed: 43628, fee(Ξ): 0.000043628, fee(USD): 0.10907000000000001 @ 1.0 gwei gasPrice
 
           # Account                               ETH          0x5FbDB231 WETH        0xe7f1725E ERC-20       0x9fE46736 ERC-721      0xCf7Ed3Ac ERC-1155
           - ---------------- ------------------------ ------------------------ ------------------------ ------------------------ ------------------------
@@ -125,7 +126,7 @@ $ ./10_testIt.sh
       ✔ Test TokenAgent ERC-721 offers and trades
 
 
-  4 passing (922ms)
+  4 passing (940ms)
 ```
 
 <br />

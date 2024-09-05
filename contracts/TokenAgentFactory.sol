@@ -243,12 +243,6 @@ contract TokenAgent is Owned {
         Tokens tokens; // TODO 128 bits // ERC-20
         Tokens used; // TODO 128 bits // ERC-20
     }
-    struct Offer20Log {
-        BuySell buySell; // 8 bits
-        Unixtime expiry; // 64 bits
-        Price[] prices; // 128 bits // token/WETH 18dp
-        Tokens[] tokenss; // 128 bits // ERC-20
-    }
     struct Offer721Log {
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
@@ -271,11 +265,11 @@ contract TokenAgent is Owned {
     mapping(OfferKey => Offer1155) public offer1155s;
     mapping(Token => TokenType) tokenTypes;
 
-    event Offer20Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer20Log offer, Unixtime timestamp);
-    event Offer721Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer721Log offer, Unixtime timestamp);
+    event Offered20(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, Tokens[] tokenss, Unixtime timestamp);
+    event Offered721(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer721Log offer, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-    event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell buySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
-    event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell buySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
+    event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
+    event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
@@ -333,7 +327,7 @@ contract TokenAgent is Owned {
                 }
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offer20Added(offerKey, offerInput.token, nonce, Offer20Log(offerInput.buySell, offerInput.expiry, offer20s[offerKey].prices, offer20s[offerKey].tokenss), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer20s[offerKey].prices, offer20s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // Single price: [count, price0] - b/s count @ price0 with any tokenId
                 // -> prices[price0], tokenIds[], count
@@ -376,7 +370,7 @@ contract TokenAgent is Owned {
                         }
                     }
                 }
-                emit Offer721Added(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered721(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // prices [one], tokenIds [], tokenss []
                 // - new single price - [price0]

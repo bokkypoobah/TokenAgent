@@ -183,8 +183,22 @@ contract Owned {
     }
 }
 
+/// @notice Reentrancy guard
+contract NonReentrancy {
+    modifier nonReentranct() {
+        assembly {
+            if tload(0) { revert(0, 0) }
+            tstore(0, 1)
+        }
+        _;
+        assembly {
+            tstore(0, 0)
+        }
+    }
+}
+
 /// @notice User owned TokenAgent
-contract TokenAgent is Owned {
+contract TokenAgent is Owned, NonReentrancy {
 
     // ints
     // 2^128 = -170, 141,183,460,469,231,731, 687,303,715,884,105,728 to 170, 141,183,460,469,231,731, 687,303,715,884,105,727
@@ -220,17 +234,17 @@ contract TokenAgent is Owned {
     }
     struct Offer20 {
         Token token; // 160 bits
-        Nonce nonce; // 32 bits
         Unixtime expiry; // 64 bits
+        Nonce nonce; // 32 bits
         Price[] prices; // 128 bits // token/WETH 18dp
         Tokens[] tokenss; // 128 bits // ERC-20
         Tokens[] useds; // 128 bits // ERC-20
     }
     struct Offer721 {
         Token token; // 160 bits
-        Nonce nonce; // 32 bits
         BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
+        Nonce nonce; // 32 bits
         Count count; // 16 bits
         Price[] prices;
         TokenId[] tokenIds;
@@ -308,8 +322,8 @@ contract TokenAgent is Owned {
                 // -> prices [one, two, ...], tokens [one, two, ...]
                 // uint startGas = gasleft();
                 offer20s[offerKey].token = offerInput.token;
-                offer20s[offerKey].nonce = nonce;
                 offer20s[offerKey].expiry = offerInput.expiry;
+                offer20s[offerKey].nonce = nonce;
                 if (offerInput.inputs.length == 0 || (offerInput.inputs.length % 2) != 0) {
                     revert InvalidInputData("length");
                 }
@@ -329,8 +343,8 @@ contract TokenAgent is Owned {
                 // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
                 // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                 offer721s[offerKey].token = offerInput.token;
-                offer721s[offerKey].nonce = nonce;
                 offer721s[offerKey].expiry = offerInput.expiry;
+                offer721s[offerKey].nonce = nonce;
                 if (offerInput.inputs.length == 0) {
                     revert InvalidInputData("zero length");
                 }
@@ -387,7 +401,7 @@ contract TokenAgent is Owned {
         // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }
 
-    function trade(TradeInput[] calldata _trades) external {
+    function trade(TradeInput[] calldata _trades) external nonReentranct {
         for (uint i = 0; i < _trades.length; i++) {
             TradeInput memory _trade = _trades[i];
             OfferKey offerKey = _trade.offerKey;

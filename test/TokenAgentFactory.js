@@ -49,6 +49,9 @@ describe("TokenAgentFactory", function () {
     }
     return o;
   }
+  function formatNumber(e) {
+    return e != null ? e.toString().replace(/(?<!(\.\d*|^.{0}))(?=(\d{3})+(?!\d))/g, ',') : null;
+  }
   function printLogs(d, label, txReceipt) {
     const tokenAgentAdresses = {};
     for (let i = 0; i < 4; i++) {
@@ -56,7 +59,7 @@ describe("TokenAgentFactory", function () {
     }
     const fee = BigInt(txReceipt.gasUsed) * GASPRICE;
     const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
-    console.log("        * " + label + " - gasUsed: " + txReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
+    console.log("        * " + label + " - gasUsed: " + formatNumber(txReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
     txReceipt.logs.forEach((event) => {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
@@ -186,7 +189,7 @@ describe("TokenAgentFactory", function () {
     const tokenAgentFactoryTxReceipt = await tokenAgentFactoryTx.wait();
     const fee = BigInt(tokenAgentFactoryTxReceipt.gasUsed) * GASPRICE;
     const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
-    console.log("        * accounts[0]->TokenAgentFactory.deploy(weth) => " + tokenAgentFactory.target.substring(0, 10) + " - gasUsed: " + tokenAgentFactoryTxReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
+    console.log("        * accounts[0]->TokenAgentFactory.deploy(weth) => " + tokenAgentFactory.target.substring(0, 10) + " - gasUsed: " + formatNumber(tokenAgentFactoryTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
 
     const TokenAgent = await ethers.getContractFactory("TokenAgent");
     const tokenAgents = [];
@@ -199,7 +202,7 @@ describe("TokenAgentFactory", function () {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
         DEBUGSETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
-        console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + newTokenAgentTxReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
+        console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + formatNumber(newTokenAgentTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
       });
 
       const tokenAgentAddress = await tokenAgentFactory.tokenAgentsByOwners(accounts[i].address, 0);
@@ -449,33 +452,34 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it.skip("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
       const offers1 = [
         [
-          d.erc721Token.target,
+          d.erc1155Token.target,
           BUY,
           SINGLE,
           d.expiry,
-          [4, ethers.parseUnits("0.1", 18)],
+          [ethers.parseUnits("0.1", 18), 4],
         ],
         [
-          d.erc721Token.target,
+          d.erc1155Token.target,
           SELL,
           SINGLE,
           d.expiry,
-          [4, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
+          [ethers.parseUnits("0.1", 18), 40, 4, 10, 5, 10, 6, 10, 7, 10],
         ],
         [
-          d.erc721Token.target,
+          d.erc1155Token.target,
           SELL,
           MULTIPLE,
           d.expiry,
-          [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
+          [ethers.parseUnits("0.1", 18), 4, 10, ethers.parseUnits("0.2", 18), 5, 10, ethers.parseUnits("0.3", 18), 6, 10, ethers.parseUnits("0.4", 18), 7, 10],
         ],
       ];
+      console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       const offerKeys = [];
@@ -485,7 +489,7 @@ describe("TokenAgentFactory", function () {
       });
       printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + offerKeys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
 
-      if (true) {
+      if (false) {
         const trades1 = [
           // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
           [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],

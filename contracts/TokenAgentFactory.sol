@@ -112,7 +112,7 @@ type Price is uint128;
 type Token is address;
 type TokenId is uint256;
 type Tokens is uint128;
-type Unixtime is uint64;
+type Unixtime is uint40; // 2^40 = 1,099,511,627,776 seconds = 34865.285000507356672 years
 
 enum BuySell { BUY, SELL }
 enum Execution { FILL, FILLORKILL }
@@ -181,7 +181,7 @@ contract Owned {
         if (msg.sender != newOwner) {
             revert NotNewOwner();
         }
-        emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint64(block.timestamp)));
+        emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint40(block.timestamp)));
         owner = newOwner;
         newOwner = address(0);
     }
@@ -299,7 +299,7 @@ contract TokenAgent is Owned, NonReentrancy {
     }
     function invalidateOrders() external onlyOwner {
         nonce = Nonce.wrap(Nonce.unwrap(nonce) + 1);
-        emit OffersInvalidated(nonce, Unixtime.wrap(uint64(block.timestamp)));
+        emit OffersInvalidated(nonce, Unixtime.wrap(uint40(block.timestamp)));
     }
 
     function addOffers(OfferInput[] calldata _offerInputs) external onlyOwner {
@@ -331,7 +331,7 @@ contract TokenAgent is Owned, NonReentrancy {
                 }
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer20s[offerKey].prices, offer20s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer20s[offerKey].prices, offer20s[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId
                 // -> prices[price0], tokenIds[], count
@@ -374,7 +374,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         }
                     }
                 }
-                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds, Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
                 // -> prices[price0], tokenIds[], tokenss [], count
@@ -415,7 +415,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
                     }
                 }
-                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer1155s[offerKey].count, offer1155s[offerKey].prices, offer1155s[offerKey].tokenIds, offer1155s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer1155s[offerKey].count, offer1155s[offerKey].prices, offer1155s[offerKey].tokenIds, offer1155s[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }
@@ -498,7 +498,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded20(_trade.offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokens_, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded20(_trade.offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokens_, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint40(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 Offer721 storage offer = offer721s[offerKey];
@@ -564,7 +564,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     }
                     weth.transferFrom(msg.sender, owner, totalPrice);
                 }
-                emit Traded721(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
+                emit Traded721(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 Offer1155 memory offer = offer1155s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
@@ -638,7 +638,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     }
                     weth.transferFrom(msg.sender, owner, totalPrice);
                 }
-                emit Traded1155(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
+                emit Traded1155(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }
@@ -718,7 +718,7 @@ contract TokenAgentFactory is CloneFactory {
         tokenAgent.init(weth, msg.sender);
         tokenAgents.push(tokenAgent);
         tokenAgentsByOwners[msg.sender].push(tokenAgent);
-        emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint64(block.timestamp)));
+        emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint40(block.timestamp)));
     }
 
 }

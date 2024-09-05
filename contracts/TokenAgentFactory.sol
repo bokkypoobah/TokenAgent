@@ -234,30 +234,15 @@ contract TokenAgent is Owned, NonReentrancy {
         Unixtime expiry; // 64 bits
         uint256[] inputs;
     }
-    struct Offer20 {
+    struct Offer {
         Token token; // 160 bits
-        Unixtime expiry; // 64 bits
-        Nonce nonce; // 32 bits
-        Price[] prices; // 128 bits // token/WETH 18dp
-        Tokens[] tokenss; // 128 bits // ERC-20
-        Tokens[] useds; // 128 bits // ERC-20
-    }
-    struct Offer721 {
-        Token token; // 160 bits
-        Unixtime expiry; // 64 bits
+        Unixtime expiry; // 40 bits
         Nonce nonce; // 32 bits
         Count count; // 16 bits
-        Price[] prices;
-        TokenId[] tokenIds;
-    }
-    struct Offer1155 {
-        Token token; // 160 bits
-        Unixtime expiry; // 64 bits
-        Nonce nonce; // 32 bits
-        Count count; // 16 bits
-        Price[] prices;
-        TokenId[] tokenIds;
-        Tokens[] tokenss;
+        Price[] prices; // token/WETH 18dp
+        TokenId[] tokenIds; // ERC-721/1155
+        Tokens[] tokenss; // ERC-20/1155
+        Tokens[] useds; // ERC-20
     }
 
     struct TradeInput {
@@ -269,9 +254,7 @@ contract TokenAgent is Owned, NonReentrancy {
 
     IERC20 public weth;
     Nonce public nonce;
-    mapping(OfferKey => Offer20) public offer20s;
-    mapping(OfferKey => Offer721) public offer721s;
-    mapping(OfferKey => Offer1155) public offer1155s;
+    mapping(OfferKey => Offer) public offers;
     mapping(Token => TokenType) tokenTypes;
 
     event Offered20(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, Tokens[] tokenss, Unixtime timestamp);
@@ -325,20 +308,20 @@ contract TokenAgent is Owned, NonReentrancy {
                 // All: [price0, tokens0, price1, tokens1, ...]
                 // -> prices [one, two, ...], tokens [one, two, ...]
                 // uint startGas = gasleft();
-                offer20s[offerKey].token = offerInput.token;
-                offer20s[offerKey].expiry = offerInput.expiry;
-                offer20s[offerKey].nonce = nonce;
+                offers[offerKey].token = offerInput.token;
+                offers[offerKey].expiry = offerInput.expiry;
+                offers[offerKey].nonce = nonce;
                 if (offerInput.inputs.length == 0 || (offerInput.inputs.length % 2) != 0) {
                     revert InvalidInputData("length");
                 }
                 for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                    offer20s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
-                    offer20s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j + 1])));
-                    offer20s[offerKey].useds.push(Tokens.wrap(0));
+                    offers[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
+                    offers[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j + 1])));
+                    offers[offerKey].useds.push(Tokens.wrap(0));
                 }
                 // uint usedGas = startGas - gasleft();
                 // console.log("usedGas", usedGas);
-                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer20s[offerKey].prices, offer20s[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].prices, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId
                 // -> prices[price0], tokenIds[], count
@@ -346,9 +329,9 @@ contract TokenAgent is Owned, NonReentrancy {
                 // -> prices[price0], tokenIds[tokenId0, tokenId1], count
                 // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
                 // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
-                offer721s[offerKey].token = offerInput.token;
-                offer721s[offerKey].expiry = offerInput.expiry;
-                offer721s[offerKey].nonce = nonce;
+                offers[offerKey].token = offerInput.token;
+                offers[offerKey].expiry = offerInput.expiry;
+                offers[offerKey].nonce = nonce;
                 if (offerInput.inputs.length == 0) {
                     revert InvalidInputData("zero length");
                 }
@@ -359,29 +342,29 @@ contract TokenAgent is Owned, NonReentrancy {
                     if (offerInput.inputs.length < 2) {
                         revert InvalidInputData("length < 2");
                     }
-                    offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
-                    offer721s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
+                    offers[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
+                    offers[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
                     for (uint j = 2; j < offerInput.inputs.length; j++) {
-                        offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
+                        offers[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
                     }
                 } else {
                     if ((offerInput.inputs.length % 2) != 0) {
                         revert InvalidInputData("length not even");
                     }
-                    offer721s[offerKey].count = Count.wrap(type(uint16).max);
+                    offers[offerKey].count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                        offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
-                        offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
+                        offers[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
+                        offers[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
                     }
                 }
-                if (offer721s[offerKey].tokenIds.length > 1) {
-                    for (uint j = 1; j < offer721s[offerKey].tokenIds.length; j++) {
-                        if (TokenId.unwrap(offer721s[offerKey].tokenIds[j - 1]) >= TokenId.unwrap(offer721s[offerKey].tokenIds[j])) {
+                if (offers[offerKey].tokenIds.length > 1) {
+                    for (uint j = 1; j < offers[offerKey].tokenIds.length; j++) {
+                        if (TokenId.unwrap(offers[offerKey].tokenIds[j - 1]) >= TokenId.unwrap(offers[offerKey].tokenIds[j])) {
                             revert TokenIdsMustBeSortedWithNoDuplicates();
                         }
                     }
                 }
-                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
                 // -> prices[price0], tokenIds[], tokenss [], count
@@ -389,9 +372,9 @@ contract TokenAgent is Owned, NonReentrancy {
                 // -> prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...], count
                 // Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
                 // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
-                offer1155s[offerKey].token = offerInput.token;
-                offer1155s[offerKey].expiry = offerInput.expiry;
-                offer1155s[offerKey].nonce = nonce;
+                offers[offerKey].token = offerInput.token;
+                offers[offerKey].expiry = offerInput.expiry;
+                offers[offerKey].nonce = nonce;
                 if (offerInput.inputs.length == 0) {
                     revert InvalidInputData("zero length");
                 }
@@ -405,24 +388,24 @@ contract TokenAgent is Owned, NonReentrancy {
                     if ((offerInput.inputs.length % 2) != 0) {
                         revert InvalidInputData("length not even");
                     }
-                    offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
-                    offer1155s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
+                    offers[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
+                    offers[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
                     for (uint j = 2; j < offerInput.inputs.length; j += 2) {
-                        offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
-                        offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+1])));
+                        offers[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
+                        offers[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+1])));
                     }
                 } else {
                     if ((offerInput.inputs.length % 3) != 0) {
                         revert InvalidInputData("length not divisible by 3");
                     }
-                    offer1155s[offerKey].count = Count.wrap(type(uint16).max);
+                    offers[offerKey].count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < offerInput.inputs.length; j += 3) {
-                        offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
-                        offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
-                        offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
+                        offers[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
+                        offers[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
+                        offers[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
                     }
                 }
-                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer1155s[offerKey].count, offer1155s[offerKey].prices, offer1155s[offerKey].tokenIds, offer1155s[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offers[offerKey].count, offers[offerKey].prices, offers[offerKey].tokenIds, offers[offerKey].tokenss, Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }
@@ -440,7 +423,7 @@ contract TokenAgent is Owned, NonReentrancy {
 
             if (tokenType == TokenType.ERC20) {
                 // All: taker inputs[tokens]
-                Offer20 storage offer = offer20s[offerKey];
+                Offer storage offer = offers[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
                 }
@@ -508,7 +491,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     emit Traded20(_trade.offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokens_, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint40(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
-                Offer721 storage offer = offer721s[offerKey];
+                Offer storage offer = offers[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
                 }
@@ -573,7 +556,7 @@ contract TokenAgent is Owned, NonReentrancy {
                 }
                 emit Traded721(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
-                Offer1155 memory offer = offer1155s[offerKey];
+                Offer memory offer = offers[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
                 }

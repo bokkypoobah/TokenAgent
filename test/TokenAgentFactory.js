@@ -68,15 +68,15 @@ describe("TokenAgentFactory", function () {
             ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
             ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
             ', nonce: ' + log.args[5] +
-            ', prices: ' + JSON.stringify(log.args[6].map(e => ethers.formatEther(e))) +
-            ', tokens: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
+            ', prices: ' + JSON.stringify(log.args[6].map(e => parseFloat(ethers.formatEther(e)))) +
+            ', tokens: ' + JSON.stringify(log.args[7].map(e => parseFloat(ethers.formatEther(e)))) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offered721") {
           console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
             ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
             ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
-            ', prices: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
+            ', prices: ' + JSON.stringify(log.args[7].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[8].map(e => e.toString())) +
             ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() +
             ')');
@@ -85,9 +85,9 @@ describe("TokenAgentFactory", function () {
               ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
               ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
               ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
-              ', prices: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
-              ', tokenIds: ' + JSON.stringify(log.args[8].map(e => e.toString())) +
-              ', tokenss: ' + JSON.stringify(log.args[9].map(e => e.toString())) +
+              ', prices: ' + JSON.stringify(log.args[7].map(e => parseFloat(ethers.formatEther(e)))) +
+              ', tokenIds: ' + JSON.stringify(log.args[8].map(e => parseInt(e.toString()))) +
+              ', tokenss: ' + JSON.stringify(log.args[9].map(e => parseInt(e.toString()))) +
               ', timestamp: ' + new Date(parseInt(log.args[10]) * 1000).toLocaleTimeString() +
               ')');
         } else if (log.name == "Traded20") {
@@ -95,8 +95,8 @@ describe("TokenAgentFactory", function () {
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
-            ', prices: ' + JSON.stringify(log.args[5].map(e => ethers.formatEther(e))) +
-            ', tokens: ' + JSON.stringify(log.args[6].map(e => ethers.formatEther(e))) +
+            ', prices: ' + JSON.stringify(log.args[5].map(e => parseFloat(ethers.formatEther(e)))) +
+            ', tokens: ' + JSON.stringify(log.args[6].map(e => parseFloat(ethers.formatEther(e)))) +
             ', averagePrice: ' + ethers.formatEther(log.args[7]) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Traded721") {
@@ -104,7 +104,7 @@ describe("TokenAgentFactory", function () {
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
-            ', prices: ' + JSON.stringify(log.args[5].map(e => ethers.formatEther(e))) +
+            ', prices: ' + JSON.stringify(log.args[5].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[6].map(e => e.toString())) +
             ', totalPrice: ' + ethers.formatEther(log.args[7]) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
@@ -113,9 +113,9 @@ describe("TokenAgentFactory", function () {
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
-            ', prices: ' + JSON.stringify(log.args[5].map(e => ethers.formatEther(e))) +
-            ', tokenIds: ' + JSON.stringify(log.args[6].map(e => e.toString())) +
-            ', tokenss: ' + JSON.stringify(log.args[7].map(e => e.toString())) +
+            ', prices: ' + JSON.stringify(log.args[5].map(e => parseFloat(ethers.formatEther(e)))) +
+            ', tokenIds: ' + JSON.stringify(log.args[6].map(e => parseInt(e.toString()))) +
+            ', tokenss: ' + JSON.stringify(log.args[7].map(e => parseInt(e.toString()))) +
             ', totalPrice: ' + ethers.formatEther(log.args[8]) +
             ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() + ')');
         } else {

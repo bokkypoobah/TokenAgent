@@ -56,7 +56,7 @@ describe("TokenAgentFactory", function () {
     }
     const fee = BigInt(txReceipt.gasUsed) * GASPRICE;
     const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
-    console.log("        * " + label + " gasUsed: " + txReceipt.gasUsed + ", fee(Ξ): " + ethers.formatEther(fee) + ", fee(USD): " + feeUsd + " @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei gasPrice");
+    console.log("        * " + label + " - gasUsed: " + txReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
     txReceipt.logs.forEach((event) => {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
@@ -149,16 +149,25 @@ describe("TokenAgentFactory", function () {
     const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
     const TokenAgentFactory = await ethers.getContractFactory("TokenAgentFactory");
     const tokenAgentFactory = await TokenAgentFactory.deploy(weth);
+    const tokenAgentFactoryTxDeployment = await tokenAgentFactory.waitForDeployment();
+    const tokenAgentFactoryTx = await tokenAgentFactoryTxDeployment.deploymentTransaction();
+    const tokenAgentFactoryTxReceipt = await tokenAgentFactoryTx.wait();
+    const fee = BigInt(tokenAgentFactoryTxReceipt.gasUsed) * GASPRICE;
+    const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
+    console.log("        * accounts[0]->TokenAgentFactory.deploy(weth) => " + tokenAgentFactory.target.substring(0, 10) + " - gasUsed: " + tokenAgentFactoryTxReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
 
     const TokenAgent = await ethers.getContractFactory("TokenAgent");
     const tokenAgents = [];
     for (let i = 0; i < 4; i++) {
       const newTokenAgentTx = await tokenAgentFactory.connect(accounts[i]).newTokenAgent();
       const newTokenAgentTxReceipt = await newTokenAgentTx.wait();
+      const fee = BigInt(newTokenAgentTxReceipt.gasUsed) * GASPRICE;
+      const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
         DEBUGSETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
+        console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + newTokenAgentTxReceipt.gasUsed + " " + ethers.formatEther(fee) + "Ξ " + feeUsd + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
       });
 
       const tokenAgentAddress = await tokenAgentFactory.tokenAgentsByOwners(accounts[i].address, 0);
@@ -328,13 +337,12 @@ describe("TokenAgentFactory", function () {
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      printLogs(d, "tokenAgents[1].addOffers(offers1)", addOffers1TxReceipt);
       const offerKeys = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
       });
-      console.log("        * offerKeys: " + offerKeys.join(','));
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => " + JSON.stringify(offerKeys.map(e => e.substring(0, 10))), addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
@@ -343,7 +351,7 @@ describe("TokenAgentFactory", function () {
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "tokenAgents[1].trade(trades1)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
         await printState(d);
 
         const trades2 = [
@@ -352,7 +360,7 @@ describe("TokenAgentFactory", function () {
         console.log("        * trades2: " + JSON.stringify(trades2));
         const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
         const trades2TxReceipt = await trades2Tx.wait();
-        printLogs(d, "tokenAgents[1].trade(trades2)", trades2TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades2)", trades2TxReceipt);
         await printState(d);
       }
     });
@@ -386,7 +394,7 @@ describe("TokenAgentFactory", function () {
       ];
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      printLogs(d, "addOffers1", addOffers1TxReceipt);
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1)", addOffers1TxReceipt);
       const offerKeys = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
@@ -403,7 +411,7 @@ describe("TokenAgentFactory", function () {
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "trades1", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
         await printState(d);
       }
     });

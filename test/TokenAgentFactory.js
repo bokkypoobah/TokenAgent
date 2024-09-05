@@ -80,6 +80,16 @@ describe("TokenAgentFactory", function () {
             ', tokenIds: ' + JSON.stringify(log.args[8].map(e => e.toString())) +
             ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() +
             ')');
+          } else if (log.name == "Offered1155") {
+            console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+              ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
+              ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
+              ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
+              ', prices: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
+              ', tokenIds: ' + JSON.stringify(log.args[8].map(e => e.toString())) +
+              ', tokenss: ' + JSON.stringify(log.args[9].map(e => e.toString())) +
+              ', timestamp: ' + new Date(parseInt(log.args[10]) * 1000).toLocaleTimeString() +
+              ')');
         } else if (log.name == "Traded20") {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +

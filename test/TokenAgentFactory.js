@@ -57,19 +57,19 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         // console.log(JSON.stringify(log.map(e => e.toString())));
         if (log.name == "Offer20Added") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + (log.args[3][0] ? ' (SELL)' : ' (BUY)')+ ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? ' SELL' : ' BUY') + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', prices: ' + JSON.stringify(log.args[3][2].map(e => ethers.formatEther(e))) + ', tokens: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offer721Added") {
           // console.log("        + " + log.name + JSON.stringify(log.args.map(e => e.toString())));
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + log.args[3][0] + ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) + ', token: ' + log.args[1].substring(0, 12) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? ' SELL' : ' BUY')+ ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] + ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) + ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         } else {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(' + log.args.join(',') + ')');
         }
       } else if (event.address == d.weth.target) {
         const log = d.weth.interface.parseLog(event);
-        console.log("        + weth." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        console.log("        + weth." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       } else if (event.address == d.erc20Token.target) {
         const log = d.erc20Token.interface.parseLog(event);
-        console.log("        + erc20Token." + log.name + '(from: ' + log.args[0] + ', to: ' + log.args[1] + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        console.log("        + erc20Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       } else if (event.address == d.tokenAgents[1].target) {
         const log = d.tokenAgents[1].interface.parseLog(event);
         // TODO
@@ -95,7 +95,6 @@ describe("TokenAgentFactory", function () {
     for (let tokenId = 0; tokenId < 4; tokenId++) {
       for (let i = 0; i < 4; i++) {
         const count = await d.erc1155Token.balanceOf(d.accounts[i].address, tokenId);
-        // console.log(d.accounts[i].address + " tokenId: " + tokenId + " " + count);
         if (!(d.accounts[i].address in erc1155Balances)) {
           erc1155Balances[d.accounts[i].address] = {};
         }
@@ -127,7 +126,6 @@ describe("TokenAgentFactory", function () {
 
   async function deployContracts() {
     const accounts = await ethers.getSigners();
-    // console.log("        * accounts: " + JSON.stringify(accounts.slice(0, 3).map(e => e.address)));
     const WETH9 = await ethers.getContractFactory("WETH9");
     const weth = await WETH9.deploy();
     const ERC20Token = await ethers.getContractFactory("ERC20Token");
@@ -137,16 +135,13 @@ describe("TokenAgentFactory", function () {
     const erc20TokenTxReceipt = await erc20TokenTx.wait();
     erc20TokenTxReceipt.logs.forEach((event) => {
       const log = erc20Token.interface.parseLog(event);
-      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 10) + ', to:' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
-    // const erc20TokenTxReceipt = await erc20TokenTxBlah.wait();
     const ERC721Token = await ethers.getContractFactory("ERC721Token");
     const erc721Token = await ERC721Token.deploy();
     const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
     const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
-    // console.log("        * weth: " + weth.target);
-    // console.log("        * 20: " + erc20Token.target + ", 721: "+ erc721Token.target + ", 1155: "+ erc1155Token.target);
     const TokenAgentFactory = await ethers.getContractFactory("TokenAgentFactory");
     const tokenAgentFactory = await TokenAgentFactory.deploy(weth);
 
@@ -260,8 +255,6 @@ describe("TokenAgentFactory", function () {
 
     const now = parseInt(new Date().getTime()/1000);
     const expiry = parseInt(now) + 120;
-
-    // console.log("        * now: " + now + ' ' + new Intl.DateTimeFormat(undefined, DATE_FORMAT_OPTIONS).format(parseInt(now) * 1000));
     console.log("        * now: " + new Date(parseInt(now) * 1000).toLocaleTimeString() + ", expiry: " + new Date(parseInt(expiry) * 1000).toLocaleTimeString());
 
     return { tokenAgentFactory, tokenAgents, weth, erc20Token, erc721Token, erc1155Token, accounts, now, expiry };

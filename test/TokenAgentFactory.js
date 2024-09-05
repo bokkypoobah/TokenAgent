@@ -479,14 +479,14 @@ describe("TokenAgentFactory", function () {
           SELL,
           SINGLE,
           d.expiry,
-          [ethers.parseUnits("0.1", 18), 40, 4, 10, 5, 10, 6, 10, 7, 10],
+          [ethers.parseUnits("0.1", 18), 40, 0, 10, 1, 10, 2, 10, 3, 10],
         ],
         [
           d.erc1155Token.target,
           SELL,
           MULTIPLE,
           d.expiry,
-          [ethers.parseUnits("0.1", 18), 4, 10, ethers.parseUnits("0.2", 18), 5, 10, ethers.parseUnits("0.3", 18), 6, 10, ethers.parseUnits("0.4", 18), 7, 10],
+          [ethers.parseUnits("0.1", 18), 0, 10, ethers.parseUnits("0.2", 18), 1, 10, ethers.parseUnits("0.3", 18), 2, 10, ethers.parseUnits("0.4", 18), 3, 10],
         ],
       ];
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));

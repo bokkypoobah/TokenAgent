@@ -402,7 +402,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     }
                     offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
                     offer1155s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
-                    for (uint j = 2; j < offerInput.inputs.length / 2; j += 2) {
+                    for (uint j = 2; j < offerInput.inputs.length; j += 2) {
                         offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
                         offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+1])));
                     }
@@ -411,7 +411,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         revert InvalidInputData("length not even");
                     }
                     offer1155s[offerKey].count = Count.wrap(type(uint16).max);
-                    for (uint j = 0; j < offerInput.inputs.length / 3; j += 3) {
+                    for (uint j = 0; j < offerInput.inputs.length; j += 3) {
                         offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
                         offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
                         offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));

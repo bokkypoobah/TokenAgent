@@ -236,9 +236,10 @@ contract TokenAgent is Owned {
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
     }
 
-    // TODO - buy/sell or -ve / +ve flows
+    // TODO - buy/sell or -ve / +ve flows, move offerKey and taker out of struct for indexing
     struct TradeLog {
         OfferKey offerKey; // 256 bits
+        Account taker; // 160 bits
         Tokens tokens; // 128 bits // ERC-20
         Price averagePrice; // 128 bits min average when selling, max average when buying
         Execution execution; // 8 bits
@@ -441,7 +442,7 @@ contract TokenAgent is Owned {
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(TradeLog(_trade.offerKey, _trade.tokens, _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded(TradeLog(_trade.offerKey, Account.wrap(msg.sender), _trade.tokens, _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 // TODO

@@ -257,7 +257,7 @@ contract TokenAgent is Owned, NonReentrancy {
 
     struct TradeInput {
         OfferKey offerKey; // 256 bits
-        Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721 max total price when buying, min total price when selling
+        Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
         uint256[] inputs;
     }
@@ -376,7 +376,6 @@ contract TokenAgent is Owned, NonReentrancy {
                     }
                 }
                 emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds, Unixtime.wrap(uint64(block.timestamp)));
-
             } else if (tokenType == TokenType.ERC1155) {
                 // Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
                 // -> prices[price0], tokenIds[], tokenss [], count
@@ -408,7 +407,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     }
                 } else {
                     if ((offerInput.inputs.length % 3) != 0) {
-                        revert InvalidInputData("length not even");
+                        revert InvalidInputData("length not divisible by 3");
                     }
                     offer1155s[offerKey].count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < offerInput.inputs.length; j += 3) {
@@ -417,17 +416,7 @@ contract TokenAgent is Owned, NonReentrancy {
                         offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
                     }
                 }
-
                 emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer1155s[offerKey].count, offer1155s[offerKey].prices, offer1155s[offerKey].tokenIds, offer1155s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
-
-
-
-                // // TODO: Not complete for the last 2 cases
-                // if (offerInput.prices.length == 0 ||
-                //     (offerInput.prices.length == 1 && offerInput.tokenss.length != 0 && offerInput.tokenIds.length != offerInput.tokenss.length) ||
-                //     (offerInput.prices.length > 1 && offerInput.prices.length != offerInput.tokenIds.length && offerInput.tokenIds.length != offerInput.tokenss.length)) {
-                //     revert InvalidInputData();
-                // }
             }
         }
     }

@@ -499,10 +499,10 @@ describe("TokenAgentFactory", function () {
       });
       printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + offerKeys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
 
-      if (false) {
+      if (true) {
         const trades1 = [
           // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [0, 5, 1, 5, 2, 5, 3, 5]],
           // [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));

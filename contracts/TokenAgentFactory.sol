@@ -524,6 +524,10 @@ contract TokenAgentFactory is CloneFactory {
         weth = _weth;
     }
 
+    function tokenAgentsLength(address owner) public view returns (uint){
+        return tokenAgentsByOwners[owner].length;
+    }
+
     function newTokenAgent() public {
         TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
         tokenAgent.init(weth, msg.sender);

@@ -281,6 +281,7 @@ describe("TokenAgentFactory", function () {
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.emit(d.tokenAgentFactory, "NewTokenAgent")
         .withArgs(anyValue, d.accounts[0].address, 1, anyValue);
+      expect(await d.tokenAgentFactory.tokenAgentsLength(d.accounts[0].address)).to.equal(2);
       const tokenAgentAddress = await d.tokenAgentFactory.tokenAgents(4);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);

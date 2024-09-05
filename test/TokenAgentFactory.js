@@ -64,7 +64,7 @@ describe("TokenAgentFactory", function () {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
         if (log.name == "Offered") {
-          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(key:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
             ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
             ', tokenType: ' + (log.args[3] == 1 ? '20' : (log.args[3] == 2 ? '721' : '1155')) +
             ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
@@ -76,7 +76,7 @@ describe("TokenAgentFactory", function () {
             ', timestamp: ' + new Date(parseInt(log.args[11]) * 1000).toLocaleTimeString() +
             ')');
         } else if (log.name == "Traded") {
-          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(key:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', tokenType: ' + (log.args[4] == 1 ? '20' : (log.args[4] == 2 ? '721' : '1155')) +
@@ -361,16 +361,16 @@ describe("TokenAgentFactory", function () {
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      const keys = [];
+      const indices = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
-        keys.push(log.args[0]);
+        indices.push(parseInt(log.args[0]));
       });
-      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + keys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
-          [keys[0], ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[0], ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
@@ -379,7 +379,7 @@ describe("TokenAgentFactory", function () {
         await printState(d);
 
         const trades2 = [
-          [keys[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades2: " + JSON.stringify(trades2));
         const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
@@ -419,18 +419,18 @@ describe("TokenAgentFactory", function () {
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      const keys = [];
+      const indices = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
-        keys.push(log.args[0]);
+        indices.push(parseInt(log.args[0]));
       });
-      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + keys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
-          // [keys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          // [keys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
-          [keys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          // [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
@@ -470,18 +470,18 @@ describe("TokenAgentFactory", function () {
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      const keys = [];
+      const indices = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
-        keys.push(log.args[0]);
+        indices.push(parseInt(log.args[0]));
       });
-      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + keys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
-          // [keys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [keys[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
-          // [keys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
+          // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);

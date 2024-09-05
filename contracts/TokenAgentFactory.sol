@@ -97,11 +97,11 @@ interface IERC165 {
 }
 
 interface IERC721Partial {
-    function transferFrom(address from, address to, uint256 tokenId) external;
+    function transferFrom(address from, address to, uint tokenId) external;
 }
 
 interface IERC1155Partial {
-    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
+    function safeTransferFrom(address from, address to, uint id, uint amount, bytes calldata data) external;
 }
 
 type Account is address;
@@ -110,9 +110,9 @@ type Nonce is uint32;
 type OfferKey is bytes32;
 type Price is uint128;
 type Token is address;
-type TokenId is uint256;
+type TokenId is uint;
 type Tokens is uint128;
-type Unixtime is uint40; // 2^40 = 1,099,511,627,776 seconds = 34865.285000507356672 years
+type Unixtime is uint40;
 
 enum BuySell { BUY, SELL }
 enum Execution { FILL, FILLORKILL }
@@ -213,43 +213,38 @@ contract TokenAgent is Owned, NonReentrancy {
 
     // ints
     // 2^128 = -170, 141,183,460,469,231,731, 687,303,715,884,105,728 to 170, 141,183,460,469,231,731, 687,303,715,884,105,727
-
     // uints
-    // 2^16 = 65,536
-    // 2^32 = 4,294,967,296
-    // 2^48 = 281,474,976,710,656
-    // 2^60 = 1, 152,921,504, 606,846,976
-    // 2^64 = 18, 446,744,073,709,551,616
+    // 2^16  = 65,536
+    // 2^32  = 4,294,967,296
+    // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+    // 2^48  = 281,474,976,710,656
+    // 2^60  = 1, 152,921,504, 606,846,976
+    // 2^64  = 18, 446,744,073,709,551,616
     // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
-    //
-    // ERC-20:
-    // wethAmount = tokens * price / 10^18
-    // 12.3456    = 100 * 0.123456
 
     struct OfferInput {
-        Token token; // 160 bits
-        BuySell buySell; // 8 bits
-        Pricing pricing; // 8 bits
-        Unixtime expiry; // 64 bits
-        uint256[] inputs;
+        Token token;         // 160 bits
+        BuySell buySell;     // 8 bits
+        Pricing pricing;     // 8 bits
+        Unixtime expiry;     // 64 bits
+        uint[] inputs;
     }
     struct Offer {
-        Token token; // 160 bits
-        Unixtime expiry; // 40 bits
-        Nonce nonce; // 32 bits
-        Count count; // 16 bits
-        Price[] prices; // token/WETH 18dp
-        TokenId[] tokenIds; // ERC-721/1155
-        Tokens[] tokenss; // ERC-20/1155
-        Tokens[] useds; // ERC-20
+        Token token;         // 160 bits
+        Unixtime expiry;     // 40 bits
+        Nonce nonce;         // 32 bits
+        Count count;         // 16 bits
+        Price[] prices;      // token/WETH 18dp
+        TokenId[] tokenIds;  // ERC-721/1155
+        Tokens[] tokenss;    // ERC-20/1155
+        Tokens[] useds;      // ERC-20
     }
-
     struct TradeInput {
-        OfferKey offerKey; // 256 bits
-        Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
+        OfferKey offerKey;   // 256 bits
+        Price price;         // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
-        uint256[] inputs;
+        uint[] inputs;
     }
 
     IERC20 public weth;
@@ -301,7 +296,7 @@ contract TokenAgent is Owned, NonReentrancy {
                 revert CannotOfferWETH();
             }
             if (tokenType == TokenType.ERC20) {
-                // All: [price0, tokens0, price1, tokens1, ...]
+                // [price0, tokens0, price1, tokens1, ...]
                 // -> prices [one, two, ...], tokens [one, two, ...]
                 // uint startGas = gasleft();
                 offers[offerKey].token = offerInput.token;
@@ -428,7 +423,6 @@ contract TokenAgent is Owned, NonReentrancy {
             }
 
             if (tokenType == TokenType.ERC20) {
-                // All: taker inputs[tokens]
                 if (_trade.inputs.length != 1) {
                     revert InvalidInputData("Expecting single price input");
                 }

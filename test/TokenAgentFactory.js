@@ -70,11 +70,13 @@ describe("TokenAgentFactory", function () {
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offered721") {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
-            ', token: ' + log.args[1].substring(0, 10) + ', nonce: ' + log.args[2] + ', buySell: ' + (log.args[3][0] ? 'SELL' : 'BUY')+
-            ', expiry: ' + new Date(parseInt(log.args[3][1]) * 1000).toLocaleTimeString() + ', count: ' + log.args[3][2] +
-            ', prices: ' + JSON.stringify(log.args[3][3].map(e => ethers.formatEther(e))) +
-            ', tokenIds: ' + JSON.stringify(log.args[3][4].map(e => e.toString())) +
-            ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
+            ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
+            ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
+            ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
+            ', prices: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
+            ', tokenIds: ' + JSON.stringify(log.args[8].map(e => e.toString())) +
+            ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() +
+            ')');
         } else if (log.name == "Traded20") {
           console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
@@ -397,6 +399,56 @@ describe("TokenAgentFactory", function () {
     });
 
     it("Test TokenAgent ERC-721 offers and trades", async function () {
+      const d = await loadFixture(deployContracts);
+      await printState(d);
+
+      const offers1 = [
+        [
+          d.erc721Token.target,
+          BUY,
+          SINGLE,
+          d.expiry,
+          [4, ethers.parseUnits("0.1", 18)],
+        ],
+        [
+          d.erc721Token.target,
+          SELL,
+          SINGLE,
+          d.expiry,
+          [4, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
+        ],
+        [
+          d.erc721Token.target,
+          SELL,
+          MULTIPLE,
+          d.expiry,
+          [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
+        ],
+      ];
+      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
+      const addOffers1TxReceipt = await addOffers1Tx.wait();
+      const offerKeys = [];
+      addOffers1TxReceipt.logs.forEach((event) => {
+        const log = d.tokenAgents[1].interface.parseLog(event);
+        offerKeys.push(log.args[0]);
+      });
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + offerKeys.map(e => e.substring(0, 6) + '...' + e.slice(-4)).join(", ") + "]", addOffers1TxReceipt);
+
+      if (true) {
+        const trades1 = [
+          // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          // [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+        ];
+        console.log("        * trades1: " + JSON.stringify(trades1));
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
+        const trades1TxReceipt = await trades1Tx.wait();
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
+        await printState(d);
+      }
+    });
+
+    it.skip("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 

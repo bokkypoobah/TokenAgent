@@ -243,13 +243,6 @@ contract TokenAgent is Owned {
         Tokens tokens; // TODO 128 bits // ERC-20
         Tokens used; // TODO 128 bits // ERC-20
     }
-    struct Offer721Log {
-        BuySell buySell; // 8 bits
-        Unixtime expiry; // 64 bits
-        Count count;
-        Price[] prices;
-        TokenId[] tokenIds;
-    }
 
     struct TradeInput {
         OfferKey offerKey; // 256 bits
@@ -266,7 +259,7 @@ contract TokenAgent is Owned {
     mapping(Token => TokenType) tokenTypes;
 
     event Offered20(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, Tokens[] tokenss, Unixtime timestamp);
-    event Offered721(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer721Log offer, Unixtime timestamp);
+    event Offered721(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
     event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
@@ -370,7 +363,8 @@ contract TokenAgent is Owned {
                         }
                     }
                 }
-                emit Offered721(offerKey, offerInput.token, nonce, Offer721Log(offerInput.buySell, offerInput.expiry, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds), Unixtime.wrap(uint64(block.timestamp)));
+                emit Offered721(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer721s[offerKey].count, offer721s[offerKey].prices, offer721s[offerKey].tokenIds, Unixtime.wrap(uint64(block.timestamp)));
+
             } else if (tokenType == TokenType.ERC1155) {
                 // prices [one], tokenIds [], tokenss []
                 // - new single price - [price0]
@@ -418,10 +412,9 @@ contract TokenAgent is Owned {
                 uint128 tokens = uint128(_trade.inputs[0]);
                 uint128 totalTokens = 0;
                 uint128 totalWETHTokens = 0;
-                uint[] memory prices_;
-                uint[] memory tokens_;
-                prices_ = new uint[](offer.prices.length);
-                tokens_ = new uint[](offer.prices.length);
+                uint[] memory prices_ = new uint[](offer.prices.length);
+                uint[] memory tokens_ = new uint[](offer.prices.length);
+                uint k;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
                     uint128 _price = Price.unwrap(offer.prices[j]);
                     uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
@@ -432,17 +425,18 @@ contract TokenAgent is Owned {
                             tokens -= _remaining;
                             totalTokens += _remaining;
                             offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + _remaining);
-                            prices_[j] = _price;
-                            tokens_[j] = _remaining;
+                            prices_[k] = _price;
+                            tokens_[k] = _remaining;
                             totalWETHTokens += _remaining * _price / 10**18;
                         } else {
                             totalTokens += tokens;
                             offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + tokens);
-                            prices_[j] = _price;
-                            tokens_[j] = tokens;
+                            prices_[k] = _price;
+                            tokens_[k] = tokens;
                             totalWETHTokens += tokens * _price / 10**18;
                             tokens = 0;
                         }
+                        k++;
                     }
                     // console.log("        >        totalTokens/totalWETHTokens", totalTokens, totalWETHTokens);
                 }

@@ -408,14 +408,14 @@ describe("TokenAgentFactory", function () {
           BUY,
           SINGLE,
           d.expiry,
-          [4, ethers.parseUnits("0.1", 18)],
+          [ethers.parseUnits("0.1", 18), 4],
         ],
         [
           d.erc721Token.target,
           SELL,
           SINGLE,
           d.expiry,
-          [4, ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
+          [ethers.parseUnits("0.1", 18), 4, 4, 5, 6, 7],
         ],
         [
           d.erc721Token.target,
@@ -425,6 +425,7 @@ describe("TokenAgentFactory", function () {
           [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
         ],
       ];
+      console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       const offerKeys = [];

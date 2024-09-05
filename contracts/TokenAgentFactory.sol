@@ -322,9 +322,9 @@ contract TokenAgent is Owned {
                 // console.log("usedGas", usedGas);
                 emit Offered20(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer20s[offerKey].prices, offer20s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
-                // Single price: [count, price0] - b/s count @ price0 with any tokenId
+                // Single price: [price0, count] - b/s count @ price0 with any tokenId
                 // -> prices[price0], tokenIds[], count
-                // Single price: [count, price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
+                // Single price: [price0, count, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
                 // -> prices[price0], tokenIds[tokenId0, tokenId1], count
                 // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
                 // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
@@ -335,14 +335,14 @@ contract TokenAgent is Owned {
                     revert InvalidInputData("zero length");
                 }
                 if (offerInput.pricing == Pricing.SINGLE) {
-                    if (offerInput.inputs[0] >= type(uint16).max) {
+                    if (offerInput.inputs[1] >= type(uint16).max) {
                         revert InvalidInputData("count must be < 65535");
                     }
                     if (offerInput.inputs.length < 2) {
                         revert InvalidInputData("length < 2");
                     }
-                    offer721s[offerKey].count = Count.wrap(uint16(offerInput.inputs[0]));
-                    offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[1])));
+                    offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
+                    offer721s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
                     for (uint j = 2; j < offerInput.inputs.length; j++) {
                         offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
                     }

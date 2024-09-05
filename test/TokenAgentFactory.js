@@ -101,11 +101,8 @@ describe("TokenAgentFactory", function () {
       } else if (event.address == d.erc1155Token.target) {
         const log = d.erc1155Token.interface.parseLog(event);
         console.log("          + erc1155Token." + log.name + '(operator: ' + log.args[0].substring(0, 10) + ', from: ' + log.args[1].substring(0, 10) + ', to: ' + log.args[2].substring(0, 10) + ', tokenId: ' + log.args[3] + ', tokens: ' + log.args[4] + ')');
-      // } else if (event.address == d.tokenAgents[1].target) {
-      //   const log = d.tokenAgents[1].interface.parseLog(event);
-      //   // TODO
-      //   console.log("          + tokenAgents[1]." + log.name + '(' + log.args.join(', ') + ')');
-      //   // console.log("          + " + log.name + '(key: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
+      } else {
+        console.log("          + " + JSON.stringify(event));
       }
     });
   }

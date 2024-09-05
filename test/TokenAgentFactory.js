@@ -346,7 +346,7 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
       });
-      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => " + JSON.stringify(offerKeys.map(e => e.substring(0, 10))), addOffers1TxReceipt);
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => " + JSON.stringify(offerKeys.map(e => e.substring(0, 6) + '...' + e.slice(-4))), addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
@@ -398,20 +398,17 @@ describe("TokenAgentFactory", function () {
       ];
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
-      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1)", addOffers1TxReceipt);
       const offerKeys = [];
       addOffers1TxReceipt.logs.forEach((event) => {
         const log = d.tokenAgents[1].interface.parseLog(event);
         offerKeys.push(log.args[0]);
       });
-      console.log("        * offerKeys: " + offerKeys.join(','));
+      printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => " + JSON.stringify(offerKeys.map(e => e.substring(0, 6) + '...' + e.slice(-4))), addOffers1TxReceipt);
 
       if (true) {
         const trades1 = [
           [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
           [offerKeys[1], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
-          // [offerKeys[1], ethers.parseUnits("10", 18).toString()],
-          // [offerKeys[2], ethers.parseUnits("30", 18).toString()]
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);

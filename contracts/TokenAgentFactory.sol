@@ -237,7 +237,6 @@ contract TokenAgent is Owned, NonReentrancy {
     }
     struct Offer721 {
         Token token; // 160 bits
-        BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
         Nonce nonce; // 32 bits
         Count count; // 16 bits
@@ -246,7 +245,6 @@ contract TokenAgent is Owned, NonReentrancy {
     }
     struct Offer1155 {
         Token token; // 160 bits
-        BuySell buySell; // 8 bits
         Unixtime expiry; // 64 bits
         Nonce nonce; // 32 bits
         Count count; // 16 bits
@@ -523,16 +521,16 @@ contract TokenAgent is Owned, NonReentrancy {
                 uint[] memory prices_ = new uint[](_trade.inputs.length);
                 uint[] memory tokenIds_ = new uint[](_trade.inputs.length);
                 for (uint j = 0; j < _trade.inputs.length; j++) {
-                    uint256 tokenId = _trade.inputs[j];
+                    // uint256 tokenId = _trade.inputs[j];
                     // - prices[price0], tokenIds[]
                     // - prices[price0], tokenIds[tokenId0, tokenId1, ...]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                     uint price;
                     if (offer.tokenIds.length > 0) {
-                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(tokenId));
+                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(_trade.inputs[j]));
                         // console.log("        >        tokenId/index", tokenId, index);
                         if (index == type(uint).max) {
-                            revert InvalidTokenId(TokenId.wrap(tokenId));
+                            revert InvalidTokenId(TokenId.wrap(_trade.inputs[j]));
                         }
                         if (offer.prices.length == offer.tokenIds.length) {
                             price = Price.unwrap(offer.prices[index]);
@@ -543,14 +541,14 @@ contract TokenAgent is Owned, NonReentrancy {
                         price = Price.unwrap(offer.prices[0]);
                     }
                     prices_[j] = price;
-                    tokenIds_[j] = tokenId;
+                    tokenIds_[j] = _trade.inputs[j];
                     totalPrice += price;
                     if (buySell == BuySell.BUY) {
                         // console.log("        >        msg.sender SELL/owner BUY tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
-                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, tokenId);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, _trade.inputs[j]);
                     } else {
                         // console.log("        >        msg.sender BUY/owner SELL tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
-                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, tokenId);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, _trade.inputs[j]);
                     }
                 }
                 if (buySell == BuySell.BUY) {
@@ -578,11 +576,17 @@ contract TokenAgent is Owned, NonReentrancy {
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
-                if (Count.unwrap(offer.count) < _trade.inputs.length) {
-                    revert InsufficentCountRemaining(Count.wrap(uint16(_trade.inputs.length)), offer.count);
-                }
-                if (Count.unwrap(offer.count) != type(uint16).max) {
-                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
+                {
+                    uint totalCount;
+                    for (uint j = 0; j < _trade.inputs.length; j += 2) {
+                        totalCount += _trade.inputs[j+1];
+                    }
+                    if (Count.unwrap(offer.count) < totalCount) {
+                        revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
+                    }
+                    if (Count.unwrap(offer.count) != type(uint16).max) {
+                        offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
+                    }
                 }
                 uint totalPrice;
                 uint[] memory prices_ = new uint[](_trade.inputs.length / 2);
@@ -608,6 +612,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     } else {
                         price = Price.unwrap(offer.prices[0]);
                     }
+                    // Check individual tokens
                     prices_[j/2] = price;
                     tokenIds_[j/2] = _trade.inputs[j];
                     tokenss_[j/2] = _trade.inputs[j+1];

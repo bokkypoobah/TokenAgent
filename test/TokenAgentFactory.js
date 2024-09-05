@@ -64,7 +64,7 @@ describe("TokenAgentFactory", function () {
       if (event.address in tokenAgentAdresses) {
         const log = d.tokenAgents[1].interface.parseLog(event);
         if (log.name == "Offered20") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
             ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
             ', nonce: ' + log.args[5] +
@@ -72,7 +72,7 @@ describe("TokenAgentFactory", function () {
             ', tokens: ' + JSON.stringify(log.args[7].map(e => ethers.formatEther(e))) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Offered721") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
             ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
             ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
@@ -81,7 +81,7 @@ describe("TokenAgentFactory", function () {
             ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() +
             ')');
           } else if (log.name == "Offered1155") {
-            console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+            console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
               ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
               ', buySell: ' + (log.args[3] ? 'SELL' : 'BUY') + ', expiry: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() +
               ', nonce: ' + log.args[5] + ', count: ' + log.args[6] +
@@ -91,7 +91,7 @@ describe("TokenAgentFactory", function () {
               ', timestamp: ' + new Date(parseInt(log.args[10]) * 1000).toLocaleTimeString() +
               ')');
         } else if (log.name == "Traded20") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
@@ -100,7 +100,7 @@ describe("TokenAgentFactory", function () {
             ', averagePrice: ' + ethers.formatEther(log.args[7]) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Traded721") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
@@ -109,7 +109,7 @@ describe("TokenAgentFactory", function () {
             ', totalPrice: ' + ethers.formatEther(log.args[7]) +
             ', timestamp: ' + new Date(parseInt(log.args[8]) * 1000).toLocaleTimeString() + ')');
         } else if (log.name == "Traded1155") {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(offerKey:' + log.args[0].substring(0, 6) + '...' + log.args[0].slice(-4) +
             ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
             ', token: ' + log.args[3].substring(0, 10) +
             ', makerBuySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
@@ -119,25 +119,25 @@ describe("TokenAgentFactory", function () {
             ', totalPrice: ' + ethers.formatEther(log.args[8]) +
             ', timestamp: ' + new Date(parseInt(log.args[9]) * 1000).toLocaleTimeString() + ')');
         } else {
-          console.log("        + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(' + log.args.join(', ') + ')');
+          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(' + log.args.join(', ') + ')');
         }
       } else if (event.address == d.weth.target) {
         const log = d.weth.interface.parseLog(event);
-        console.log("        + weth." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        console.log("          + weth." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       } else if (event.address == d.erc20Token.target) {
         const log = d.erc20Token.interface.parseLog(event);
-        console.log("        + erc20Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        console.log("          + erc20Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       } else if (event.address == d.erc721Token.target) {
         const log = d.erc721Token.interface.parseLog(event);
-        console.log("        + erc721Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokenId: ' + log.args[2] + ')');
+        console.log("          + erc721Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokenId: ' + log.args[2] + ')');
       } else if (event.address == d.erc1155Token.target) {
         const log = d.erc1155Token.interface.parseLog(event);
-        console.log("        + erc1155Token." + log.name + '(operator: ' + log.args[0].substring(0, 10) + ', from: ' + log.args[1].substring(0, 10) + ', to: ' + log.args[2].substring(0, 10) + ', tokenId: ' + log.args[3] + ', tokens: ' + log.args[4] + ')');
+        console.log("          + erc1155Token." + log.name + '(operator: ' + log.args[0].substring(0, 10) + ', from: ' + log.args[1].substring(0, 10) + ', to: ' + log.args[2].substring(0, 10) + ', tokenId: ' + log.args[3] + ', tokens: ' + log.args[4] + ')');
       // } else if (event.address == d.tokenAgents[1].target) {
       //   const log = d.tokenAgents[1].interface.parseLog(event);
       //   // TODO
-      //   console.log("        + tokenAgents[1]." + log.name + '(' + log.args.join(', ') + ')');
-      //   // console.log("        + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
+      //   console.log("          + tokenAgents[1]." + log.name + '(' + log.args.join(', ') + ')');
+      //   // console.log("          + " + log.name + '(offerKey: ' + log.args[0][0].substring(0, 10) + '...' + log.args[0][0].slice(-8) + ')');
       }
     });
   }
@@ -198,7 +198,7 @@ describe("TokenAgentFactory", function () {
     const erc20TokenTxReceipt = await erc20TokenTx.wait();
     erc20TokenTxReceipt.logs.forEach((event) => {
       const log = erc20Token.interface.parseLog(event);
-      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 10) + ', to:' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      DEBUGSETUPEVENTS && console.log("          + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 10) + ', to:' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
     const ERC721Token = await ethers.getContractFactory("ERC721Token");
@@ -223,8 +223,8 @@ describe("TokenAgentFactory", function () {
       const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
-        // console.log("        + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
-        DEBUGSETUPEVENTS && console.log("        + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
+        // console.log("          + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
+        DEBUGSETUPEVENTS && console.log("          + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
         console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + formatNumber(newTokenAgentTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
       });
 
@@ -239,7 +239,7 @@ describe("TokenAgentFactory", function () {
       const mintTxReceipt = await mintTx.wait();
       mintTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        DEBUGSETUPEVENTS && console.log("        + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
+        DEBUGSETUPEVENTS && console.log("          + weth." + log.name + '(dst:' + log.args[0].substring(0, 12) + ', wad: ' + ethers.formatEther(log.args[1]) + ')');
       });
     }
 
@@ -249,14 +249,14 @@ describe("TokenAgentFactory", function () {
       const transferTxReceipt = await transferTx.wait();
       transferTxReceipt.logs.forEach((event) => {
         const log = weth.interface.parseLog(event);
-        DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        DEBUGSETUPEVENTS && console.log("          + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
       });
     }
     const transfer1Tx = await erc20Token.transfer(ADDRESS0, ethers.parseUnits("996000", 18));
     const transfer1TxReceipt = await transfer1Tx.wait();
     transfer1TxReceipt.logs.forEach((event) => {
       const log = weth.interface.parseLog(event);
-      DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+      DEBUGSETUPEVENTS && console.log("          + erc20Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
     });
 
     const approveAmount = ethers.parseUnits("12.345", 18);
@@ -266,7 +266,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          DEBUGSETUPEVENTS && console.log("        + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          DEBUGSETUPEVENTS && console.log("          + weth." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -276,7 +276,7 @@ describe("TokenAgentFactory", function () {
         const approvalTxReceipt = await approvalTx.wait();
         approvalTxReceipt.logs.forEach((event) => {
           const log = weth.interface.parseLog(event);
-          DEBUGSETUPEVENTS && console.log("        + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+          DEBUGSETUPEVENTS && console.log("          + erc20Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', spender:' + log.args[1].substring(0, 12) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
         });
       }
     }
@@ -287,7 +287,7 @@ describe("TokenAgentFactory", function () {
         const mintTxReceipt = await mintTx.wait();
         mintTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          DEBUGSETUPEVENTS && console.log("        + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("          + erc721Token." + log.name + '(from:' + log.args[0].substring(0, 12) + ', to: ' + log.args[1].substring(0, 12) + ', tokenId: ' + log.args[2]);
         });
       }
     }
@@ -298,7 +298,7 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc721Token.interface.parseLog(event);
-          DEBUGSETUPEVENTS && console.log("        + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("          + erc721Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }
@@ -309,7 +309,7 @@ describe("TokenAgentFactory", function () {
           const mintTxReceipt = await mintTx.wait();
           mintTxReceipt.logs.forEach((event) => {
             const log = erc1155Token.interface.parseLog(event);
-            DEBUGSETUPEVENTS && console.log("        + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
+            DEBUGSETUPEVENTS && console.log("          + erc1155Token." + log.name + '(operator:' + log.args[0].substring(0, 12) + ', from: ' + log.args[1].substring(0, 12) + ', to: ' + log.args[2].substring(0, 12) + ', id: ' + log.args[3] + ', amount: ' + log.args[4]);
           });
         }
     }
@@ -320,7 +320,7 @@ describe("TokenAgentFactory", function () {
         const setApprovalForAllTxReceipt = await setApprovalForAllTx.wait();
         setApprovalForAllTxReceipt.logs.forEach((event) => {
           const log = erc1155Token.interface.parseLog(event);
-          DEBUGSETUPEVENTS && console.log("        + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
+          DEBUGSETUPEVENTS && console.log("          + erc1155Token." + log.name + '(owner:' + log.args[0].substring(0, 12) + ', operator: ' + log.args[1].substring(0, 12) + ', approved: ' + log.args[2]);
         });
       }
     }

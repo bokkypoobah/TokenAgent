@@ -130,6 +130,9 @@ describe("TokenAgentFactory", function () {
       } else if (event.address == d.erc721Token.target) {
         const log = d.erc721Token.interface.parseLog(event);
         console.log("        + erc721Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokenId: ' + log.args[2] + ')');
+      } else if (event.address == d.erc1155Token.target) {
+        const log = d.erc1155Token.interface.parseLog(event);
+        console.log("        + erc1155Token." + log.name + '(operator: ' + log.args[0].substring(0, 10) + ', from: ' + log.args[1].substring(0, 10) + ', to: ' + log.args[2].substring(0, 10) + ', tokenId: ' + log.args[3] + ', tokens: ' + log.args[4] + ')');
       // } else if (event.address == d.tokenAgents[1].target) {
       //   const log = d.tokenAgents[1].interface.parseLog(event);
       //   // TODO
@@ -512,7 +515,7 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [offerKeys[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [0, 5, 1, 5, 2, 5, 3, 5]],
+          [offerKeys[1], ethers.parseUnits("2", 18).toString(), FILLORKILL, [0, 5, 1, 5, 2, 5, 3, 5]],
           // [offerKeys[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));

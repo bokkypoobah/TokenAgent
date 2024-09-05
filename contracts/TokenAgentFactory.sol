@@ -100,6 +100,10 @@ interface IERC721Partial {
     function transferFrom(address from, address to, uint256 tokenId) external;
 }
 
+interface IERC1155Partial {
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
+}
+
 type Account is address;
 type Count is uint16;
 type Nonce is uint32;
@@ -585,16 +589,16 @@ contract TokenAgent is Owned, NonReentrancy {
                 uint[] memory tokenIds_ = new uint[](_trade.inputs.length / 2);
                 uint[] memory tokenss_ = new uint[](_trade.inputs.length / 2);
                 for (uint j = 0; j < _trade.inputs.length; j += 2) {
-                    uint256 tokenId = _trade.inputs[j];
+                    // uint256 tokenId = _trade.inputs[j];
                     // - prices[price0], tokenIds[], tokenss[]
                     // - prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
                     uint price;
                     if (offer.tokenIds.length > 0) {
-                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(tokenId));
+                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(_trade.inputs[j]));
                         // console.log("        >        tokenId/index", tokenId, index);
                         if (index == type(uint).max) {
-                            revert InvalidTokenId(TokenId.wrap(tokenId));
+                            revert InvalidTokenId(TokenId.wrap(_trade.inputs[j]));
                         }
                         if (offer.prices.length == offer.tokenIds.length) {
                             price = Price.unwrap(offer.prices[index]);
@@ -605,9 +609,29 @@ contract TokenAgent is Owned, NonReentrancy {
                         price = Price.unwrap(offer.prices[0]);
                     }
                     prices_[j/2] = price;
-                    tokenIds_[j/2] = tokenId;
+                    tokenIds_[j/2] = _trade.inputs[j];
                     tokenss_[j/2] = _trade.inputs[j+1];
                     totalPrice += price * _trade.inputs[j+1];
+                    if (buySell == BuySell.BUY) {
+                        // console.log("        >        msg.sender SELL/owner BUY tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
+                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(msg.sender, owner, _trade.inputs[j], _trade.inputs[j+1], "");
+                    } else {
+                        // console.log("        >        msg.sender BUY/owner SELL tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
+                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(owner, msg.sender, _trade.inputs[j], _trade.inputs[j+1], "");
+                    }
+                }
+                if (buySell == BuySell.BUY) {
+                    // console.log("        >        msg.sender SELL/owner BUY totalPrice", totalPrice);
+                    if (totalPrice < Price.unwrap(_trade.price)) {
+                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(totalPrice)), _trade.price);
+                    }
+                    weth.transferFrom(owner, msg.sender, totalPrice);
+                } else {
+                    // console.log("        >        msg.sender BUY/owner SELL totalPrice", totalPrice);
+                    if (totalPrice > Price.unwrap(_trade.price)) {
+                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(totalPrice)), _trade.price);
+                    }
+                    weth.transferFrom(msg.sender, owner, totalPrice);
                 }
                 emit Traded1155(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
             }

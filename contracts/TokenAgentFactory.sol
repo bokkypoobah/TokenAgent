@@ -158,11 +158,18 @@ contract Owned {
 
     error AlreadyInitialised();
     error NotOwner();
+    error Owner();
     error NotNewOwner();
 
     modifier onlyOwner {
         if (msg.sender != owner) {
             revert NotOwner();
+        }
+        _;
+    }
+    modifier notOwner {
+        if (msg.sender == owner) {
+            revert Owner();
         }
         _;
     }
@@ -189,7 +196,7 @@ contract Owned {
 
 /// @notice Reentrancy guard
 contract NonReentrancy {
-    modifier nonReentranct() {
+    modifier nonReentrant() {
         assembly {
             if tload(0) { revert(0, 0) }
             tstore(0, 1)
@@ -424,7 +431,7 @@ contract TokenAgent is Owned, NonReentrancy {
         // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }
 
-    function trade(TradeInput[] calldata _trades) external nonReentranct {
+    function trade(TradeInput[] calldata _trades) external nonReentrant notOwner {
         for (uint i = 0; i < _trades.length; i++) {
             TradeInput memory _trade = _trades[i];
             OfferKey offerKey = _trade.offerKey;

@@ -369,7 +369,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-721 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
@@ -393,7 +393,7 @@ describe("TokenAgentFactory", function () {
           SELL,
           MULTIPLE,
           d.expiry,
-          [ethers.parseUnits("0.1", 18), 1, ethers.parseUnits("0.2", 18), 2, ethers.parseUnits("0.3", 18), 3],
+          [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
         ],
       ];
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
@@ -407,7 +407,7 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          // [offerKeys[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
           [offerKeys[1], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));

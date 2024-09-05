@@ -120,6 +120,30 @@ bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
 
 Token constant THEDAO = Token.wrap(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
 
+library ArraySearch {
+    function includesTokenId(TokenId[] memory tokenIds, TokenId target) internal pure returns (uint) {
+        if (tokenIds.length > 0) {
+            uint left;
+            uint right = tokenIds.length - 1;
+            uint mid;
+            while (left <= right) {
+                mid = (left + right) / 2;
+                if (TokenId.unwrap(tokenIds[mid]) < TokenId.unwrap(target)) {
+                    left = mid + 1;
+                } else if (TokenId.unwrap(tokenIds[mid]) > TokenId.unwrap(target)) {
+                    if (mid < 1) {
+                        break;
+                    }
+                    right = mid - 1;
+                } else {
+                    return mid;
+                }
+            }
+        }
+        return type(uint).max;
+    }
+}
+
 /// @notice Ownership
 contract Owned {
     bool initialised;
@@ -270,6 +294,7 @@ contract TokenAgent is Owned {
     error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
     error InvalidOfferKey(OfferKey offerKey);
     error InvalidToken(Token token);
+    error InvalidTokenId(TokenId tokenId);
     error OfferExpired(OfferKey offerKey, Unixtime expiry);
     error TokenIdsMustBeSortedWithNoDuplicates();
 
@@ -465,13 +490,47 @@ contract TokenAgent is Owned {
                     uint256 tokenId = _trade.inputs[j];
 
                     // TODO: Check trade valid and accumulate WETH
+                    // Single price: [count, price0] - b/s count @ price0 with any tokenId
+                    // -> prices[price0], tokenIds[], count
+                    // Single price: [count, price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
+                    // -> prices[price0], tokenIds[tokenId0, tokenId1], count
+                    // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
+                    // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
+                    // struct Offer721 {
+                    //     Token token; // 160 bits
+                    //     Nonce nonce; // 32 bits
+                    //     BuySell buySell; // 8 bits
+                    //     Unixtime expiry; // 64 bits
+                    //     Count count; // 16 bits
+                    //     Price[] prices;
+                    //     TokenId[] tokenIds;
+                    // }
 
+                    // Cases
+                    // - prices[price0], tokenIds[]
+                    // - prices[price0], tokenIds[tokenId0, tokenId1]
+                    // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
+                    uint price;
+                    if (offer.tokenIds.length > 0) {
+                        uint index = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(tokenId));
+                        console.log("        >        tokenId/index", tokenId, index);
+                        if (index == type(uint).max) {
+                            revert InvalidTokenId(TokenId.wrap(tokenId));
+                        }
+                        if (offer.prices.length == offer.tokenIds.length) {
+                            price = Price.unwrap(offer.prices[index]);
+                        } else {
+                            price = Price.unwrap(offer.prices[0]);
+                        }
+                    } else {
+                        price = Price.unwrap(offer.prices[0]);
+                    }
 
                     if (buySell == BuySell.BUY) {
-                        console.log("        >        msg.sender SELL/owner BUY tokenId/count", tokenId, uint256(Count.unwrap(offer.count)));
+                        console.log("        >        msg.sender SELL/owner BUY tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, tokenId);
                     } else {
-                        console.log("        >        msg.sender BUY/owner SELL tokenId/count", tokenId, uint256(Count.unwrap(offer.count)));
+                        console.log("        >        msg.sender BUY/owner SELL tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, tokenId);
                     }
                 }

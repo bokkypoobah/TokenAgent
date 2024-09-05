@@ -261,17 +261,7 @@ contract TokenAgent is Owned {
         OfferKey offerKey; // 256 bits
         Price price; // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721 max total price when buying, min total price when selling
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
-        // Tokens tokens; // 128 bits // ERC-20
         uint256[] inputs;
-    }
-
-    // TODO - buy/sell or -ve / +ve flows, move offerKey and taker out of struct for indexing
-    struct TradeLog {
-        OfferKey offerKey; // 256 bits
-        Account taker; // 160 bits
-        Tokens tokens; // 128 bits // ERC-20
-        Price averagePrice; // 128 bits min average when selling, max average when buying
-        Execution execution; // 8 bits
     }
 
     IERC20 public weth;
@@ -284,11 +274,14 @@ contract TokenAgent is Owned {
     event Offer20Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer20Log offer, Unixtime timestamp);
     event Offer721Added(OfferKey indexed offerKey, Token indexed token, Nonce nonce, Offer721Log offer, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-    event Traded(TradeLog trade, Unixtime timestamp);
+    event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, uint[] items, Price averagePrice, Unixtime timestamp);
+    event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, uint[] items, Price totalPrice, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
     error ExecutedAveragePriceLessThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
+    error ExecutedTotalPriceGreaterThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
+    error ExecutedTotalPriceLessThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
     error InvalidInputData(string reason);
     error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
@@ -413,7 +406,7 @@ contract TokenAgent is Owned {
             TokenType tokenType = TokenType((uint(OfferKey.unwrap(offerKey)) % 16) / 2);
 
             if (tokenType == TokenType.ERC20) {
-                // All: inputs[price]
+                // All: taker inputs[tokens]
                 Offer20 storage offer = offer20s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
@@ -421,7 +414,6 @@ contract TokenAgent is Owned {
                 if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
                     revert InvalidOffer(offer.nonce, nonce);
                 }
-                // console.log("        >        expiry/timestamp", Unixtime.unwrap(offer.expiry), block.timestamp);
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
@@ -431,6 +423,8 @@ contract TokenAgent is Owned {
                 uint128 tokens = uint128(_trade.inputs[0]);
                 uint128 totalTokens = 0;
                 uint128 totalWETHTokens = 0;
+                uint[] memory items;
+                items = new uint[](offer.prices.length * 2);
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
                     uint128 _price = Price.unwrap(offer.prices[j]);
                     uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
@@ -441,10 +435,14 @@ contract TokenAgent is Owned {
                             tokens -= _remaining;
                             totalTokens += _remaining;
                             offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + _remaining);
+                            items[j * 2] = _price;
+                            items[j * 2 + 1] = _remaining;
                             totalWETHTokens += _remaining * _price / 10**18;
                         } else {
                             totalTokens += tokens;
                             offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + tokens);
+                            items[j * 2] = _price;
+                            items[j * 2 + 1] = tokens;
                             totalWETHTokens += tokens * _price / 10**18;
                             tokens = 0;
                         }
@@ -472,10 +470,9 @@ contract TokenAgent is Owned {
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(TradeLog(_trade.offerKey, Account.wrap(msg.sender), Tokens.wrap(uint128(_trade.inputs[0])), _trade.price, _trade.execution), Unixtime.wrap(uint64(block.timestamp)));
+                    emit Traded20(_trade.offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, items, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint64(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
-                // TODO
                 Offer721 memory offer = offer721s[offerKey];
                 if (Token.unwrap(offer.token) == address(0)) {
                     revert InvalidOfferKey(offerKey);
@@ -486,27 +483,11 @@ contract TokenAgent is Owned {
                 if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
                     revert OfferExpired(offerKey, offer.expiry);
                 }
+                uint totalPrice;
+                uint[] memory items;
+                items = new uint[](_trade.inputs.length * 2);
                 for (uint j = 0; j < _trade.inputs.length; j++) {
                     uint256 tokenId = _trade.inputs[j];
-
-                    // TODO: Check trade valid and accumulate WETH
-                    // Single price: [count, price0] - b/s count @ price0 with any tokenId
-                    // -> prices[price0], tokenIds[], count
-                    // Single price: [count, price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
-                    // -> prices[price0], tokenIds[tokenId0, tokenId1], count
-                    // Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
-                    // -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
-                    // struct Offer721 {
-                    //     Token token; // 160 bits
-                    //     Nonce nonce; // 32 bits
-                    //     BuySell buySell; // 8 bits
-                    //     Unixtime expiry; // 64 bits
-                    //     Count count; // 16 bits
-                    //     Price[] prices;
-                    //     TokenId[] tokenIds;
-                    // }
-
-                    // Cases
                     // - prices[price0], tokenIds[]
                     // - prices[price0], tokenIds[tokenId0, tokenId1]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
@@ -525,7 +506,9 @@ contract TokenAgent is Owned {
                     } else {
                         price = Price.unwrap(offer.prices[0]);
                     }
-
+                    items[j * 2] = price;
+                    items[j * 2 + 1] = tokenId;
+                    totalPrice += price;
                     if (buySell == BuySell.BUY) {
                         console.log("        >        msg.sender SELL/owner BUY tokenId/count/price", tokenId, uint256(Count.unwrap(offer.count)), price);
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, tokenId);
@@ -534,8 +517,20 @@ contract TokenAgent is Owned {
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, tokenId);
                     }
                 }
-                // Token token = offer.token;
-                // console.log("        > ERC-721", Token.unwrap(token), uint(buySell));
+                if (buySell == BuySell.BUY) {
+                    console.log("        >        msg.sender SELL/owner BUY totalPrice", totalPrice);
+                    if (totalPrice < Price.unwrap(_trade.price)) {
+                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(totalPrice)), _trade.price);
+                    }
+                    weth.transferFrom(owner, msg.sender, totalPrice);
+                } else {
+                    console.log("        >        msg.sender BUY/owner SELL totalPrice", totalPrice);
+                    if (totalPrice > Price.unwrap(_trade.price)) {
+                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(totalPrice)), _trade.price);
+                    }
+                    weth.transferFrom(msg.sender, owner, totalPrice);
+                }
+                emit Traded721(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, items, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // TODO
                 Offer1155 memory offer = offer1155s[offerKey];

@@ -607,7 +607,7 @@ contract TokenAgent is Owned, NonReentrancy {
                     prices_[j/2] = price;
                     tokenIds_[j/2] = tokenId;
                     tokenss_[j/2] = _trade.inputs[j+1];
-                    totalPrice += price;
+                    totalPrice += price * _trade.inputs[j+1];
                 }
                 emit Traded1155(offerKey, Account.wrap(msg.sender), Account.wrap(owner), offer.token, buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint64(block.timestamp)));
             }

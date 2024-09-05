@@ -271,6 +271,7 @@ contract TokenAgent is Owned, NonReentrancy {
 
     event Offered20(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, Tokens[] tokenss, Unixtime timestamp);
     event Offered721(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Unixtime timestamp);
+    event Offered1155(OfferKey offerKey, Account indexed maker, Token indexed token, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded20(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokens, Price averagePrice, Unixtime timestamp);
     event Traded721(OfferKey offerKey, Account indexed taker, Account indexed maker, Token indexed token, BuySell makerBuySell, uint[] prices, uint[] tokenIds, Price totalPrice, Unixtime timestamp);
@@ -390,27 +391,34 @@ contract TokenAgent is Owned, NonReentrancy {
                     revert InvalidInputData("zero length");
                 }
                 if (offerInput.pricing == Pricing.SINGLE) {
-                    // if (offerInput.inputs[1] >= type(uint16).max) {
-                    //     revert InvalidInputData("count must be < 65535");
-                    // }
-                    // if (offerInput.inputs.length < 2) {
-                    //     revert InvalidInputData("length < 2");
-                    // }
-                    // offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
-                    // offer721s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
-                    // for (uint j = 2; j < offerInput.inputs.length; j++) {
-                    //     offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
-                    // }
+                    if (offerInput.inputs[1] >= type(uint16).max) {
+                        revert InvalidInputData("count must be < 65535");
+                    }
+                    if (offerInput.inputs.length < 2) {
+                        revert InvalidInputData("length < 2");
+                    }
+                    if ((offerInput.inputs.length % 2) != 0) {
+                        revert InvalidInputData("length not even");
+                    }
+                    offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[0])));
+                    offer1155s[offerKey].count = Count.wrap(uint16(offerInput.inputs[1]));
+                    for (uint j = 2; j < offerInput.inputs.length / 2; j += 2) {
+                        offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j]));
+                        offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+1])));
+                    }
                 } else {
-                    // if ((offerInput.inputs.length % 2) != 0) {
-                    //     revert InvalidInputData("length not even");
-                    // }
-                    // offer721s[offerKey].count = Count.wrap(type(uint16).max);
-                    // for (uint j = 0; j < offerInput.inputs.length; j += 2) {
-                    //     offer721s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
-                    //     offer721s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
-                    // }
+                    if ((offerInput.inputs.length % 3) != 0) {
+                        revert InvalidInputData("length not even");
+                    }
+                    offer1155s[offerKey].count = Count.wrap(type(uint16).max);
+                    for (uint j = 0; j < offerInput.inputs.length / 3; j += 3) {
+                        offer1155s[offerKey].prices.push(Price.wrap(uint128(offerInput.inputs[j])));
+                        offer1155s[offerKey].tokenIds.push(TokenId.wrap(offerInput.inputs[j+1]));
+                        offer1155s[offerKey].tokenss.push(Tokens.wrap(uint128(offerInput.inputs[j+2])));
+                    }
                 }
+
+                emit Offered1155(offerKey, Account.wrap(msg.sender), offerInput.token, offerInput.buySell, offerInput.expiry, nonce, offer1155s[offerKey].count, offer1155s[offerKey].prices, offer1155s[offerKey].tokenIds, offer1155s[offerKey].tokenss, Unixtime.wrap(uint64(block.timestamp)));
 
 
 

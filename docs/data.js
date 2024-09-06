@@ -944,7 +944,7 @@ const dataModule = {
             if (!log.removed) {
               try {
                 const logData = interface.parseLog(log);
-                const [ contract, tokenAgent, owner, index ] = [ log.address, ...logData.args ];
+                const [ contract, tokenAgent, owner, index, timestamp ] = [ log.address, ...logData.args ];
                 records.push( {
                   chainId: parameter.chainId,
                   blockNumber: parseInt(log.blockNumber),
@@ -957,7 +957,7 @@ const dataModule = {
                   owner: ethers.utils.getAddress(owner),
                   index: parseInt(index),
                   confirmations: parameter.blockNumber - log.blockNumber,
-                  timestamp: null,
+                  timestamp,
                   tx: null,
                 });
               } catch (e) {
@@ -1033,7 +1033,15 @@ const dataModule = {
         let data = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
-          tokenAgents[parameter.chainId][item.tokenAgent] = { owner: item.owner, index: item.index };
+          tokenAgents[parameter.chainId][item.tokenAgent] = {
+            blockNumber: item.blockNumber,
+            logIndex: item.logIndex,
+            txIndex: item.txIndex,
+            txHash: item.txHash,
+            timestamp: item.timestamp,
+            owner: item.owner,
+            index: item.index,
+          };
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;

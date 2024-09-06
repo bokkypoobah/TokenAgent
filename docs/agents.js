@@ -140,7 +140,7 @@ const Agents = {
     items() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       for (const [tokenAgent, d] of Object.entries(this.tokenAgents[this.chainId] || {})) {
-        console.log(tokenAgent + " => " + JSON.stringify(d));
+        // console.log(tokenAgent + " => " + JSON.stringify(d));
         results.push({ tokenAgent, owner: d.owner, index: d.index });
       }
       return results;

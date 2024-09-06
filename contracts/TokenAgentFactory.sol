@@ -464,6 +464,21 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 revert OfferExpired(Index.wrap(index), offer.expiry);
             }
 
+            uint price;
+            uint[] memory prices_;
+            uint[] memory tokenIds_;
+            uint[] memory tokenss_;
+            // // ERC-20
+            // uint[] memory prices_ = new uint[](offer.prices.length);
+            // uint[] memory tokens_ = new uint[](offer.prices.length);
+            // // ERC-721
+            // uint[] memory prices_ = new uint[](input.data.length);
+            // uint[] memory tokenIds_ = new uint[](input.data.length);
+            // // ERC-1155
+            // uint[] memory prices_ = new uint[](input.data.length / 2);
+            // uint[] memory tokenIds_ = new uint[](input.data.length / 2);
+            // uint[] memory tokenss_ = new uint[](input.data.length / 2);
+
             if (tokenType == TokenType.ERC20) {
                 if (input.data.length != 1) {
                     revert InvalidInputData("Expecting single price input");
@@ -471,50 +486,56 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 uint128 tokens = uint128(input.data[0]);
                 uint128 totalTokens = 0;
                 uint128 totalWETHTokens = 0;
-                uint[] memory prices_ = new uint[](offer.prices.length);
-                uint[] memory tokens_ = new uint[](offer.prices.length);
-                uint k;
-                for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
-                    uint128 _price = Price.unwrap(offer.prices[j]);
-                    uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
-                    if (_remaining > 0) {
-                        if (tokens >= _remaining) {
-                            tokens -= _remaining;
-                            totalTokens += _remaining;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + _remaining);
-                            prices_[k] = _price;
-                            tokens_[k] = _remaining;
-                            totalWETHTokens += _remaining * _price / 10**18;
-                        } else {
-                            totalTokens += tokens;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + tokens);
-                            prices_[k] = _price;
-                            tokens_[k] = tokens;
-                            totalWETHTokens += tokens * _price / 10**18;
-                            tokens = 0;
+                // uint[] memory prices_ = new uint[](offer.prices.length);
+                // uint[] memory tokens_ = new uint[](offer.prices.length);
+                prices_ = new uint[](offer.prices.length);
+                tokenIds_ = new uint[](0);
+                tokenss_ = new uint[](offer.prices.length);
+                {
+                    uint k;
+                    for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
+                        uint128 _price = Price.unwrap(offer.prices[j]);
+                        uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
+                        if (_remaining > 0) {
+                            if (tokens >= _remaining) {
+                                tokens -= _remaining;
+                                totalTokens += _remaining;
+                                offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + _remaining);
+                                prices_[k] = _price;
+                                tokenss_[k] = _remaining;
+                                totalWETHTokens += _remaining * _price / 10**18;
+                            } else {
+                                totalTokens += tokens;
+                                offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + tokens);
+                                prices_[k] = _price;
+                                tokenss_[k] = tokens;
+                                totalWETHTokens += tokens * _price / 10**18;
+                                tokens = 0;
+                            }
+                            k++;
                         }
-                        k++;
                     }
                 }
+
                 if (input.execution == Execution.FILLORKILL && totalTokens < input.data[0]) {
                     revert InsufficentTokensRemaining(Tokens.wrap(uint128(input.data[0])), Tokens.wrap(totalTokens));
                 }
                 if (totalTokens > 0) {
-                    uint128 averagePrice = totalWETHTokens * 10**18 / totalTokens;
+                    price = totalWETHTokens * 10**18 / totalTokens;
                     if (offer.buySell == BuySell.BUY) {
-                        if (averagePrice < Price.unwrap(input.price)) {
-                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(averagePrice), input.price);
+                        if (price < Price.unwrap(input.price)) {
+                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
                         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
                         weth.transferFrom(owner, msg.sender, totalWETHTokens);
                     } else {
-                        if (averagePrice > Price.unwrap(input.price)) {
-                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(averagePrice), input.price);
+                        if (price > Price.unwrap(input.price)) {
+                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
                         weth.transferFrom(msg.sender, owner, totalWETHTokens);
                         IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
                     }
-                    emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, new uint[](0), tokens_, Price.wrap(uint128(averagePrice)), Unixtime.wrap(uint40(block.timestamp)));
+                    // emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, new uint[](0), tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
                 }
             } else if (tokenType == TokenType.ERC721) {
                 if (Count.unwrap(offer.count) < input.data.length) {
@@ -523,30 +544,32 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 if (Count.unwrap(offer.count) != type(uint16).max) {
                     offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
                 }
-                uint totalPrice;
-                uint[] memory prices_ = new uint[](input.data.length);
-                uint[] memory tokenIds_ = new uint[](input.data.length);
+                // uint[] memory prices_ = new uint[](input.data.length);
+                // uint[] memory tokenIds_ = new uint[](input.data.length);
+                prices_ = new uint[](input.data.length);
+                tokenIds_ = new uint[](input.data.length);
+                tokenss_ = new uint[](0);
                 for (uint j = 0; j < input.data.length; j++) {
                     // - prices[price0], tokenIds[]
                     // - prices[price0], tokenIds[tokenId0, tokenId1, ...]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
-                    uint price;
+                    uint p;
                     if (offer.tokenIds.length > 0) {
                         uint k = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(input.data[j]));
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
                         if (offer.prices.length == offer.tokenIds.length) {
-                            price = Price.unwrap(offer.prices[k]);
+                            p = Price.unwrap(offer.prices[k]);
                         } else {
-                            price = Price.unwrap(offer.prices[0]);
+                            p = Price.unwrap(offer.prices[0]);
                         }
                     } else {
-                        price = Price.unwrap(offer.prices[0]);
+                        p = Price.unwrap(offer.prices[0]);
                     }
-                    prices_[j] = price;
+                    prices_[j] = p;
                     tokenIds_[j] = input.data[j];
-                    totalPrice += price;
+                    price += p;
                     if (offer.buySell == BuySell.BUY) {
                         IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, input.data[j]);
                     } else {
@@ -554,17 +577,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
-                    if (totalPrice < Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(totalPrice)), input.price);
+                    if (price < Price.unwrap(input.price)) {
+                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(owner, msg.sender, totalPrice);
+                    weth.transferFrom(owner, msg.sender, price);
                 } else {
-                    if (totalPrice > Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(totalPrice)), input.price);
+                    if (price > Price.unwrap(input.price)) {
+                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, owner, totalPrice);
+                    weth.transferFrom(msg.sender, owner, price);
                 }
-                emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, new uint[](0), Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint40(block.timestamp)));
+                // emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, new uint[](0), Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 {
                     uint totalCount;
@@ -578,33 +601,35 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
                     }
                 }
-                uint totalPrice;
-                uint[] memory prices_ = new uint[](input.data.length / 2);
-                uint[] memory tokenIds_ = new uint[](input.data.length / 2);
-                uint[] memory tokenss_ = new uint[](input.data.length / 2);
+                // uint[] memory prices_ = new uint[](input.data.length / 2);
+                // uint[] memory tokenIds_ = new uint[](input.data.length / 2);
+                // uint[] memory tokenss_ = new uint[](input.data.length / 2);
+                prices_ = new uint[](input.data.length / 2);
+                tokenIds_ = new uint[](input.data.length / 2);
+                tokenss_ = new uint[](input.data.length / 2);
                 for (uint j = 0; j < input.data.length; j += 2) {
                     // - prices[price0], tokenIds[], tokenss[]
                     // - prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-                    uint price;
+                    uint p;
                     if (offer.tokenIds.length > 0) {
                         uint k = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(input.data[j]));
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
                         if (offer.prices.length == offer.tokenIds.length) {
-                            price = Price.unwrap(offer.prices[k]);
+                            p = Price.unwrap(offer.prices[k]);
                         } else {
-                            price = Price.unwrap(offer.prices[0]);
+                            p = Price.unwrap(offer.prices[0]);
                         }
                     } else {
-                        price = Price.unwrap(offer.prices[0]);
+                        p = Price.unwrap(offer.prices[0]);
                     }
                     // TODO: Check individual tokenId counts and decrement them
-                    prices_[j/2] = price;
+                    prices_[j/2] = p;
                     tokenIds_[j/2] = input.data[j];
                     tokenss_[j/2] = input.data[j+1];
-                    totalPrice += price * input.data[j+1];
+                    price += p * input.data[j+1];
                     if (offer.buySell == BuySell.BUY) {
                         IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(msg.sender, owner, input.data[j], input.data[j+1], "");
                     } else {
@@ -612,18 +637,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
-                    if (totalPrice < Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(totalPrice)), input.price);
+                    if (price < Price.unwrap(input.price)) {
+                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(owner, msg.sender, totalPrice);
+                    weth.transferFrom(owner, msg.sender, price);
                 } else {
-                    if (totalPrice > Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(totalPrice)), input.price);
+                    if (price > Price.unwrap(input.price)) {
+                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, owner, totalPrice);
+                    weth.transferFrom(msg.sender, owner, price);
                 }
-                emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(totalPrice)), Unixtime.wrap(uint40(block.timestamp)));
+                // emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
             }
+            emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 }

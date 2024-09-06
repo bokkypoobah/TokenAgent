@@ -108,7 +108,6 @@ type Account is address;
 type Count is uint16;
 type Nonce is uint32;
 type Index is uint;
-type Key is bytes32;
 type Price is uint128;
 type Token is address;
 type TokenId is uint;
@@ -298,7 +297,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     IERC20 public weth;
     Nonce public nonce;
-    // mapping(Key => Offer) public offers;
     Offer[] public offers;
 
     event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Nonce nonce, Count count, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
@@ -339,7 +337,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             uint index = offers.length;
             offers.push();
             Offer storage offer = offers[index];
-            // Key key = makeKey(offerInput, tokenType);
             if (tokenType == TokenType.INVALID) {
                 revert InvalidToken(offerInput.token);
             }
@@ -629,12 +626,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             }
         }
     }
-
-    // function makeKey(OfferInput memory offerInput, TokenType tokenType) internal view returns (Key key) {
-    //     bytes32 hash = keccak256(abi.encodePacked(offerInput.token, offerInput.buySell, offerInput.pricing, offerInput.expiry, block.timestamp));
-    //     hash = bytes32(((uint(hash) >> 4) << 4) + (uint(tokenType) * 2) + uint(offerInput.buySell));
-    //     return Key.wrap(hash);
-    // }
 }
 
 /// @notice TokenAgent factory

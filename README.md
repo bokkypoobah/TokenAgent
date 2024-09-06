@@ -2,6 +2,18 @@
 
 Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
+#### Requirements
+* Web3 browser, connected to Sepolia Testnet currently
+
+
+#### URL
+[https://bokkypoobah.github.io/TokenAgent/](https://bokkypoobah.github.io/TokenAgent/)
+
+
+#### Notes
+This project is currently heavily under development. Clear your browser's LocalStorage and IndexedDB if this dapp is not operating as expected as the configuration data may have a new format.
+
+
 #### How It Works - ERC-20 ATM
 
 * `account1` deploys `TokenAgent1`, cloned via `TokenAgentFactory`
@@ -9,12 +21,17 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 * `account1` adds offers to `TokenAgent1` to, e.g., BUY ERC20: 100 @ 0.1 ERC20/WETH, 200 @ 0.2 ERC20/WETH, ...
 * `account2` interacts with `TokenAgent1` to, e.g., SELL ERC20 for WETH against the `account1`'s offers
 
+
 #### How The Dapp Will Work
 
 * Incrementally scrape all `NewTokenAgent(tokenAgent, owner, index, timestamp)` events emitted by `TokenAgentFactory` to create a list of valid `TokenAgent` addresses
 * Incrementally scrape all events emitted by all the deployed `TokenAgent`, filtering by the valid `TokenAgent` addresses
 * When a user wants to view the offers and trades for a particular ERC20, incrementally scrape all the ERC20 events
 * The dapp will have all the data required to compute the token balances and `TokenAgent` states using the events above
+
+<br />
+
+---
 
 ## Deployments
 

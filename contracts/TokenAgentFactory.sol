@@ -644,16 +644,32 @@ contract TokenAgentFactory is CloneFactory {
         weth = _weth;
     }
 
-    function tokenAgentsLength(address owner) public view returns (uint){
-        return tokenAgentsByOwners[owner].length;
-    }
-
     function newTokenAgent() public {
         TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
         tokenAgent.init(weth, msg.sender);
         tokenAgents.push(tokenAgent);
         tokenAgentsByOwners[msg.sender].push(tokenAgent);
         emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint40(block.timestamp)));
+    }
+
+    function tokenAgentsLength(address owner) public view returns (uint){
+        return tokenAgentsByOwners[owner].length;
+    }
+
+    function getTokenAgentsInfo(uint from, uint to) public view returns (uint[] memory indices_, address[] memory tokenAgents_, address[] memory owners_) {
+        indices_ = new uint[](to - from);
+        tokenAgents_ = new address[](to - from);
+        owners_ = new address[](to - from);
+        uint k;
+        for (uint i = from; i < to && i < tokenAgents.length; i++) {
+            if (i < tokenAgents.length) {
+                indices_[k] = i;
+                tokenAgents_[k] = address(tokenAgents[i]);
+                owners_[k] = tokenAgents[i].owner();
+                k++;
+            }
+        }
+
     }
 
 }

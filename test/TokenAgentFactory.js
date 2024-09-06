@@ -198,6 +198,13 @@ describe("TokenAgentFactory", function () {
       tokenAgents.push(tokenAgent);
     }
 
+    const tokenAgentsInfo = await tokenAgentFactory.getTokenAgentsInfo(0, 10);
+    console.log("          # tokenAgent Owner");
+    console.log("          - ---------- ----------");
+    for (let i = 0; i < tokenAgentsInfo[0].length && tokenAgentsInfo[1][i] != ADDRESS0; i++) {
+      console.log("          " + i + " " + tokenAgentsInfo[1][i].substring(0, 10) + " " + tokenAgentsInfo[2][i].substring(0, 10));
+    }
+
     const amountWeth = ethers.parseUnits("100", 18);
     for (let i = 0; i < 4; i++) {
       const mintTx = await accounts[i].sendTransaction({ to: weth.target, value: amountWeth });

@@ -388,7 +388,8 @@ describe("TokenAgentFactory", function () {
            ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
         ],
       ];
-      console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
+      // console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
+      console.log("        * offers1: " + JSON.stringify(offers1, (k, v) => typeof v === 'bigint' ? ethers.formatEther(v) : v));
       const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       const indices = [];

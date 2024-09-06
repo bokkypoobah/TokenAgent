@@ -72,7 +72,7 @@ describe("TokenAgentFactory", function () {
             ', nonce: ' + log.args[6] + ', count: ' + log.args[7] +
             ', prices: ' + JSON.stringify(log.args[8].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[9].map(e => parseInt(e.toString()))) +
-            ', tokenss: ' + JSON.stringify(log.args[10].map(e => parseInt(e.toString()))) +
+            ', tokenss: ' + JSON.stringify(log.args[10].map(e => (log.args[3] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
             ', timestamp: ' + new Date(parseInt(log.args[11]) * 1000).toLocaleTimeString() +
             ')');
         } else if (log.name == "Traded") {

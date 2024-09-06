@@ -2,7 +2,83 @@ const Agent = {
   template: `
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
-        <div class="d-flex flex-wrap m-0 p-0">
+
+        <b-tabs card v-model="settings.tabIndex" @changed="saveSettings();" content-class="mt-1" align="left">
+          <template #tabs-start>
+            <div class="d-flex flex-wrap m-0 p-0">
+              <div class="mt-0 pr-0" style="width: 25.0rem;">
+                <b-form-group :state="!settings.tokenAgentAddress || validAddress(settings.tokenAgentAddress)" :invalid-feedback="'Invalid address'" class="m-0 p-0">
+                  <b-form-input type="text" size="sm" id="explorer-tokenAgentAddress" v-model="settings.tokenAgentAddress" @change="saveSettings(); loadData(settings.contract);" placeholder="Enter token agent address, or select from dropdown"></b-form-input>
+                </b-form-group>
+              </div>
+              <!-- TODO WIP -->
+              <!-- <div class="mt-0 pr-1">
+                <b-button size="sm" @click="showModalAddTokenContract" variant="link" v-b-popover.hover.ds500="'WIP: Search for token contracts'"><b-icon-search shift-v="+0" font-scale="1.2"></b-icon-search></b-button>
+              </div> -->
+              <div class="mt-0 pr-3">
+                <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
+                  <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
+                  <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
+                    <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
+                    <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                  </div>
+                </b-dropdown>
+              </div>
+              <!-- <div class="mt-0 pr-1">
+                <b-button size="sm" :disabled="!validAddress(settings.contract)" :href="explorer + 'token/' + settings.contract + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+              </div> -->
+              <div class="mt-0 pr-1">
+                <b-button size="sm" :disabled="sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
+              </div>
+              <!-- <div class="mt-0 pr-1">
+                <b-button :disabled="!settings.contract || !validAddress(settings.contract)" @click="copyToClipboard(settings.contract);" variant="link" v-b-popover.hover.ds500="'Copy ERC-20 contract address to clipboard'" class="m-0 ml-2 p-0"><b-icon-clipboard shift-v="+1" font-scale="1.1"></b-icon-clipboard></b-button>
+              </div> -->
+              <div class="mt-0 pr-1" style="width: 23.0rem;">
+                <font size="-1">
+                  <!-- <b-badge variant="light" v-b-popover.hover.ds500="contract.decimals != null && contract.totalSupply && ('symbol: ' + contract.symbol + ', name: ' + contract.name + ', decimals: ' + contract.decimals + ', totalSupply: ' + formatDecimals(contract.totalSupply, contract.decimals) + ' (' + formatNumber(contract.totalSupply) + ')') || ''" class="m-0 mt-1 ml-2 mr-1">
+                    {{ (contract.contractType && ('ERC-' + contract.contractType) || 'Enter token contract address and click [Retrieve]') }}
+                  </b-badge>
+                  <b-badge v-if="contract.symbol" variant="light" v-b-popover.hover.ds500="'symbol'" class="m-0 mt-1">
+                    {{ contract.symbol }}
+                  </b-badge>
+                  <b-badge v-if="contract.name" variant="light" v-b-popover.hover.ds500="'name'" class="m-0 mt-1">
+                    {{ contract.name }}
+                  </b-badge>
+                  <b-badge v-if="contract.decimals" variant="light" v-b-popover.hover.ds500="'decimals'" class="m-0 mt-1">
+                    {{ contract.decimals }}
+                  </b-badge>
+                  <b-badge v-if="contract.totalSupply" variant="light" v-b-popover.hover.ds500="'totalSupply ' + (contract.totalSupply && formatNumber(contract.totalSupply) || '')" class="m-0 mt-1">
+                    {{ formatDecimals(contract.totalSupply, contract.decimals) }}
+                  </b-badge> -->
+                </font>
+              </div>
+            </div>
+          </template>
+          <b-tab no-body active>
+            <template #title>
+              <span v-b-popover.hover.ds500="'Token Agent Overview'">Overview</span>
+            </template>
+          </b-tab>
+          <b-tab no-body>
+            <template #title>
+              <span v-b-popover.hover.ds500="'Token Agent Orders'">Orders</span>
+            </template>
+          </b-tab>
+          <b-tab no-body>
+            <template #title>
+              <span v-b-popover.hover.ds500="'Token Agent Events'">Events</span>
+            </template>
+          </b-tab>
+          <b-tab no-body>
+            <template #title>
+              <span v-b-popover.hover.ds500="'Token Agent Raw Command Console'">Console</span>
+            </template>
+          </b-tab>
+        </b-tabs>
+
+
+
+        <div v-if="false" class="d-flex flex-wrap m-0 p-0">
           <div class="mt-0 flex-grow-1">
           </div>
           <div v-if="sync.section == null" class="mt-0 pr-1">
@@ -39,7 +115,7 @@ const Agent = {
           </div>
         </div>
 
-        <b-table ref="theTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
+        <b-table v-if="false" ref="theTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
             <div>
@@ -78,11 +154,14 @@ const Agent = {
       count: 0,
       reschedule: true,
       settings: {
+        tabIndex: 0,
+        tokenAgentAddress: null,
+
         filter: null,
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 1,
+        version: 0,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
@@ -133,6 +212,16 @@ const Agent = {
     registry() {
       return store.getters['data/registry'];
     },
+
+    tokenAgentsDropdownOptions() {
+      const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+      for (const [tokenAgent, d] of Object.entries(this.tokenAgents[this.chainId] || {})) {
+        results.push({ tokenAgent, owner: d.owner, index: d.index });
+      }
+      // console.log(now() + " INFO Agent:computed.tokenAgentsDropdownOptions - results[0..9]: " + JSON.stringify(this.filteredSortedItems.slice(0, 10), null, 2));
+      return results;
+    },
+
 
     totalRegistryEntries() {
       return Object.keys(this.registry[this.chainId] || {}).length + ((store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0);
@@ -190,6 +279,20 @@ const Agent = {
 
   },
   methods: {
+    validAddress(a) {
+      if (a) {
+        try {
+          const address = ethers.utils.getAddress(a);
+          return true;
+        } catch (e) {
+        }
+      }
+      return false;
+    },
+    async loadData() {
+      console.log(now() + " INFO Agent:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      // store.dispatch('syncOptions/loadData');
+    },
     saveSettings() {
       console.log(now() + " INFO Agent:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentAgentSettings = JSON.stringify(this.settings);
@@ -205,7 +308,7 @@ const Agent = {
       store.dispatch('newTransfer/newTransfer', stealthMetaAddress);
     },
     async timeoutCallback() {
-      // console.log(now() + " DEBUG Agent:methods.timeoutCallback - count: " + this.count);
+      console.log(now() + " DEBUG Agent:methods.timeoutCallback - count: " + this.count);
       this.count++;
       var t = this;
       if (this.reschedule) {
@@ -227,6 +330,7 @@ const Agent = {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }
+      // this.loadData(this.settings.tokenAgentAddress);
     }
     this.reschedule = true;
     // console.log(now() + " DEBUG Agent:mounted - calling timeoutCallback()");

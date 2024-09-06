@@ -95,8 +95,8 @@ const SyncOptions = {
   },
   methods: {
     saveSettings() {
-      // console.log(now() + " INFO SyncOptions:methods.saveSettings - syncOptionsSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.syncOptionsSettings = JSON.stringify(this.settings);
+      // console.log(now() + " INFO SyncOptions:methods.saveSettings - tokenAgentSyncOptionsSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.tokenAgentSyncOptionsSettings = JSON.stringify(this.settings);
     },
     syncNow() {
       store.dispatch('data/syncIt', {
@@ -119,8 +119,8 @@ const SyncOptions = {
   },
   mounted() {
     // console.log(now() + " DEBUG SyncOptions:mounted - $route: " + JSON.stringify(this.$route.params));
-    if ('syncOptionsSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.syncOptionsSettings);
+    if ('tokenAgentSyncOptionsSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.tokenAgentSyncOptionsSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
       }

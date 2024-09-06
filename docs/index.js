@@ -61,6 +61,7 @@ const store = new Vuex.Store({
   modules: {
     connection: connectionModule,
     welcome: welcomeModule,
+    agents: agentsModule,
     registry: registryModule,
     stealthTransfers: stealthTransfersModule,
     approvals: approvalsModule,

@@ -39,7 +39,7 @@ const Welcome = {
                       </span>
                   </li>
                   <li>
-                    TokenAgent:
+                    TokenAgent template for cloning:
                       <span v-if="networkSupported">
                         <b-link :href="explorer + 'address/0x0514E4402Fe93b6bA0B014b30E5b715eD0943c25#code'" target="_blank">0x0514E4402Fe93b6bA0B014b30E5b715eD0943c25</b-link>
                       </span>

@@ -463,8 +463,8 @@ const Addresses = {
   },
   methods: {
     saveSettings() {
-      console.log(now() + " INFO Addresses:methods.saveSettings - addressesSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.addressesSettings = JSON.stringify(this.settings);
+      console.log(now() + " INFO Addresses:methods.saveSettings - tokenAgentAddressesSettings: " + JSON.stringify(this.settings, null, 2));
+      localStorage.tokenAgentAddressesSettings = JSON.stringify(this.settings);
     },
 
     newTransfer(stealthMetaAddress = null) {
@@ -638,8 +638,8 @@ const Addresses = {
   mounted() {
     logDebug("Addresses", "mounted() $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('addressesSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.addressesSettings);
+    if ('tokenAgentAddressesSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.tokenAgentAddressesSettings);
       if ('version' in tempSettings && tempSettings.version == 0) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;

@@ -92,6 +92,13 @@ const NETWORKS = {
         "https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/sepolia/assets/${contract}/logo.png",
         "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/sepolia/assets/${contract}/logo.png",
     ],
+    tokens: [
+      { address: "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9", symbol: "WEENUS", name: "Weenus 💪", decimals: 18, type: "erc20", drip: "1000" },
+      { address: "0xc21d97673B9E0B3AA53a06439F71fDc1facE393B", symbol: "XEENUS", name: "Xeenus 💪", decimals: 18, type: "erc20", drip: "1000" },
+      { address: "0x93fCA4c6E2525C09c95269055B46f16b1459BF9d", symbol: "YEENUS", name: "Yeenus 💪", decimals: 8, type: "erc20", drip: "1000" },
+      { address: "0xe9EF74A6568E9f0e42a587C9363C9BcC582dcC6c", symbol: "ZEENUS", name: "Zeenus 💪", decimals: 0, type: "erc20", drip: "1000" },
+      { address: "0x8b73448426797099b6b9a96c4343f528bbAfc55e", symbol: "TESTTOADZ", name: "TestToadz", type: "erc721", drip: "3" },
+    ],
     reservoir: "https://api-sepolia.reservoir.tools/",
   },
   // 17000: {

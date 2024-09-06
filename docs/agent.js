@@ -3,7 +3,7 @@ const Agent = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-tabs card v-model="settings.tabIndex" @changed="saveSettings();" content-class="mt-1" align="left">
+        <b-tabs card v-model="settings.tabIndex" @changed="saveSettings();" content-class="mt-0" align="left">
           <template #tabs-start>
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pr-0" style="width: 25.0rem;">
@@ -62,27 +62,58 @@ const Agent = {
           </template>
           <b-tab no-body active>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent Overview'">Overview</span>
+              <!-- <span v-b-popover.hover.ds500="'Token Agent Console'">Console</span> -->
+              Console
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent Orders'">Orders</span>
+              <!-- <span v-b-popover.hover.ds500="'Token Agent Orders'">Orders</span> -->
+              Orders
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent Events'">Events</span>
-            </template>
-          </b-tab>
-          <b-tab no-body>
-            <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent Raw Command Console'">Console</span>
+              <!-- <span v-b-popover.hover.ds500="'Token Agent Events'">Events</span> -->
+              Events
             </template>
           </b-tab>
         </b-tabs>
 
-
+        <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-2">
+          <b-card bg-variant="light">
+            <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
+              <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
+                <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789" class="w-50"></b-form-input>
+              </b-form-group>
+            </b-form-group>
+            <b-form-group label-cols-lg="2" label="" label-size="lg" label-class="font-weight-bold pt-0" class="mt-3">
+              <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <font size="-2">
+                  <pre>
+  addOffers: {
+    offers: [],
+    token: null,
+    buySell: 0,
+    count: null,
+    pricing: 0,
+    expiry: null,
+    prices: [],
+    tokenIds: [],
+    tokenss: [],
+  }
+                  </pre>
+                </font>
+              </b-form-group>
+            </b-form-group>
+          </b-card>
+        </b-card>
+        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
+          Orders
+        </b-card>
+        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-1 p-0">
+          Events
+        </b-card>
 
         <div v-if="false" class="d-flex flex-wrap m-0 p-0">
           <div class="mt-0 flex-grow-1">
@@ -163,12 +194,22 @@ const Agent = {
         tabIndex: 0,
         tokenAgentAddress: null,
         tokenAgentOwner: null,
-
+        addOffers: {
+          offers: [],
+          token: null,
+          buySell: 0,
+          count: null,
+          pricing: 0,
+          expiry: null,
+          prices: [],
+          tokenIds: [],
+          tokenss: [],
+        },
         filter: null,
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 1,
+        version: 2,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },

@@ -448,6 +448,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }
 
+    // TODO: ERC-1155 Check individual tokenId counts and decrement them
     function trade(TradeInput[] calldata inputs) external nonReentrant notOwner {
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
@@ -601,7 +602,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     } else {
                         p = Price.unwrap(offer.prices[0]);
                     }
-                    // TODO: Check individual tokenId counts and decrement them
                     prices_[j/2] = p;
                     tokenIds_[j/2] = input.data[j];
                     tokenss_[j/2] = input.data[j+1];

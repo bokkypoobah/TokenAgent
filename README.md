@@ -2,27 +2,36 @@
 
 Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
-#### Requirements
-* Web3 browser, connected to Sepolia Testnet currently
-
-
-#### URL
+##### UI URL
 [https://bokkypoobah.github.io/TokenAgent/](https://bokkypoobah.github.io/TokenAgent/)
 
+##### Requirements
+* Web3 browser, connected to Sepolia Testnet currently
 
-#### Notes
+##### Contract
+
+[contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)
+
+##### Deployments to Sepolia
+* v0.8.0 template [TokenAgent](https://sepolia.etherscan.io/address/0x0514e4402fe93b6ba0b014b30e5b715ed0943c25#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x598b17e44c3e8894dfcc9aaec16dad81756f5651#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.0](deployed/TokenAgentFactory_v0.8.0_Sepolia_0x598b17E44c3e8894DfcC9aAec16DaD81756F5651.sol)
+
+##### Notes
 This project is currently heavily under development. Clear your browser's LocalStorage and IndexedDB if this dapp is not operating as expected as the configuration data may have a new format.
 
+<br />
 
-#### How It Works - ERC-20 ATM
+---
+
+#### Info
+
+###### How It Works - ERC-20 ATM
 
 * `account1` deploys `TokenAgent1`, cloned via `TokenAgentFactory`
 * `account1` approves for `TokenAgent1` to transfer WETH and ERC20
 * `account1` adds offers to `TokenAgent1` to, e.g., BUY ERC20: 100 @ 0.1 ERC20/WETH, 200 @ 0.2 ERC20/WETH, ...
 * `account2` interacts with `TokenAgent1` to, e.g., SELL ERC20 for WETH against the `account1`'s offers
 
-
-#### How The Dapp Will Work
+###### How The Dapp Will Work
 
 * Incrementally scrape all `NewTokenAgent(tokenAgent, owner, index, timestamp)` events emitted by `TokenAgentFactory` to create a list of valid `TokenAgent` addresses
 * Incrementally scrape all events emitted by all the deployed `TokenAgent`, filtering by the valid `TokenAgent` addresses
@@ -33,21 +42,16 @@ This project is currently heavily under development. Clear your browser's LocalS
 
 ---
 
-## Deployments
+#### Testing
 
-#### Sepolia Testing
-* v0.8.0 template [TokenAgent](https://sepolia.etherscan.io/address/0x0514e4402fe93b6ba0b014b30e5b715ed0943c25#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x598b17e44c3e8894dfcc9aaec16dad81756f5651#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.0](deployed/TokenAgentFactory_v0.8.0_Sepolia_0x598b17E44c3e8894DfcC9aAec16DaD81756F5651.sol)
-
-## Testing
-
-#### First Install
+###### First Install
 Clone/download this repository, and in the new folder on your computer:
 
 ```bash
 npm install --save-dev hardhat
 ```
 
-#### Run Test Script
+###### Run Test Script
 
 Or run the test with the output saved in [./testIt.out](./testIt.out).
 You may initially have to mark the script as executable using the command `chmod 700 ./10_testIt.sh`.

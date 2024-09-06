@@ -182,7 +182,7 @@ const Addresses = {
           </div>
         </b-card>
 
-        <b-table ref="addressesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="accountsFields" :items="pagedFilteredSortedAddresses" show-empty empty-html="Click [+] above to add accounts" head-variant="light" class="m-0 mt-1">
+        <b-table ref="addressesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="accountsFields" :items="pagedFilteredSortedAddresses" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
             <div v-if="totalAddresses == 0">

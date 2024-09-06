@@ -45,7 +45,7 @@ const Agents = {
             <div>
               <ul>
                 <li>
-                  Check you are connected to one of the <b-link href="https://stealthaddress.dev/contracts/deployments" target="_blank">supported networks</b-link> (TODO: Only Sepolia currently)
+                  Check you are connected to the Sepolia testnet, currently
                 </li>
                 <li>
                   Click <b-button size="sm" variant="link" class="m-0 p-0"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button> above to sync this app to the blockchain

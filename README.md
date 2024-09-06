@@ -8,6 +8,14 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 ##### Requirements
 * Web3 browser, connected to Sepolia Testnet currently
 
+##### Screenshots
+
+###### Addresses
+<kbd><img src="images/Screenshot_Addresses_20240906.png" /></kbd>
+
+###### Agents
+<kbd><img src="images/Screenshot_Agents_20240906.png" /></kbd>
+
 ##### Contract
 
 [contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)

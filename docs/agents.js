@@ -29,17 +29,17 @@ const Agents = {
             <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
           </div>
           <div class="mt-0 pr-1">
-            <font size="-2" v-b-popover.hover.ds500="'# registry entries'">{{ filteredSortedRegistryEntries.length + '/' + totalRegistryEntries }}</font>
+            <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedItems.length + '/' + items.length }}</font>
           </div>
           <div class="mt-0 pr-1">
-            <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedRegistryEntries.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
+            <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
           </div>
           <div class="mt-0 pl-1">
             <b-form-select size="sm" v-model="settings.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
           </div>
         </div>
 
-        <b-table ref="registryTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedRegistryEntries" show-empty head-variant="light" class="m-0 mt-1">
+        <b-table ref="theTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
             <div>
@@ -56,17 +56,19 @@ const Agents = {
           <template #cell(number)="data">
             {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
           </template>
-          <template #cell(registrant)="data">
-            <b-link :href="explorer + 'address/' + data.item.registrant" v-b-popover.hover.ds500="data.item.registrant" target="_blank">
-              {{ names[data.item.registrant] || (data.item.registrant.substring(0, 8) + '...' + data.item.registrant.slice(-6)) }}
+          <template #cell(tokenAgent)="data">
+            <b-link :href="explorer + 'address/' + data.item.tokenAgent + '#code'" v-b-popover.hover.ds500="data.item.tokenAgent" target="_blank">
+              {{ names[data.item.tokenAgent] || data.item.tokenAgent }}
             </b-link>
           </template>
-          <template #cell(transfer)="data">
+          <template #cell(owner)="data">
+            <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="data.item.owner" target="_blank">
+              {{ names[data.item.owner] || data.item.owner }}
+            </b-link>
+          </template>
+          <!-- <template #cell(transfer)="data">
             <b-button size="sm" :disabled="!transferHelper" @click="newTransfer(data.item.stealthMetaAddress);" variant="link" v-b-popover.hover.ds500="'Transfer to ' + data.item.stealthMetaAddress" class="m-0 ml-2 p-0"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
-          </template>
-          <template #cell(stealthMetaAddress)="data">
-            {{ data.item.stealthMetaAddress }}
-          </template>
+          </template> -->
         </b-table>
       </b-card>
     </div>
@@ -79,20 +81,24 @@ const Agents = {
         filter: null,
         currentPage: 1,
         pageSize: 10,
-        sortOption: 'registrantasc',
-        version: 0,
+        sortOption: 'ownertokenagentasc',
+        version: 1,
       },
       sortOptions: [
-        { value: 'registrantasc', text: '▲ Registrant' },
-        { value: 'registrantdsc', text: '▼ Registrant' },
-        { value: 'stealthmetaaddressasc', text: '▲ Stealth Meta-Address' },
-        { value: 'stealthmetaaddressdsc', text: '▼ Stealth Meta-Address' },
+        { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
+        { value: 'ownertokenagentdsc', text: '▼ Owner, ▲ Token Agent' },
+        { value: 'tokenagentasc', text: '▲ Token Agent' },
+        { value: 'tokenagentdsc', text: '▼ Token Agent' },
+        // TODO: Deploy new TokenContractFactory with index worked out
+        // { value: 'indexasc', text: '▲ Index' },
+        // { value: 'indexdsc', text: '▼ Index' },
       ],
       fields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
-        { key: 'transferAgent', label: 'Transfer Agent', sortable: false, thStyle: 'width: 50%;', thClass: 'text-left', tdClass: 'text-left' },
-        // { key: 'transfer', label: '', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'owner', label: 'Owner', sortable: false, thStyle: 'width: 45%;', tdClass: 'text-left' },
+        { key: 'tokenAgent', label: 'Token Agent', sortable: false, thStyle: 'width: 55%;', thClass: 'text-left', tdClass: 'text-left' },
+        // TODO: Deploy new TokenContractFactory with index worked out
+        // { key: 'index', label: 'Index', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
     }
   },
@@ -112,6 +118,9 @@ const Agents = {
     addresses() {
       return store.getters['data/addresses'];
     },
+    tokenAgents() {
+      return store.getters['data/tokenAgents'];
+    },
     names() {
       return store.getters['data/names'];
     },
@@ -128,37 +137,55 @@ const Agents = {
     totalRegistryEntries() {
       return Object.keys(this.registry[this.chainId] || {}).length + ((store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0);
     },
-    filteredRegistryEntries() {
+    items() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
-      for (const [registrant, stealthMetaAddress] of Object.entries(this.registry[this.chainId] || {})) {
-        results.push({ registrant, stealthMetaAddress });
+      for (const [tokenAgent, d] of Object.entries(this.tokenAgents[this.chainId] || {})) {
+        console.log(tokenAgent + " => " + JSON.stringify(d));
+        results.push({ tokenAgent, owner: d.owner, index: d.index });
       }
       return results;
     },
-    filteredSortedRegistryEntries() {
-      const results = this.filteredRegistryEntries;
-      if (this.settings.sortOption == 'registrantasc') {
+    filteredSortedItems() {
+      const results = this.items;
+      // console.log(JSON.stringify(results, null, 2));
+      if (this.settings.sortOption == 'ownertokenagentasc') {
         results.sort((a, b) => {
-          return ('' + a.registrant).localeCompare(b.registrant);
+          if (('' + a.owner).localeCompare(b.owner) == 0) {
+            return ('' + a.transferAgent).localeCompare(b.transferAgent);
+          } else {
+            return ('' + a.owner).localeCompare(b.owner);
+          }
         });
-      } else if (this.settings.sortOption == 'registrantdsc') {
+      } else if (this.settings.sortOption == 'ownertokenagentdsc') {
         results.sort((a, b) => {
-          return ('' + b.registrant).localeCompare(a.registrant);
+          if (('' + a.owner).localeCompare(b.owner) == 0) {
+            return ('' + a.transferAgent).localeCompare(b.transferAgent);
+          } else {
+            return ('' + b.owner).localeCompare(a.owner);
+          }
         });
-      } else if (this.settings.sortOption == 'stealthmetaaddressasc') {
+      } else if (this.settings.sortOption == 'tokenagentasc') {
         results.sort((a, b) => {
-          return ('' + a.stealthMetaAddress).localeCompare(b.stealthMetaAddress);
+          return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
         });
-      } else if (this.settings.sortOption == 'stealthmetaaddressdsc') {
+      } else if (this.settings.sortOption == 'tokenagentdsc') {
         results.sort((a, b) => {
-          return ('' + b.stealthMetaAddress).localeCompare(a.stealthMetaAddress);
+          return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
+        });
+      } else if (this.settings.sortOption == 'indexasc') {
+        results.sort((a, b) => {
+          return a.index - b.index;
+        });
+      } else if (this.settings.sortOption == 'indexdsc') {
+        results.sort((a, b) => {
+          return b.index - a.index;
         });
       }
       return results;
     },
-    pagedFilteredSortedRegistryEntries() {
-      // console.log(now() + " INFO Agents:computed.pagedFilteredSortedRegistryEntries - results[0..1]: " + JSON.stringify(this.filteredSortedRegistryEntries.slice(0, 2), null, 2));
-      return this.filteredSortedRegistryEntries.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
+    pagedFilteredSortedItems() {
+      // console.log(now() + " INFO Agents:computed.pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
+      return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 
   },

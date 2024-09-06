@@ -223,7 +223,7 @@ const Agents = {
     store.dispatch('data/restoreState');
     if ('tokenAgentAgentsSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.tokenAgentAgentsSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }

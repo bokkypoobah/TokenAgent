@@ -15,18 +15,18 @@ const Agent = {
               <!-- <div class="mt-0 pr-1">
                 <b-button size="sm" @click="showModalAddTokenContract" variant="link" v-b-popover.hover.ds500="'WIP: Search for token contracts'"><b-icon-search shift-v="+0" font-scale="1.2"></b-icon-search></b-button>
               </div> -->
-              <div class="mt-0 pr-3">
+              <div class="mt-0 pr-0">
                 <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
                   <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
                   <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
                     <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
-                    <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                    <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; settings.tokenAgentOwner = item.owner; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
                   </div>
                 </b-dropdown>
               </div>
-              <!-- <div class="mt-0 pr-1">
-                <b-button size="sm" :disabled="!validAddress(settings.contract)" :href="explorer + 'token/' + settings.contract + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
-              </div> -->
+              <div class="mt-0 pr-1">
+                <b-button size="sm" :disabled="!validAddress(settings.tokenAgentAddress)" :href="explorer + 'token/' + settings.tokenAgentAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+              </div>
               <div class="mt-0 pr-1">
                 <b-button size="sm" :disabled="sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
               </div>
@@ -35,6 +35,12 @@ const Agent = {
               </div> -->
               <div class="mt-0 pr-1" style="width: 23.0rem;">
                 <font size="-1">
+                  <b-link :href="explorer + 'address/' + settings.tokenAgentOwner" v-b-popover.hover.ds500="'Token Agent owner ' + settings.tokenAgentOwner" target="_blank">
+                    <b-badge v-if="settings.tokenAgentOwner" variant="link" class="m-0 mt-1">
+                      {{ settings.tokenAgentOwner.substring(0, 10) + '...' + settings.tokenAgentOwner.slice(-8) }}
+                    </b-badge>
+                  </b-link>
+
                   <!-- <b-badge variant="light" v-b-popover.hover.ds500="contract.decimals != null && contract.totalSupply && ('symbol: ' + contract.symbol + ', name: ' + contract.name + ', decimals: ' + contract.decimals + ', totalSupply: ' + formatDecimals(contract.totalSupply, contract.decimals) + ' (' + formatNumber(contract.totalSupply) + ')') || ''" class="m-0 mt-1 ml-2 mr-1">
                     {{ (contract.contractType && ('ERC-' + contract.contractType) || 'Enter token contract address and click [Retrieve]') }}
                   </b-badge>
@@ -156,12 +162,13 @@ const Agent = {
       settings: {
         tabIndex: 0,
         tokenAgentAddress: null,
+        tokenAgentOwner: null,
 
         filter: null,
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 0,
+        version: 1,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
@@ -326,7 +333,7 @@ const Agent = {
     store.dispatch('data/restoreState');
     if ('tokenAgentAgentSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.tokenAgentAgentSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }

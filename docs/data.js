@@ -131,103 +131,24 @@ const dataModule = {
   state: {
     DB_PROCESSING_BATCH_SIZE: 12345,
 
-    // address => info
     addresses: {},
+    tokenAgentFactories: {},
+    tokenAgents: {},
 
-    // "11155111": {
-    //   "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9": {
-    //     "type": "erc20",
-    //     "balances": {
-    //       "0x000001f568875F378Bf6d170B790967FE429C81A": "7002013838755293944542",
-    //       "0x5d446D064757Cc92eFe92548F2D7b7a3eab30362": "11999205282222222222223"
-    //     }
-    //   },
-    //   "0x8b73448426797099b6b9a96c4343f528bbAfc55e": {
-    //     "type": "erc721",
-    //     "tokens": {
-    //       "60": "0x000001f568875F378Bf6d170B790967FE429C81A",
-    //       "6743": "0x5d446D064757Cc92eFe92548F2D7b7a3eab30362"
-    //     }
-    //   },
-    //   "0x3F15A716888EFb6871872fC4358F638DEE495f3b": {
-    //     "type": "erc1155",
-    //     "tokens": {
-    //       "7": {
-    //         "0x000001f568875F378Bf6d170B790967FE429C81A": "1"
-    //       },
-    //       "8": {
-    //         "0x000001f568875F378Bf6d170B790967FE429C81A": "1"
-    //       }
-    //     }
-    //   }
-    // }
+    // Ignore this block
     balances: {},
     approvals: {},
-
-    // {
-    //   "11155111": {
-    //     "0x8b73448426797099b6b9a96c4343f528bbAfc55e": {
-    //       "junk": false,
-    //       "tokens": {
-    //         "6743": {
-    //           "name": "CrypToadz #6743",
-    //           "description": "CrypToadz #6743",
-    //           "image": "ipfs://QmeWBcNJqTYvPoJ1au6h4xGR277QTcaH94Y9Z19UGaDejo",
-    //           "attributes": [
-    //             {
-    //               "trait_type": "Eyes",
-    //               "value": "Butthole"
-    //             }
-    //           ],
-    //           "favourite": false
-    //         }
-    //       }
-    //     },
-    //     "0x3F15A716888EFb6871872fC4358F638DEE495f3b": {
-    //       "junk": false,
-    //       "tokens": {
-    //         "8": {
-    //           "name": "feels good",
-    //           "description": "A piece that can be combined",
-    //           "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHNoYXBlLXJlbmRlcmluZz0iY3Jpc3BFZGdlcyIgaWQ9InBpeGVsIiAgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMzkgMzkiIHdpZHRoPSIzOTAiIGhlaWdodD0iMzkwIj4gPGltYWdlIHg9IjAiIHk9IjAiIHdpZHRoPSIzOSIgaGVpZ2h0PSIzOSIgaHJlZj0iZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTlRBd0lpQm9aV2xuYUhROUlqVXdNQ0lnZG1sbGQwSnZlRDBpTUNBd0lEVXdNQ0ExTURBaUlIWmxjbk5wYjI0OUlqRXVNaUlnZUcxc2JuTTlJbWgwZEhBNkx5OTNkM2N1ZHpNdWIzSm5Mekl3TURBdmMzWm5JaUJ6ZEhsc1pUMGlZbUZqYTJkeWIzVnVaQzFqYjJ4dmNqcDBjbUZ1YzNCaGNtVnVkRHRpWVdOclozSnZkVzVrTFdsdFlXZGxPblZ5YkNoa1lYUmhPbWx0WVdkbEwzQnVaenRpWVhObE5qUXNhVlpDVDFKM01FdEhaMjlCUVVGQlRsTlZhRVZWWjBGQlFVTmpRVUZCUVc1RFFWbEJRVUZEVFc4eFJURkJRVUZCUVZoT1UxSXdTVUZ5Y3pSak5sRkJRVUZRUmtwU1JVWlZWMGxZZEd4cVJVOW5ha0ZWVVVZclRuQXpSWGx6YW1kWlFuTXZRVU5TZURGalQwbFZWR2MwTm1WblRGQTBSMEZaV0VOQ1QxaEJZMjVITkZOSFUzSXJiWGt6T0V3MlZ5OHZOM2R6ZEV4aFFXOXBjVWx2YVhGS05FMU5URGg0YkVoUVJsRjBRMGwwWTBGaVJ6bDZRVTAzY25Bck1YZDRTVXh0UTFwWGVsbHRWMlJCY0VSTk4zQlNNV0Z3TDNadFJWRjNVa3MwYms1clVreGpVRkpqTURsR2NXWkpiemxrYTJOaVdEVTNNblppWVVWcFUyZGlUVTFhWjJwSVJ6SlBPSE0yZG01YVFWUjJVSFJyYjBwek16UnVabTVKSzNsVWRUTllUelZoWjFCa1kyeDJlRk5FTDFaclZuUnlVbWwxWm5oVGEwWllWalJLYW5KWmRVVmtOREJKYzJRNWFYTjFTSEpIYUVscVFtNDRLelZIU1dOM1pVRlRWREpTTWtsa016RkNOVEkxZERCNmJtSnZiSG80TUZBNFJDdFhWblJTVmtWVlNsTlpkbTR6V2xWMVJVZDNRVVEwUVVGQlFVRlRWVlpQVWtzMVExbEpTVDBwTzJKaFkydG5jbTkxYm1RdGNtVndaV0YwT201dkxYSmxjR1ZoZER0aVlXTnJaM0p2ZFc1a0xYTnBlbVU2WTI5dWRHRnBianRpWVdOclozSnZkVzVrTFhCdmMybDBhVzl1T21ObGJuUmxjanRwYldGblpTMXlaVzVrWlhKcGJtYzZMWGRsWW10cGRDMXZjSFJwYldsNlpTMWpiMjUwY21GemREc3RiWE10YVc1MFpYSndiMnhoZEdsdmJpMXRiMlJsT201bFlYSmxjM1F0Ym1WcFoyaGliM0k3YVcxaFoyVXRjbVZ1WkdWeWFXNW5PaTF0YjNvdFkzSnBjM0F0WldSblpYTTdhVzFoWjJVdGNtVnVaR1Z5YVc1bk9uQnBlR1ZzWVhSbFpEc2lQand2YzNablBnPT0iLz48c3R5bGU+I3BpeGVsIHtpbWFnZS1yZW5kZXJpbmc6IHBpeGVsYXRlZDsgaW1hZ2UtcmVuZGVyaW5nOiAtbW96LWNyaXNwLWVkZ2VzOyBpbWFnZS1yZW5kZXJpbmc6IC13ZWJraXQtY3Jpc3AtZWRnZXM7IC1tcy1pbnRlcnBvbGF0aW9uLW1vZGU6IG5lYXJlc3QtbmVpZ2hib3I7fTwvc3R5bGU+PC9zdmc+",
-    //           "attributes": [
-    //             {
-    //               "trait_type": "Tags",
-    //               "value": "frog"
-    //             },
-    //             {
-    //               "trait_type": "Tags",
-    //               "value": "derp"
-    //             }
-    //           ],
-    //           "favourite": true
-    //         }
-    //       }
-    //     },
-    //     "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9": {
-    //       "type": "erc20",
-    //       "symbol": "WEENUS",
-    //       "name": "Weenus 💪",
-    //       "decimals": 18,
-    //       "totalSupply": "1358000000000000000000000",
-    //       "junk": false,
-    //       "favourite": false,
-    //       "notes": null
-    //     },
-    //   }
-    // }
     tokens: {},
     expiries: {},
-
     collection: {}, // chainId -> contract => { id, symbol, name, image, slug, creator, tokenCount }
     timestamps: {}, // chainId -> blockNumber => timestamp
     txs: {}, // txHash => tx & txReceipt
-
     registry: {}, // Address => StealthMetaAddress
     stealthTransfers: {}, // ChainId, blockNumber, logIndex => data
     ens: {},
     names: {},
     exchangeRates: {},
+
     forceRefresh: 0,
     sync: {
       section: null,
@@ -236,13 +157,16 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "magicalinternetmoneydata080a",
+      name: "tokenagentdata080a",
       version: 1,
       schemaDefinition: {
+        tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+        tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+
         announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
         registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         tokenEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
-        // tokenEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,[eventType+confirmations]',
+
         cache: '&objectName',
       },
       updated: null,
@@ -250,20 +174,23 @@ const dataModule = {
   },
   getters: {
     addresses: state => state.addresses,
+    tokenAgentFactories: state => state.tokenAgentFactories,
+    tokenAgents: state => state.tokenAgents,
+
+    // Ignore this block
     balances: state => state.balances,
     approvals: state => state.approvals,
     tokens: state => state.tokens,
     expiries: state => state.expiries,
-
     collection: state => state.collection,
     timestamps: state => state.timestamps,
     txs: state => state.txs,
-
     registry: state => state.registry,
     stealthTransfers: state => state.stealthTransfers,
     ens: state => state.ens,
     names: state => state.names,
     exchangeRates: state => state.exchangeRates,
+
     forceRefresh: state => state.forceRefresh,
     sync: state => state.sync,
     db: state => state.db,
@@ -921,63 +848,71 @@ const dataModule = {
       }
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options };
-      if (options.stealthTransfers && !options.devThing) {
-        await context.dispatch('syncStealthTransfers', parameter);
+
+      if (options.tokenAgentFactory && !options.devThing) {
+        await context.dispatch('syncTokenAgentFactoryEvents', parameter);
       }
-      if (options.stealthTransfers && !options.devThing) {
-        await context.dispatch('syncStealthTransfersData', parameter);
-      }
-      if (options.stealthTransfers && !options.devThing) {
-        await context.dispatch('identifyMyStealthTransfers', parameter);
-      }
-      if (options.stealthTransfers && !options.devThing) {
-        await context.dispatch('collateStealthTransfers', parameter);
+      if (options.tokenAgents && !options.devThing) {
+        await context.dispatch('syncTokenAgentsEvents', parameter);
       }
 
-      if (options.stealthMetaAddressRegistry && !options.devThing) {
-        await context.dispatch('syncRegistrations', parameter);
-      }
-      if (options.stealthMetaAddressRegistry && !options.devThing) {
-        await context.dispatch('syncRegistrationsData', parameter);
-      }
-      if (options.stealthMetaAddressRegistry && !options.devThing) {
-        await context.dispatch('collateRegistrations', parameter);
-      }
+      // if (options.stealthTransfers && !options.devThing) {
+      //   await context.dispatch('syncStealthTransfers', parameter);
+      // }
+      // if (options.stealthTransfers && !options.devThing) {
+      //   await context.dispatch('syncStealthTransfersData', parameter);
+      // }
+      // if (options.stealthTransfers && !options.devThing) {
+      //   await context.dispatch('identifyMyStealthTransfers', parameter);
+      // }
+      // if (options.stealthTransfers && !options.devThing) {
+      //   await context.dispatch('collateStealthTransfers', parameter);
+      // }
 
-      if ((options.tokens || options.selectedContract) && !options.devThing) {
-        await context.dispatch('syncTokenEvents', parameter);
-      }
-      if ((options.tokens || options.fungiblesMetadata || options.nonFungiblesMetadata || options.selectedContract) && !options.devThing) {
-        await context.dispatch('computeBalances', parameter);
-        await context.dispatch('computeApprovals', parameter);
-      }
+      // if (options.stealthMetaAddressRegistry && !options.devThing) {
+      //   await context.dispatch('syncRegistrations', parameter);
+      // }
+      // if (options.stealthMetaAddressRegistry && !options.devThing) {
+      //   await context.dispatch('syncRegistrationsData', parameter);
+      // }
+      // if (options.stealthMetaAddressRegistry && !options.devThing) {
+      //   await context.dispatch('collateRegistrations', parameter);
+      // }
 
-      if (options.devThing) {
-        await context.dispatch('computeApprovals', parameter);
-      }
+      // if ((options.tokens || options.selectedContract) && !options.devThing) {
+      //   await context.dispatch('syncTokenEvents', parameter);
+      // }
+      // if ((options.tokens || options.fungiblesMetadata || options.nonFungiblesMetadata || options.selectedContract) && !options.devThing) {
+      //   await context.dispatch('computeBalances', parameter);
+      //   await context.dispatch('computeApprovals', parameter);
+      // }
 
-      if (options.ensEvents && chainId == 1 && !options.devThing) {
-        await context.dispatch('syncENSEvents', parameter);
-      }
+      // if (options.devThing) {
+      //   await context.dispatch('computeApprovals', parameter);
+      // }
 
-      if (options.fungiblesMetadata && !options.devThing) {
-        await context.dispatch('syncFungiblesMetadata', parameter);
-      }
-      if (options.nonFungiblesMetadata && !options.devThing) {
-        await context.dispatch('syncNonFungiblesMetadataFromReservoir', parameter);
-        // await context.dispatch('syncNonFungiblesMetadata', parameter);
-      }
-      if (options.ens && chainId == 1 && !options.devThing) {
-        await context.dispatch('syncReverseENS', parameter);
-      }
-      if (options.timestamps && !options.devThing) {
-        await context.dispatch('syncTokenEventTimestamps', parameter);
-      }
-      if (options.txData && !options.devThing) {
-        await context.dispatch('syncTokenEventTxData', parameter);
-      }
+      // if (options.ensEvents && chainId == 1 && !options.devThing) {
+      //   await context.dispatch('syncENSEvents', parameter);
+      // }
 
-      await context.dispatch('collateNames', parameter);
+      // if (options.fungiblesMetadata && !options.devThing) {
+      //   await context.dispatch('syncFungiblesMetadata', parameter);
+      // }
+      // if (options.nonFungiblesMetadata && !options.devThing) {
+      //   await context.dispatch('syncNonFungiblesMetadataFromReservoir', parameter);
+      //   // await context.dispatch('syncNonFungiblesMetadata', parameter);
+      // }
+      // if (options.ens && chainId == 1 && !options.devThing) {
+      //   await context.dispatch('syncReverseENS', parameter);
+      // }
+      // if (options.timestamps && !options.devThing) {
+      //   await context.dispatch('syncTokenEventTimestamps', parameter);
+      // }
+      // if (options.txData && !options.devThing) {
+      //   await context.dispatch('syncTokenEventTxData', parameter);
+      // }
+
+      // await context.dispatch('collateNames', parameter);
       // if (options.devThing) {
       //   console.log("Dev Thing");
       // }

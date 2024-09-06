@@ -922,6 +922,197 @@ const dataModule = {
       context.commit('forceRefresh');
     },
 
+    async syncTokenAgentFactoryEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      return;
+
+      // StealthMetaAddressSet (index_topic_1 address registrant, index_topic_2 uint256 schemeId, bytes stealthMetaAddress)
+      // 0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9
+      const erc5564RegistryContract = new ethers.Contract(ERC6538REGISTRYADDRESS, ERC6538REGISTRYABI, provider);
+      let total = 0;
+      let t = this;
+      async function processLogs(fromBlock, toBlock, logs) {
+        total = parseInt(total) + logs.length;
+        context.commit('setSyncCompleted', total);
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
+        const records = [];
+        for (const log of logs) {
+          if (!log.removed) {
+            try {
+              const logData = erc5564RegistryContract.interface.parseLog(log);
+              // console.log("logData: " + JSON.stringify(logData, null, 2));
+              const [ contract, schemeId ] = [ log.address, parseInt(logData.args[1]) ];
+              if (schemeId == ONLY_SUPPORTED_SCHEME_ID) {
+                records.push( {
+                  chainId: parameter.chainId,
+                  blockNumber: parseInt(log.blockNumber),
+                  logIndex: parseInt(log.logIndex),
+                  txIndex: parseInt(log.transactionIndex),
+                  txHash: log.transactionHash,
+                  contract,
+                  name: logData.name,
+                  registrant: ethers.utils.getAddress(logData.args[0]),
+                  schemeId,
+                  stealthMetaAddress: ethers.utils.toUtf8String(logData.args[2]),
+                  mine: false,
+                  confirmations: parameter.blockNumber - log.blockNumber,
+                  timestamp: null,
+                  tx: null,
+                });
+              }
+            } catch (e) {
+              console.log(now() + " ERROR dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + e.message);
+            }
+          }
+        }
+        if (records.length) {
+          await db.registrations.bulkAdd(records).then(function(lastKey) {
+            console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+          }).catch(Dexie.BulkError, function(e) {
+            // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
+          });
+        }
+      }
+      async function getLogs(fromBlock, toBlock, processLogs) {
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
+        let split = false;
+        const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
+        if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
+          try {
+            const filter = {
+              address: ERC6538REGISTRYADDRESS,
+              fromBlock,
+              toBlock,
+              topics: [
+                '0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9',
+                null,
+                null
+              ]
+            };
+            const eventLogs = await provider.getLogs(filter);
+            await processLogs(fromBlock, toBlock, eventLogs);
+          } catch (e) {
+            split = true;
+          }
+        } else {
+          split = true;
+        }
+        if (split) {
+          const mid = parseInt((fromBlock + toBlock) / 2);
+          await getLogs(fromBlock, mid, processLogs);
+          await getLogs(parseInt(mid) + 1, toBlock, processLogs);
+        }
+      }
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
+      context.commit('setSyncSection', { section: 'Stealth Meta-Address Registry', total: null });
+      const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
+      const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      // TODO: Handle incrementalSync?
+      const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+      await getLogs(startBlock, parameter.blockNumber, processLogs);
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END");
+    },
+
+    async syncTokenAgentsEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents BEGIN: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      return;
+
+      // StealthMetaAddressSet (index_topic_1 address registrant, index_topic_2 uint256 schemeId, bytes stealthMetaAddress)
+      // 0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9
+      const erc5564RegistryContract = new ethers.Contract(ERC6538REGISTRYADDRESS, ERC6538REGISTRYABI, provider);
+      let total = 0;
+      let t = this;
+      async function processLogs(fromBlock, toBlock, logs) {
+        total = parseInt(total) + logs.length;
+        context.commit('setSyncCompleted', total);
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
+        const records = [];
+        for (const log of logs) {
+          if (!log.removed) {
+            try {
+              const logData = erc5564RegistryContract.interface.parseLog(log);
+              // console.log("logData: " + JSON.stringify(logData, null, 2));
+              const [ contract, schemeId ] = [ log.address, parseInt(logData.args[1]) ];
+              if (schemeId == ONLY_SUPPORTED_SCHEME_ID) {
+                records.push( {
+                  chainId: parameter.chainId,
+                  blockNumber: parseInt(log.blockNumber),
+                  logIndex: parseInt(log.logIndex),
+                  txIndex: parseInt(log.transactionIndex),
+                  txHash: log.transactionHash,
+                  contract,
+                  name: logData.name,
+                  registrant: ethers.utils.getAddress(logData.args[0]),
+                  schemeId,
+                  stealthMetaAddress: ethers.utils.toUtf8String(logData.args[2]),
+                  mine: false,
+                  confirmations: parameter.blockNumber - log.blockNumber,
+                  timestamp: null,
+                  tx: null,
+                });
+              }
+            } catch (e) {
+              console.log(now() + " ERROR dataModule:actions.syncTokenAgentsEvents.processLogs: " + e.message);
+            }
+          }
+        }
+        if (records.length) {
+          await db.registrations.bulkAdd(records).then(function(lastKey) {
+            console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+          }).catch(Dexie.BulkError, function(e) {
+            // console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
+          });
+        }
+      }
+      async function getLogs(fromBlock, toBlock, processLogs) {
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents.getLogs: " + fromBlock + " - " + toBlock);
+        let split = false;
+        const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
+        if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
+          try {
+            const filter = {
+              address: ERC6538REGISTRYADDRESS,
+              fromBlock,
+              toBlock,
+              topics: [
+                '0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9',
+                null,
+                null
+              ]
+            };
+            const eventLogs = await provider.getLogs(filter);
+            await processLogs(fromBlock, toBlock, eventLogs);
+          } catch (e) {
+            split = true;
+          }
+        } else {
+          split = true;
+        }
+        if (split) {
+          const mid = parseInt((fromBlock + toBlock) / 2);
+          await getLogs(fromBlock, mid, processLogs);
+          await getLogs(parseInt(mid) + 1, toBlock, processLogs);
+        }
+      }
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents BEGIN");
+      context.commit('setSyncSection', { section: 'Stealth Meta-Address Registry', total: null });
+      const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
+      const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+      // TODO: Handle incrementalSync?
+      const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+      await getLogs(startBlock, parameter.blockNumber, processLogs);
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents END");
+    },
+
+
     async syncStealthTransfers(context, parameter) {
       console.log(now() + " INFO dataModule:actions.syncStealthTransfers BEGIN: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);

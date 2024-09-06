@@ -599,7 +599,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers']) {
+        for (let type of ['tokenAgents', 'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // console.log(now() + " INFO dataModule:actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
@@ -852,6 +852,9 @@ const dataModule = {
       if (options.tokenAgentFactory && !options.devThing) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
       }
+      if (options.tokenAgentFactory && !options.devThing) {
+        await context.dispatch('collateTokenAgentFactoryEvents', parameter);
+      }
       if (options.tokenAgents && !options.devThing) {
         await context.dispatch('syncTokenAgentsEvents', parameter);
       }
@@ -927,26 +930,21 @@ const dataModule = {
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      return;
-
-      // StealthMetaAddressSet (index_topic_1 address registrant, index_topic_2 uint256 schemeId, bytes stealthMetaAddress)
-      // 0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9
-      const erc5564RegistryContract = new ethers.Contract(ERC6538REGISTRYADDRESS, ERC6538REGISTRYABI, provider);
-      let total = 0;
-      let t = this;
-      async function processLogs(fromBlock, toBlock, logs) {
-        total = parseInt(total) + logs.length;
-        context.commit('setSyncCompleted', total);
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
-        const records = [];
-        for (const log of logs) {
-          if (!log.removed) {
-            try {
-              const logData = erc5564RegistryContract.interface.parseLog(log);
-              // console.log("logData: " + JSON.stringify(logData, null, 2));
-              const [ contract, schemeId ] = [ log.address, parseInt(logData.args[1]) ];
-              if (schemeId == ONLY_SUPPORTED_SCHEME_ID) {
+      const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        const interface = new ethers.utils.Interface(network.tokenAgentFactory.abi);
+        let total = 0;
+        let t = this;
+        async function processLogs(fromBlock, toBlock, logs) {
+          total = parseInt(total) + logs.length;
+          context.commit('setSyncCompleted', total);
+          console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + fromBlock + " - " + toBlock + " " + logs.length + " " + total);
+          const records = [];
+          for (const log of logs) {
+            if (!log.removed) {
+              try {
+                const logData = interface.parseLog(log);
+                const [ contract, tokenAgent, owner, index ] = [ log.address, ...logData.args ];
                 records.push( {
                   chainId: parameter.chainId,
                   blockNumber: parseInt(log.blockNumber),
@@ -955,66 +953,95 @@ const dataModule = {
                   txHash: log.transactionHash,
                   contract,
                   name: logData.name,
-                  registrant: ethers.utils.getAddress(logData.args[0]),
-                  schemeId,
-                  stealthMetaAddress: ethers.utils.toUtf8String(logData.args[2]),
-                  mine: false,
+                  tokenAgent: ethers.utils.getAddress(tokenAgent),
+                  owner: ethers.utils.getAddress(owner),
+                  index: parseInt(index),
                   confirmations: parameter.blockNumber - log.blockNumber,
                   timestamp: null,
                   tx: null,
                 });
+              } catch (e) {
+                console.log(now() + " ERROR dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + e.message);
               }
-            } catch (e) {
-              console.log(now() + " ERROR dataModule:actions.syncTokenAgentFactoryEvents.processLogs: " + e.message);
             }
           }
+          if (records.length) {
+            console.log("records: " + JSON.stringify(records, null, 2));
+            await db.tokenAgentFactoryEvents.bulkAdd(records).then(function(lastKey) {
+              console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+            }).catch(Dexie.BulkError, function(e) {
+              console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
+            });
+          }
         }
-        if (records.length) {
-          await db.registrations.bulkAdd(records).then(function(lastKey) {
-            console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
-          }).catch(Dexie.BulkError, function(e) {
-            // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
-          });
-        }
-      }
-      async function getLogs(fromBlock, toBlock, processLogs) {
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
-        let split = false;
-        const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
-        if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
-          try {
-            const filter = {
-              address: ERC6538REGISTRYADDRESS,
-              fromBlock,
-              toBlock,
-              topics: [
-                '0x4e739a47dfa4fd3cfa92f8fe760cebe125565927e5c422cb28e7aa388a067af9',
-                null,
-                null
-              ]
-            };
-            const eventLogs = await provider.getLogs(filter);
-            await processLogs(fromBlock, toBlock, eventLogs);
-          } catch (e) {
+        async function getLogs(fromBlock, toBlock, processLogs) {
+          console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
+          let split = false;
+          const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
+          if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
+            try {
+              const filter = {
+                address: network.tokenAgentFactory.address,
+                fromBlock,
+                toBlock,
+                topics: [
+                  [
+                    // event NewTokenAgent(TokenAgent indexed tokenAgent, address indexed owner, uint indexed index, Unixtime timestamp);
+                    ethers.utils.id("NewTokenAgent(address,address,uint256,uint40)"),
+                  ],
+                  null,
+                  null
+                ]
+              };
+              const eventLogs = await provider.getLogs(filter);
+              await processLogs(fromBlock, toBlock, eventLogs);
+            } catch (e) {
+              split = true;
+            }
+          } else {
             split = true;
           }
-        } else {
-          split = true;
+          if (split) {
+            const mid = parseInt((fromBlock + toBlock) / 2);
+            await getLogs(fromBlock, mid, processLogs);
+            await getLogs(parseInt(mid) + 1, toBlock, processLogs);
+          }
         }
-        if (split) {
-          const mid = parseInt((fromBlock + toBlock) / 2);
-          await getLogs(fromBlock, mid, processLogs);
-          await getLogs(parseInt(mid) + 1, toBlock, processLogs);
-        }
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
+        context.commit('setSyncSection', { section: 'TokenAgentFactory events', total: null });
+        const deleteCall = await db.tokenAgentFactoryEvents.where("confirmations").below(parameter.confirmations).delete();
+        const latest = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
+        const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+        await getLogs(startBlock, parameter.blockNumber, processLogs);
       }
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
-      context.commit('setSyncSection', { section: 'Stealth Meta-Address Registry', total: null });
-      const deleteCall = await db.registrations.where("confirmations").below(parameter.confirmations).delete();
-      const latest = await db.registrations.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-      // TODO: Handle incrementalSync?
-      const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-      await getLogs(startBlock, parameter.blockNumber, processLogs);
       console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END");
+    },
+
+    async collateTokenAgentFactoryEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+
+      const tokenAgents = context.state.tokenAgents;
+      if (!(parameter.chainId in tokenAgents)) {
+        tokenAgents[parameter.chainId] = {};
+      }
+      console.log("tokenAgents BEFORE: " + JSON.stringify(tokenAgents, null, 2));
+      let rows = 0;
+      let done = false;
+      do {
+        let data = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        for (const item of data) {
+          tokenAgents[parameter.chainId][item.tokenAgent] = item.owner;
+        }
+        rows = parseInt(rows) + data.length;
+        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+      } while (!done);
+      console.log("tokenAgents AFTER: " + JSON.stringify(tokenAgents, null, 2));
+      context.commit('setState', { name: 'tokenAgents', data: tokenAgents });
+      await context.dispatch('saveData', ['tokenAgents']);
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents END");
     },
 
     async syncTokenAgentsEvents(context, parameter) {

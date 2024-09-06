@@ -149,6 +149,28 @@ describe("TokenAgentFactory", function () {
         padLeft(erc1155Info.join(", "), 34)
       );
     }
+
+    const offersInfo = await d.tokenAgents[1].getOffersInfo(0, 10);
+    if (offersInfo.length > 0) {
+      console.log();
+      console.log("          tokenAgents[1] Offers");
+      console.log("          ## Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds");
+      console.log("          -- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------");
+      for (let i = 0; i < offersInfo.length; i++) {
+        const info = offersInfo[i];
+        console.log("           " + padLeft(info[0]) + " " + info[1].substring(0, 10) + " " +
+          padRight(info[2] == 1 ? '20' : (info[2] == 2 ? '721' : '1155'), 4) + " " +
+          (info[3] ? 'SELL' : 'BUY ') + " " +
+          padRight(new Date(parseInt(info[4]) * 1000).toLocaleTimeString(), 12) + " " +
+          padLeft(info[5], 5) + " " + padLeft(info[6], 5) + " " +
+          padLeft(info[7].map(e => parseFloat(ethers.formatEther(e)).toFixed(2)).join(", "), 30) + " " +
+          padLeft(info[8].map(e => parseInt(e)).join(", "), 30) + " " +
+          padLeft(info[9].map(e => (info[2] == 1 ? parseFloat(ethers.formatEther(e)).toFixed(2) : parseInt(e)) ).join(", "), 30) + " " +
+          padLeft(info[10].map(e => (info[2] == 1 ? parseFloat(ethers.formatEther(e)).toFixed(2) : parseInt(e)) ).join(", "), 30)
+        );
+      }
+    }
+
     console.log();
   }
 
@@ -201,8 +223,9 @@ describe("TokenAgentFactory", function () {
     const tokenAgentsInfo = await tokenAgentFactory.getTokenAgentsInfo(0, 10);
     console.log("          # tokenAgent Owner");
     console.log("          - ---------- ----------");
-    for (let i = 0; i < tokenAgentsInfo[0].length && tokenAgentsInfo[1][i] != ADDRESS0; i++) {
-      console.log("          " + i + " " + tokenAgentsInfo[1][i].substring(0, 10) + " " + tokenAgentsInfo[2][i].substring(0, 10));
+    for (let i = 0; i < tokenAgentsInfo.length; i++) {
+      const info = tokenAgentsInfo[i];
+      console.log("          " + info[0] + " " + info[1].substring(0, 10) + " " + info[2].substring(0, 10));
     }
 
     const amountWeth = ethers.parseUnits("100", 18);

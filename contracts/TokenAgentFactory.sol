@@ -627,6 +627,45 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
     }
+
+    struct Result {
+        uint index;
+        Token token;
+        TokenType tokenType;
+        BuySell buySell;
+        Unixtime expiry;
+        Nonce nonce;
+        Count count;
+        Price[] prices;
+        TokenId[] tokenIds;
+        Tokens[] tokenss;
+        Tokens[] useds;
+    }
+    function getOffersInfo(uint from, uint to) public view returns (Result[] memory results) {
+        uint start = from < offers.length ? from : offers.length;
+        uint end = to < offers.length ? to : offers.length;
+        results = new Result[](end - start);
+        uint k;
+        for (uint i = from; i < to && i < offers.length; i++) {
+            if (i < offers.length) {
+                Offer memory offer = offers[i];
+                results[k] = Result(
+                    i,
+                    offer.token,
+                    tokenTypes[offer.token],
+                    offer.buySell,
+                    offer.expiry,
+                    offer.nonce,
+                    offer.count,
+                    offer.prices,
+                    offer.tokenIds,
+                    offer.tokenss,
+                    offer.useds
+                );
+                k++;
+            }
+        }
+    }
 }
 
 /// @notice TokenAgent factory
@@ -656,20 +695,22 @@ contract TokenAgentFactory is CloneFactory {
         return tokenAgentsByOwners[owner].length;
     }
 
-    function getTokenAgentsInfo(uint from, uint to) public view returns (uint[] memory indices_, address[] memory tokenAgents_, address[] memory owners_) {
-        indices_ = new uint[](to - from);
-        tokenAgents_ = new address[](to - from);
-        owners_ = new address[](to - from);
+    struct Result {
+        uint index;
+        TokenAgent tokenAgent;
+        Account owner;
+    }
+    function getTokenAgentsInfo(uint from, uint to) public view returns (Result[] memory results) {
+        uint start = from < tokenAgents.length ? from : tokenAgents.length;
+        uint end = to < tokenAgents.length ? to : tokenAgents.length;
+        results = new Result[](end - start);
         uint k;
         for (uint i = from; i < to && i < tokenAgents.length; i++) {
             if (i < tokenAgents.length) {
-                indices_[k] = i;
-                tokenAgents_[k] = address(tokenAgents[i]);
-                owners_[k] = tokenAgents[i].owner();
+                results[k] = Result(i, tokenAgents[i], Account.wrap(tokenAgents[i].owner()));
                 k++;
             }
         }
-
     }
 
 }

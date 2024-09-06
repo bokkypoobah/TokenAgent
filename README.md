@@ -16,6 +16,11 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 * When a user wants to view the offers and trades for a particular ERC20, incrementally scrape all the ERC20 events
 * The dapp will have all the data required to compute the token balances and `TokenAgent` states using the events above
 
+## Deployments
+
+#### Sepolia Testing
+* v0.8.0 template [TokenAgent](https://sepolia.etherscan.io/address/0x0514e4402fe93b6ba0b014b30e5b715ed0943c25#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x598b17e44c3e8894dfcc9aaec16dad81756f5651#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.0](deployed/TokenAgentFactory_v0.8.0_Sepolia_0x598b17E44c3e8894DfcC9aAec16DaD81756F5651.sol)
+
 ## Testing
 
 #### First Install

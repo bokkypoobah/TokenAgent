@@ -192,16 +192,19 @@ describe("TokenAgentFactory", function () {
     const erc721Token = await ERC721Token.deploy();
     const ERC1155Token = await ethers.getContractFactory("ERC1155Token");
     const erc1155Token = await ERC1155Token.deploy("https://blah.blah/blah/");
+    const TokenAgent = await ethers.getContractFactory("TokenAgent");
+    const tokenAgentTemplate = await TokenAgent.deploy();
     const TokenAgentFactory = await ethers.getContractFactory("TokenAgentFactory");
-    const tokenAgentFactory = await TokenAgentFactory.deploy(weth);
+    const tokenAgentFactory = await TokenAgentFactory.deploy();
     const tokenAgentFactoryTxDeployment = await tokenAgentFactory.waitForDeployment();
     const tokenAgentFactoryTx = await tokenAgentFactoryTxDeployment.deploymentTransaction();
     const tokenAgentFactoryTxReceipt = await tokenAgentFactoryTx.wait();
     const fee = BigInt(tokenAgentFactoryTxReceipt.gasUsed) * GASPRICE;
     const feeUsd = parseFloat(ethers.formatEther(fee)) * ETHUSD;
-    console.log("        * accounts[0]->TokenAgentFactory.deploy(weth) => " + tokenAgentFactory.target.substring(0, 10) + " - gasUsed: " + formatNumber(tokenAgentFactoryTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
+    console.log("        * accounts[0]->TokenAgentFactory.deploy() => " + tokenAgentFactory.target.substring(0, 10) + " - gasUsed: " + formatNumber(tokenAgentFactoryTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
 
-    const TokenAgent = await ethers.getContractFactory("TokenAgent");
+    await tokenAgentFactory.init(weth, tokenAgentTemplate);
+
     const tokenAgents = [];
     for (let i = 0; i < 4; i++) {
       const newTokenAgentTx = await tokenAgentFactory.connect(accounts[i]).newTokenAgent();

@@ -730,27 +730,22 @@ contract TokenAgentFactory is CloneFactory {
         uint end = to < tokenAgentRecords.length ? to : tokenAgentRecords.length;
         results = new TokenAgentInfo[](end - start);
         uint k;
-        for (uint i = from; i < to && i < tokenAgentRecords.length; i++) {
-            if (i < tokenAgentRecords.length) {
-                results[k] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
-                k++;
-            }
+        for (uint i = start; i < end; i++) {
+            results[k] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
+            k++;
         }
     }
 
     function getTokenAgentsByOwnerInfo(Account owner, uint from, uint to) public view returns (TokenAgentInfo[] memory results) {
         Index[] memory indices = tokenAgentIndicesByOwners[owner];
-
         uint start = from < indices.length ? from : indices.length;
         uint end = to < indices.length ? to : indices.length;
         results = new TokenAgentInfo[](end - start);
         uint k;
-        for (uint i = from; i < to && i < indices.length; i++) {
-            if (i < indices.length) {
-                uint index = Index.unwrap(indices[i]);
-                results[k] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
-                k++;
-            }
+        for (uint i = start; i < end; i++) {
+            uint index = Index.unwrap(indices[i]);
+            results[k] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
+            k++;
         }
     }
 }

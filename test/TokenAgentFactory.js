@@ -219,8 +219,8 @@ describe("TokenAgentFactory", function () {
       });
 
       const tokenAgentsByOwnerInfo = await tokenAgentFactory.getTokenAgentsByOwnerInfo(accounts[i].address, 0, 10);
+      // console.log("        * tokenAgentsByOwnerInfo: " + JSON.stringify(tokenAgentsByOwnerInfo.map(e => e.toString())));
       const tokenAgentAddress = tokenAgentsByOwnerInfo[0][2];
-      // console.log("        * tokenAgentAddress: " + tokenAgentAddress);
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
       tokenAgents.push(tokenAgent);
     }

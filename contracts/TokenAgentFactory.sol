@@ -113,7 +113,7 @@ interface IERC1155Partial {
 type Account is address;
 type Count is uint16;
 type Nonce is uint32;
-type Index is uint;
+type Index is uint32;
 type Price is uint128;
 type Token is address;
 type TokenId is uint;
@@ -292,6 +292,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         Tokens[] tokenss;    // ERC-20/1155
         Tokens[] useds;      // ERC-20
     }
+    struct OfferInfo {
+        uint index;
+        Token token;
+        TokenType tokenType;
+        BuySell buySell;
+        Unixtime expiry;
+        Nonce nonce;
+        Count count;
+        Price[] prices;
+        TokenId[] tokenIds;
+        Tokens[] tokenss;
+        Tokens[] useds;
+    }
     struct TradeInput {
         Index index;         // 256 bits
         Price price;         // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
@@ -377,7 +390,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.tokenss.push(Tokens.wrap(uint128(input.data[j + 1])));
                     offer.useds.push(Tokens.wrap(0));
                 }
-                emit Offered(Index.wrap(index), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, Count.wrap(0), offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, Count.wrap(0), offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
                 if (input.data.length == 0) {
                     revert InvalidInputData("zero length");
@@ -411,7 +424,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         }
                     }
                 }
-                emit Offered(Index.wrap(index), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 if (input.data.length == 0) {
                     revert InvalidInputData("zero length");
@@ -443,7 +456,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         offer.tokenss.push(Tokens.wrap(uint128(input.data[j+2])));
                     }
                 }
-                emit Offered(Index.wrap(index), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }
@@ -457,7 +470,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             TradeInput memory input = inputs[i];
             uint index = Index.unwrap(input.index);
             if (index >= offers.length) {
-                revert InvalidIndex(Index.wrap(index));
+                revert InvalidIndex(Index.wrap(uint32(index)));
             }
             Offer storage offer = offers[index];
             TokenType tokenType = _getTokenType(offer.token);
@@ -465,7 +478,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 revert InvalidOffer(offer.nonce, nonce);
             }
             if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
-                revert OfferExpired(Index.wrap(index), offer.expiry);
+                revert OfferExpired(Index.wrap(uint32(index)), offer.expiry);
             }
             uint price;
             uint[] memory prices_;
@@ -627,32 +640,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     weth.transferFrom(msg.sender, Account.unwrap(owner), price);
                 }
             }
-            emit Traded(Index.wrap(index), Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            emit Traded(Index.wrap(uint32(index)), Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
-    struct Result {
-        uint index;
-        Token token;
-        TokenType tokenType;
-        BuySell buySell;
-        Unixtime expiry;
-        Nonce nonce;
-        Count count;
-        Price[] prices;
-        TokenId[] tokenIds;
-        Tokens[] tokenss;
-        Tokens[] useds;
-    }
-    function getOffersInfo(uint from, uint to) public view returns (Result[] memory results) {
+    function getOffersInfo(uint from, uint to) public view returns (OfferInfo[] memory results) {
         uint start = from < offers.length ? from : offers.length;
         uint end = to < offers.length ? to : offers.length;
-        results = new Result[](end - start);
+        results = new OfferInfo[](end - start);
         uint k;
         for (uint i = from; i < to && i < offers.length; i++) {
             if (i < offers.length) {
                 Offer memory offer = offers[i];
-                results[k] = Result(
+                results[k] = OfferInfo(
                     i,
                     offer.token,
                     tokenTypes[offer.token],
@@ -673,11 +673,23 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
 /// @notice TokenAgent factory
 contract TokenAgentFactory is CloneFactory {
-    TokenAgent public tokenAgentTemplate;
+
+    struct TokenAgentRecord {
+        TokenAgent tokenAgent;
+        Index indexByOwner;
+    }
+    struct TokenAgentInfo {
+        Index index;
+        Index indexByOwner;
+        TokenAgent tokenAgent;
+        Account owner;
+    }
 
     IERC20 public weth;
-    TokenAgent[] public tokenAgents;
-    mapping(Account => TokenAgent[]) public tokenAgentsByOwners;
+    TokenAgent public tokenAgentTemplate;
+    TokenAgentRecord[] public tokenAgentRecords;
+    mapping(Account => Index[]) public tokenAgentIndicesByOwners;
+    mapping(TokenAgent => Index) public tokenAgentIndex;
 
     event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
 
@@ -694,41 +706,51 @@ contract TokenAgentFactory is CloneFactory {
         }
     }
 
+    function tokenAgentsLength() public view returns (uint) {
+        return tokenAgentRecords.length;
+    }
+
+    function tokenAgentsByOwnerLength(Account owner) public view returns (uint) {
+        return tokenAgentIndicesByOwners[owner].length;
+    }
+
     function newTokenAgent() public {
         if (address(weth) == address(0)) {
             revert NotInitialised();
         }
         TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
         tokenAgent.init(weth, Account.wrap(msg.sender));
-        tokenAgents.push(tokenAgent);
-        tokenAgentsByOwners[Account.wrap(msg.sender)].push(tokenAgent);
-        emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(tokenAgents.length - 1), Index.wrap(tokenAgentsByOwners[Account.wrap(msg.sender)].length - 1), Unixtime.wrap(uint40(block.timestamp)));
+        tokenAgentRecords.push(TokenAgentRecord(tokenAgent, Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length))));
+        tokenAgentIndicesByOwners[Account.wrap(msg.sender)].push(Index.wrap(uint32(tokenAgentRecords.length - 1)));
+        emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(uint32(tokenAgentRecords.length - 1)), Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length - 1)), Unixtime.wrap(uint40(block.timestamp)));
     }
 
-    function tokenAgentsLength() public view returns (uint) {
-        return tokenAgents.length;
-    }
-
-    function tokenAgentsByOwnerLength(Account owner) public view returns (uint) {
-        return tokenAgentsByOwners[owner].length;
-    }
-
-    struct Result {
-        uint index;
-        TokenAgent tokenAgent;
-        Account owner;
-    }
-    function getTokenAgentsInfo(uint from, uint to) public view returns (Result[] memory results) {
-        uint start = from < tokenAgents.length ? from : tokenAgents.length;
-        uint end = to < tokenAgents.length ? to : tokenAgents.length;
-        results = new Result[](end - start);
+    function getTokenAgentsInfo(uint from, uint to) public view returns (TokenAgentInfo[] memory results) {
+        uint start = from < tokenAgentRecords.length ? from : tokenAgentRecords.length;
+        uint end = to < tokenAgentRecords.length ? to : tokenAgentRecords.length;
+        results = new TokenAgentInfo[](end - start);
         uint k;
-        for (uint i = from; i < to && i < tokenAgents.length; i++) {
-            if (i < tokenAgents.length) {
-                results[k] = Result(i, tokenAgents[i], tokenAgents[i].owner());
+        for (uint i = from; i < to && i < tokenAgentRecords.length; i++) {
+            if (i < tokenAgentRecords.length) {
+                results[k] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
                 k++;
             }
         }
     }
 
+    function getTokenAgentsByOwnerInfo(Account owner, uint from, uint to) public view returns (TokenAgentInfo[] memory results) {
+        Index[] memory indices = tokenAgentIndicesByOwners[owner];
+
+        uint start = from < indices.length ? from : indices.length;
+        uint end = to < indices.length ? to : indices.length;
+        results = new TokenAgentInfo[](end - start);
+        uint k;
+        for (uint i = from; i < to && i < indices.length; i++) {
+            if (i < indices.length) {
+                uint index = Index.unwrap(indices[i]);
+                results[k] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
+                k++;
+            }
+        }
+    }
 }

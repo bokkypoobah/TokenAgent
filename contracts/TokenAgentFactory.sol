@@ -157,9 +157,10 @@ library ArraySearch {
 /// @notice Ownership
 contract Owned {
     Account public owner;
-    Account public newOwner;
+    Account public pendingOwner;
 
-    event OwnershipTransferred(Account indexed from, Account indexed to, Unixtime timestamp);
+    event OwnershipTransferStarted(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
+    event OwnershipTransferred(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 
     error AlreadyInitialised();
     error NotOwner();
@@ -185,16 +186,17 @@ contract Owned {
         }
         owner = _owner;
     }
-    function transferOwnership(Account _newOwner) public onlyOwner {
-        newOwner = _newOwner;
+    function transferOwnership(Account _pendingOwner) public onlyOwner {
+        pendingOwner = _pendingOwner;
+        emit OwnershipTransferStarted(owner, _pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
     }
     function acceptOwnership() public {
-        if (msg.sender != Account.unwrap(newOwner)) {
+        if (msg.sender != Account.unwrap(pendingOwner)) {
             revert NotNewOwner();
         }
-        emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint40(block.timestamp)));
-        owner = newOwner;
-        newOwner = Account.wrap(address(0));
+        emit OwnershipTransferred(owner, pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
+        owner = pendingOwner;
+        pendingOwner = Account.wrap(address(0));
     }
 }
 
@@ -306,7 +308,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         Tokens[] useds;
     }
     struct TradeInput {
-        Index index;         // 256 bits
+        Index index;         // 32 bits
         Price price;         // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
         Execution execution; // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
         uint[] data;
@@ -350,21 +352,21 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     // input.data:
     // ERC-20
     //   [price0, tokens0, price1, tokens1, ...]
-    //     -> prices [one, two, ...], tokens [one, two, ...]
+    //     -> count n/a, prices [price0, price1, ...], tokenIds[], tokens [tokens0, tokens1, ...]
     // ERC-721
     //   Single price: [price0, count] - b/s count @ price0 with any tokenId
-    //     -> prices[price0], tokenIds[], count
+    //     -> count, prices[price0], tokenIds[], tokens[]
     //   Single price: [price0, count, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
-    //     -> prices[price0], tokenIds[tokenId0, tokenId1], count
+    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1], tokens[]
     //   Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
-    //     -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
+    //     -> count n/a, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokens[]
     // ERC-1155
     //   Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
-    //     -> prices[price0], tokenIds[], tokenss [], count
+    //     -> count, prices[price0], tokenIds[], tokenss []
     //   Single price: [price0, count, tokenId0, tokens0, tokenId1, tokens1, ...] - b/s count @ price0 with specified tokenIds and tokens
-    //     -> prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...], count
+    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
     //   Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
-    //     -> prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
+    //     -> count n/a, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
     function addOffers(OrderInput[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
             OrderInput memory input = inputs[i];

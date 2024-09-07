@@ -1,18 +1,14 @@
-/**
- *Submitted for verification at Etherscan.io on 2024-09-06
-*/
-
 pragma solidity ^0.8.24;
 
 // ----------------------------------------------------------------------------
-// TokenAgent with factory v0.8.0 testing
+// TokenAgent with factory v0.8.1 testing
 //
 // https://github.com/bokkypoobah/TokenAgent
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent 0x0514E4402Fe93b6bA0B014b30E5b715eD0943c25
-// - TokenAgentFactory 0x598b17E44c3e8894DfcC9aAec16DaD81756F5651
+// - TokenAgent
+// - TokenAgentFactory
 //
 // TODO:
 // - ERC-1155 Check individual tokenId counts and increment useds
@@ -160,11 +156,10 @@ library ArraySearch {
 
 /// @notice Ownership
 contract Owned {
-    bool initialised;
-    address public owner;
-    address public newOwner;
+    Account public owner;
+    Account public newOwner;
 
-    event OwnershipTransferred(address indexed from, address indexed to, Unixtime timestamp);
+    event OwnershipTransferred(Account indexed from, Account indexed to, Unixtime timestamp);
 
     error AlreadyInitialised();
     error NotOwner();
@@ -172,35 +167,34 @@ contract Owned {
     error NotNewOwner();
 
     modifier onlyOwner {
-        if (msg.sender != owner) {
+        if (msg.sender != Account.unwrap(owner)) {
             revert NotOwner();
         }
         _;
     }
     modifier notOwner {
-        if (msg.sender == owner) {
+        if (msg.sender == Account.unwrap(owner)) {
             revert Owner();
         }
         _;
     }
 
-    function initOwned(address _owner) internal {
-        if (initialised) {
+    function initOwned(Account _owner) internal {
+        if (Account.unwrap(owner) != address(0)) {
             revert AlreadyInitialised();
         }
         owner = _owner;
-        initialised = true;
     }
-    function transferOwnership(address _newOwner) public onlyOwner {
+    function transferOwnership(Account _newOwner) public onlyOwner {
         newOwner = _newOwner;
     }
     function acceptOwnership() public {
-        if (msg.sender != newOwner) {
+        if (msg.sender != Account.unwrap(newOwner)) {
             revert NotNewOwner();
         }
         emit OwnershipTransferred(owner, newOwner, Unixtime.wrap(uint40(block.timestamp)));
         owner = newOwner;
-        newOwner = address(0);
+        newOwner = Account.wrap(address(0));
     }
 }
 
@@ -331,7 +325,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     constructor() {
     }
 
-    function init(IERC20 _weth, address owner) external {
+    function init(IERC20 _weth, Account owner) external {
         super.initOwned(owner);
         weth = _weth;
     }
@@ -519,14 +513,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         if (price < Price.unwrap(input.price)) {
                             revert ExecutedAveragePriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
-                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, totalTokens);
-                        weth.transferFrom(owner, msg.sender, totalWETHTokens);
+                        IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, Account.unwrap(owner), totalTokens);
+                        weth.transferFrom(Account.unwrap(owner), msg.sender, totalWETHTokens);
                     } else {
                         if (price > Price.unwrap(input.price)) {
                             revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
-                        weth.transferFrom(msg.sender, owner, totalWETHTokens);
-                        IERC20(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, totalTokens);
+                        weth.transferFrom(msg.sender, Account.unwrap(owner), totalWETHTokens);
+                        IERC20(Token.unwrap(offer.token)).transferFrom(Account.unwrap(owner), msg.sender, totalTokens);
                     }
                 }
             } else if (tokenType == TokenType.ERC721) {
@@ -561,21 +555,21 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     tokenIds_[j] = input.data[j];
                     price += p;
                     if (offer.buySell == BuySell.BUY) {
-                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, owner, input.data[j]);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(msg.sender, Account.unwrap(owner), input.data[j]);
                     } else {
-                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(owner, msg.sender, input.data[j]);
+                        IERC721Partial(Token.unwrap(offer.token)).transferFrom(Account.unwrap(owner), msg.sender, input.data[j]);
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
                     if (price < Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(owner, msg.sender, price);
+                    weth.transferFrom(Account.unwrap(owner), msg.sender, price);
                 } else {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, owner, price);
+                    weth.transferFrom(msg.sender, Account.unwrap(owner), price);
                 }
             } else if (tokenType == TokenType.ERC1155) {
                 {
@@ -616,24 +610,24 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     tokenss_[j/2] = input.data[j+1];
                     price += p * input.data[j+1];
                     if (offer.buySell == BuySell.BUY) {
-                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(msg.sender, owner, input.data[j], input.data[j+1], "");
+                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(msg.sender, Account.unwrap(owner), input.data[j], input.data[j+1], "");
                     } else {
-                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(owner, msg.sender, input.data[j], input.data[j+1], "");
+                        IERC1155Partial(Token.unwrap(offer.token)).safeTransferFrom(Account.unwrap(owner), msg.sender, input.data[j], input.data[j+1], "");
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
                     if (price < Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(owner, msg.sender, price);
+                    weth.transferFrom(Account.unwrap(owner), msg.sender, price);
                 } else {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, owner, price);
+                    weth.transferFrom(msg.sender, Account.unwrap(owner), price);
                 }
             }
-            emit Traded(Index.wrap(index), Account.wrap(msg.sender), Account.wrap(owner), offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            emit Traded(Index.wrap(index), Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -705,7 +699,7 @@ contract TokenAgentFactory is CloneFactory {
             revert NotInitialised();
         }
         TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
-        tokenAgent.init(weth, msg.sender);
+        tokenAgent.init(weth, Account.wrap(msg.sender));
         tokenAgents.push(tokenAgent);
         tokenAgentsByOwners[msg.sender].push(tokenAgent);
         emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint40(block.timestamp)));
@@ -727,7 +721,7 @@ contract TokenAgentFactory is CloneFactory {
         uint k;
         for (uint i = from; i < to && i < tokenAgents.length; i++) {
             if (i < tokenAgents.length) {
-                results[k] = Result(i, tokenAgents[i], Account.wrap(tokenAgents[i].owner()));
+                results[k] = Result(i, tokenAgents[i], tokenAgents[i].owner());
                 k++;
             }
         }

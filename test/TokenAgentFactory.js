@@ -387,10 +387,7 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc20Token.target,
-          SELL,
-          MULTIPLE,
-          d.expiry,
+          d.erc20Token.target, SELL, MULTIPLE, d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
            ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
            ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
@@ -434,24 +431,15 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc721Token.target,
-          BUY,
-          SINGLE,
-          d.expiry,
+          d.erc721Token.target, BUY, SINGLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 4],
         ],
         [
-          d.erc721Token.target,
-          SELL,
-          SINGLE,
-          d.expiry,
+          d.erc721Token.target, SELL, SINGLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 4, 4, 5, 6, 7],
         ],
         [
-          d.erc721Token.target,
-          SELL,
-          MULTIPLE,
-          d.expiry,
+          d.erc721Token.target, SELL, MULTIPLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
         ],
       ];
@@ -485,24 +473,15 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc1155Token.target,
-          BUY,
-          SINGLE,
-          d.expiry,
+          d.erc1155Token.target, BUY, SINGLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 4],
         ],
         [
-          d.erc1155Token.target,
-          SELL,
-          SINGLE,
-          d.expiry,
+          d.erc1155Token.target, SELL, SINGLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 40, 0, 10, 1, 10, 2, 10, 3, 10],
         ],
         [
-          d.erc1155Token.target,
-          SELL,
-          MULTIPLE,
-          d.expiry,
+          d.erc1155Token.target, SELL, MULTIPLE, d.expiry,
           [ethers.parseUnits("0.1", 18), 0, 10, ethers.parseUnits("0.2", 18), 1, 10, ethers.parseUnits("0.3", 18), 2, 10, ethers.parseUnits("0.4", 18), 3, 10],
         ],
       ];

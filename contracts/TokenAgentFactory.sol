@@ -677,9 +677,9 @@ contract TokenAgentFactory is CloneFactory {
 
     IERC20 public weth;
     TokenAgent[] public tokenAgents;
-    mapping(address => TokenAgent[]) public tokenAgentsByOwners;
+    mapping(Account => TokenAgent[]) public tokenAgentsByOwners;
 
-    event NewTokenAgent(TokenAgent indexed tokenAgent, address indexed owner, uint indexed index, Unixtime timestamp);
+    event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
 
     error NotInitialised();
 
@@ -701,11 +701,15 @@ contract TokenAgentFactory is CloneFactory {
         TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
         tokenAgent.init(weth, Account.wrap(msg.sender));
         tokenAgents.push(tokenAgent);
-        tokenAgentsByOwners[msg.sender].push(tokenAgent);
-        emit NewTokenAgent(tokenAgent, msg.sender, tokenAgentsByOwners[msg.sender].length - 1, Unixtime.wrap(uint40(block.timestamp)));
+        tokenAgentsByOwners[Account.wrap(msg.sender)].push(tokenAgent);
+        emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(tokenAgents.length - 1), Index.wrap(tokenAgentsByOwners[Account.wrap(msg.sender)].length - 1), Unixtime.wrap(uint40(block.timestamp)));
     }
 
-    function tokenAgentsLength(address owner) public view returns (uint){
+    function tokenAgentsLength() public view returns (uint) {
+        return tokenAgents.length;
+    }
+
+    function tokenAgentsByOwnerLength(Account owner) public view returns (uint) {
         return tokenAgentsByOwners[owner].length;
     }
 

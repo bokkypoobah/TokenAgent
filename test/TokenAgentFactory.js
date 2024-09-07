@@ -214,7 +214,7 @@ describe("TokenAgentFactory", function () {
       newTokenAgentTxReceipt.logs.forEach((event) => {
         const log = tokenAgentFactory.interface.parseLog(event);
         // console.log("          + tokenAgentFactory." + log.name + ' ' + JSON.stringify(log.args.map(e => e.toString())));
-        DEBUGSETUPEVENTS && console.log("          + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', timestamp: ' + new Date(parseInt(log.args[3]) * 1000).toLocaleTimeString() + ')');
+        DEBUGSETUPEVENTS && console.log("          + tokenAgentFactory." + log.name + '(tokenAgent: ' + log.args[0].substring(0, 12) + ', owner: ' + log.args[1].substring(0, 12) + ', index: ' + log.args[2] + ', indexByOwner: ' + log.args[3] + ', timestamp: ' + new Date(parseInt(log.args[4]) * 1000).toLocaleTimeString() + ')');
         console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + formatNumber(newTokenAgentTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
       });
 
@@ -336,8 +336,9 @@ describe("TokenAgentFactory", function () {
       const d = await loadFixture(deployContracts);
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.emit(d.tokenAgentFactory, "NewTokenAgent")
-        .withArgs(anyValue, d.accounts[0].address, 1, anyValue);
-      expect(await d.tokenAgentFactory.tokenAgentsLength(d.accounts[0].address)).to.equal(2);
+        .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
+      expect(await d.tokenAgentFactory.tokenAgentsByOwnerLength(d.accounts[0].address)).to.equal(2);
+      expect(await d.tokenAgentFactory.tokenAgentsLength()).to.equal(5);
       const tokenAgentAddress = await d.tokenAgentFactory.tokenAgents(4);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
@@ -359,7 +360,7 @@ describe("TokenAgentFactory", function () {
       const d = await loadFixture(deployContracts);
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.emit(d.tokenAgentFactory, "NewTokenAgent")
-        .withArgs(anyValue, d.accounts[0].address, 1, anyValue);
+        .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
       const tokenAgentAddress = await d.tokenAgentFactory.tokenAgents(4);
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);

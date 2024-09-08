@@ -110,7 +110,7 @@ interface IERC1155Partial {
 type Account is address; // 2^160
 type Count is uint16;    // 2^16  = 65,536
 type Index is uint32;    // 2^32  = 4,294,967,296
-type Nonce is uint32;    // 2^32  = 4,294,967,296
+type Nonce is uint24;    // 2^24  = 16,777,216
 type Price is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
 type Token is address;   // 2^160
 type TokenId is uint;    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
@@ -275,7 +275,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         BuySell buySell;     // 8 bits
         Unixtime expiry;     // 40 bits
         Count count;         // 16 bits
-        Nonce nonce;         // 32 bits
+        Nonce nonce;         // 24 bits
         Price[] prices;      // token/WETH 18dp
         TokenId[] tokenIds;  // ERC-721/1155
         Tokens[] tokenss;    // ERC-20/1155

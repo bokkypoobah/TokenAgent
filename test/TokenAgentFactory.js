@@ -457,8 +457,8 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          // [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
-          [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);

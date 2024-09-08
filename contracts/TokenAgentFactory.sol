@@ -268,7 +268,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         Token token;         // 160 bits
         BuySell buySell;     // 8 bits
         Pricing pricing;     // 8 bits
-        Unixtime expiry;     // 64 bits
+        Unixtime expiry;     // 40 bits
         uint[] data;
     }
     struct Offer {
@@ -527,11 +527,11 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
             } else if (tokenType == TokenType.ERC721) {
-                if (Count.unwrap(offer.count) < input.data.length) {
-                    revert InsufficentCountRemaining(Count.wrap(uint16(input.data.length)), offer.count);
-                }
                 if (Count.unwrap(offer.count) != type(uint16).max) {
-                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
+                    if (Count.unwrap(offer.count) < input.data.length) {
+                        revert InsufficentCountRemaining(Count.wrap(uint16(input.data.length)), offer.count);
+                    }
+                    offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(input.data.length));
                 }
                 prices_ = new uint[](input.data.length);
                 tokenIds_ = new uint[](input.data.length);
@@ -583,7 +583,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
                 }
                 if (Count.unwrap(offer.count) != type(uint16).max) {
-                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
+                    offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(input.data.length / 2));
                 }
                 prices_ = new uint[](input.data.length / 2);
                 tokenIds_ = new uint[](input.data.length / 2);

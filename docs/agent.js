@@ -83,9 +83,26 @@ const Agent = {
         <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
+
+
               <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
-                <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789" class="w-50"></b-form-input>
+                <b-input-group  style="width: 25.0rem;">
+                  <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789"></b-form-input>
+                  <b-input-group-append>
+                    <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
+                      <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
+                      <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
+                        <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
+                        <b-dropdown-item @click="settings.addOffers.token = item.tokenAgent; saveSettings(); loadToken(settings.addOffers.token);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                      </div>
+                    </b-dropdown>
+                  </b-input-group-append>
+                </b-input-group>
               </b-form-group>
+
+              <!-- <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
+                <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789" class="w-50"></b-form-input>
+              </b-form-group> -->
               <b-form-group label="Buy/Sell:" label-for="addoffers-buysell" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-select size="sm" id="addoffers-buysell" v-model="settings.addOffers.buySell" @change="saveSettings" :options="buySellOptions" v-b-popover.hover.ds500="'Owner BUY or SELL'" class="w-25"></b-form-select>
               </b-form-group>

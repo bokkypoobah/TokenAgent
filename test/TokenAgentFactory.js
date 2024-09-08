@@ -382,21 +382,34 @@ describe("TokenAgentFactory", function () {
 
     // TODO: Test TokenAgent error conditions
 
-    it("Test TokenAgent ERC-20 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-20 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
+
+      // const offers1 = [
+      //   [
+      //     d.erc20Token.target, SELL, MULTIPLE, d.expiry, 0,
+      //     [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
+      //      ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
+      //      ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
+      //   ],
+      // ];
+      // // console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
+      // console.log("        * offers1: " + JSON.stringify(offers1, (k, v) => typeof v === 'bigint' ? ethers.formatEther(v) : v));
+      // const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
 
       const offers1 = [
         [
           d.erc20Token.target, SELL, MULTIPLE, d.expiry, 0,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
-           ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
-           ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
+          [],
+          [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
         ],
       ];
       // console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
       console.log("        * offers1: " + JSON.stringify(offers1, (k, v) => typeof v === 'bigint' ? ethers.formatEther(v) : v));
-      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
+      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffersNew(offers1);
+
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       const indices = [];
       addOffers1TxReceipt.logs.forEach((event) => {

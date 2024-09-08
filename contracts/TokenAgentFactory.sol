@@ -150,6 +150,27 @@ library ArrayUtils {
         }
         return type(uint).max;
     }
+    function indexOfTokenId16s(TokenId16[] memory tokenIds, TokenId16 target) internal pure returns (uint) {
+        if (tokenIds.length > 0) {
+            uint left;
+            uint right = tokenIds.length - 1;
+            uint mid;
+            while (left <= right) {
+                mid = (left + right) / 2;
+                if (TokenId16.unwrap(tokenIds[mid]) < TokenId16.unwrap(target)) {
+                    left = mid + 1;
+                } else if (TokenId16.unwrap(tokenIds[mid]) > TokenId16.unwrap(target)) {
+                    if (mid < 1) {
+                        break;
+                    }
+                    right = mid - 1;
+                } else {
+                    return mid;
+                }
+            }
+        }
+        return type(uint).max;
+    }
 }
 
 /// @notice Ownership
@@ -279,7 +300,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         Nonce nonce;             // 24 bits
         TokenIdType tokenIdType; // 8 bits
         Price[] prices;          // token/WETH 18dp
-        TokenId[] tokenIds;      // ERC-721/1155
+        TokenId16[] tokenId16s;  // ERC-721/1155, when max[tokenIds...] < 2 ** 16
+        TokenId[] tokenIds;      // ERC-721/1155, when max[tokenIds...] >= 2 ** 16
         Tokens[] tokenss;        // ERC-20/1155
         Tokens[] useds;          // ERC-20
     }
@@ -378,6 +400,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
+            offer.prices = input.prices;
 
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
                 if (input.tokenIds.length > 0) {
@@ -401,24 +424,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
             }
             if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
+                offer.tokenss = input.tokenss;
                 for (uint j = 0; j < input.tokenss.length; j++) {
                     offer.useds.push();
                 }
             }
             if (tokenType == TokenType.ERC20) {
-                offer.prices = input.prices;
-                offer.tokenss = input.tokenss;
-                emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, Count.wrap(0), nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                // offer.tokenss = input.tokenss;
             } else if (tokenType == TokenType.ERC721) {
-                offer.prices = input.prices;
                 offer.tokenIds = input.tokenIds;
-                emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
-                offer.prices = input.prices;
                 offer.tokenIds = input.tokenIds;
-                offer.tokenss = input.tokenss;
-                emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                // offer.tokenss = input.tokenss;
             }
+            emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 

@@ -369,12 +369,12 @@ describe("TokenAgentFactory", function () {
       const tokenAgentAddress = tokenAgentsByOwnerInfo[1][2];
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
-      const invalidOffer1 = [[d.accounts[0].address, SELL, SINGLE, d.expiry, [888, "999999999999999999999999999999999997"]]];
+      const invalidOffer1 = [[d.accounts[0].address, SELL, SINGLE, d.expiry, 0, [888, "999999999999999999999999999999999997"]]];
       await expect(tokenAgent.addOffers(invalidOffer1))
         .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
         .withArgs(d.accounts[0].address);
       const invalidOffer2 = [
-        [d.weth.target, SELL, SINGLE, d.expiry, [888, "999999999999999999999999999999999997"]],
+        [d.weth.target, SELL, SINGLE, d.expiry, 0, [888, "999999999999999999999999999999999997"]],
       ];
       await expect(tokenAgent.addOffers(invalidOffer2))
         .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
@@ -388,7 +388,7 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc20Token.target, SELL, MULTIPLE, d.expiry,
+          d.erc20Token.target, SELL, MULTIPLE, d.expiry, 0,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("1", 18),
            ethers.parseUnits("0.2", 18), ethers.parseUnits("1", 18),
            ethers.parseUnits("0.3", 18), ethers.parseUnits("0.1", 18)],
@@ -432,15 +432,15 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc721Token.target, BUY, SINGLE, d.expiry,
+          d.erc721Token.target, BUY, SINGLE, d.expiry, 4,
           [ethers.parseUnits("0.1", 18), 4],
         ],
         [
-          d.erc721Token.target, SELL, SINGLE, d.expiry,
-          [ethers.parseUnits("0.1", 18), 4, 4, 5, 6, 7],
+          d.erc721Token.target, SELL, SINGLE, d.expiry, 4,
+          [ethers.parseUnits("0.1", 18), 4, 5, 6, 7],
         ],
         [
-          d.erc721Token.target, SELL, MULTIPLE, d.expiry,
+          d.erc721Token.target, SELL, MULTIPLE, d.expiry, 4,
           [ethers.parseUnits("0.1", 18), 4, ethers.parseUnits("0.2", 18), 5, ethers.parseUnits("0.3", 18), 6, ethers.parseUnits("0.4", 18), 7],
         ],
       ];
@@ -474,15 +474,15 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc1155Token.target, BUY, SINGLE, d.expiry,
-          [ethers.parseUnits("0.1", 18), 4],
+          d.erc1155Token.target, BUY, SINGLE, d.expiry, 40,
+          [ethers.parseUnits("0.1", 18)],
         ],
         [
-          d.erc1155Token.target, SELL, SINGLE, d.expiry,
-          [ethers.parseUnits("0.1", 18), 40, 0, 10, 1, 10, 2, 10, 3, 10],
+          d.erc1155Token.target, SELL, SINGLE, d.expiry, 40,
+          [ethers.parseUnits("0.1", 18), 0, 10, 1, 10, 2, 10, 3, 10],
         ],
         [
-          d.erc1155Token.target, SELL, MULTIPLE, d.expiry,
+          d.erc1155Token.target, SELL, MULTIPLE, d.expiry, 40,
           [ethers.parseUnits("0.1", 18), 0, 10, ethers.parseUnits("0.2", 18), 1, 10, ethers.parseUnits("0.3", 18), 2, 10, ethers.parseUnits("0.4", 18), 3, 10],
         ],
       ];

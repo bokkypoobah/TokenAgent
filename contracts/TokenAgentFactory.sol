@@ -269,6 +269,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         BuySell buySell;     // 8 bits
         Pricing pricing;     // 8 bits
         Unixtime expiry;     // 40 bits
+        Count count;         // 16 bits
         uint[] data;
     }
     struct Offer {
@@ -342,19 +343,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   [price0, tokens0, price1, tokens1, ...]
     //     -> count n/a, prices [price0, price1, ...], tokenIds[], tokens [tokens0, tokens1, ...]
     // ERC-721
-    //   Single price: [price0, count] - b/s count @ price0 with any tokenId
+    //   Single price: [price0] - b/s count @ price0 with any tokenId
     //     -> count, prices[price0], tokenIds[], tokens[]
-    //   Single price: [price0, count, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
+    //   Single price: [price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
     //     -> count, prices[price0], tokenIds[tokenId0, tokenId1], tokens[]
     //   Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
-    //     -> count n/a, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokens[]
+    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokens[]
     // ERC-1155
-    //   Single price: [price0, count] - b/s count @ price0 with any tokenId and any tokens
+    //   Single price: [price0] - b/s count @ price0 with any tokenId and any tokens
     //     -> count, prices[price0], tokenIds[], tokenss []
-    //   Single price: [price0, count, tokenId0, tokens0, tokenId1, tokens1, ...] - b/s count @ price0 with specified tokenIds and tokens
+    //   Single price: [price0, tokenId0, tokens0, tokenId1, tokens1, ...] - b/s count @ price0 with specified tokenIds and tokens
     //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
     //   Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
-    //     -> count n/a, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
+    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
     function addOffers(OrderInput[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
             OrderInput memory input = inputs[i];
@@ -371,6 +372,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.buySell = input.buySell;
             offer.expiry = input.expiry;
             offer.nonce = nonce;
+            offer.count = input.count;
             if (tokenType == TokenType.ERC20) {
                 if (input.data.length == 0 || (input.data.length % 2) != 0) {
                     revert InvalidInputData("length");
@@ -386,22 +388,21 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     revert InvalidInputData("zero length");
                 }
                 if (input.pricing == Pricing.SINGLE) {
-                    if (input.data[1] >= type(uint16).max) {
-                        revert InvalidInputData("count must be < 65535");
-                    }
-                    if (input.data.length < 2) {
-                        revert InvalidInputData("length < 2");
+                    // if (input.data[1] >= type(uint16).max) {
+                    //     revert InvalidInputData("count must be < 65535");
+                    // }
+                    if (input.data.length < 1) {
+                        revert InvalidInputData("length < 1");
                     }
                     offer.prices.push(Price.wrap(uint128(input.data[0])));
-                    offer.count = Count.wrap(uint16(input.data[1]));
-                    for (uint j = 2; j < input.data.length; j++) {
+                    // offer.count = Count.wrap(uint16(input.data[1]));
+                    for (uint j = 1; j < input.data.length; j++) {
                         offer.tokenIds.push(TokenId.wrap(input.data[j]));
                     }
                 } else {
                     if ((input.data.length % 2) != 0) {
                         revert InvalidInputData("length not even");
                     }
-                    offer.count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < input.data.length; j += 2) {
                         offer.prices.push(Price.wrap(uint128(input.data[j])));
                         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
@@ -420,18 +421,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     revert InvalidInputData("zero length");
                 }
                 if (input.pricing == Pricing.SINGLE) {
-                    if (input.data[1] >= type(uint16).max) {
-                        revert InvalidInputData("count must be < 65535");
+                    if (input.data.length < 1) {
+                        revert InvalidInputData("length < 1");
                     }
-                    if (input.data.length < 2) {
-                        revert InvalidInputData("length < 2");
-                    }
-                    if ((input.data.length % 2) != 0) {
-                        revert InvalidInputData("length not even");
+                    if ((input.data.length % 2) != 1) {
+                        revert InvalidInputData("length not odd");
                     }
                     offer.prices.push(Price.wrap(uint128(input.data[0])));
-                    offer.count = Count.wrap(uint16(input.data[1]));
-                    for (uint j = 2; j < input.data.length; j += 2) {
+                    for (uint j = 1; j < input.data.length; j += 2) {
                         offer.tokenIds.push(TokenId.wrap(input.data[j]));
                         offer.tokenss.push(Tokens.wrap(uint128(input.data[j+1])));
                     }
@@ -439,7 +436,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if ((input.data.length % 3) != 0) {
                         revert InvalidInputData("length not divisible by 3");
                     }
-                    offer.count = Count.wrap(type(uint16).max);
                     for (uint j = 0; j < input.data.length; j += 3) {
                         offer.prices.push(Price.wrap(uint128(input.data[j])));
                         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));

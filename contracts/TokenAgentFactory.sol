@@ -7,7 +7,7 @@ pragma solidity ^0.8.24;
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent
+// - TokenAgent template
 // - TokenAgentFactory
 //
 // SPDX-License-Identifier: MIT

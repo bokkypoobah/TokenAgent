@@ -2,7 +2,22 @@ const Agents = {
   template: `
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
+
+        <b-modal ref="modalnewtokenagent" v-model="settings.newTokenAgent.show" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="sm">
+          <template #modal-title>New Token Agent</template>
+          <div class="m-0 p-1">
+            <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
+            </b-form-group>
+          </div>
+        </b-modal>
+
         <div class="d-flex flex-wrap m-0 p-0">
+          <div class="mt-0 flex-grow-1">
+          </div>
+          <div class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!networkSupported" @click="settings.newTokenAgent.show = true; " variant="link" v-b-popover.hover.ds500="'Deploy new Token Agent'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+          </div>
           <div class="mt-0 flex-grow-1">
           </div>
           <div v-if="sync.section == null" class="mt-0 pr-1">
@@ -18,9 +33,9 @@ const Agents = {
           <div class="ml-0 mt-1">
             <b-button v-if="sync.section != null" size="sm" @click="halt" variant="link" v-b-popover.hover.ds500="'Click to stop. This process can be continued later'"><b-icon-stop-fill shift-v="+1" font-scale="1.0"></b-icon-stop-fill></b-button>
           </div>
-          <div class="mt-0 flex-grow-1">
+          <div v-if="false" class="mt-0 flex-grow-1">
           </div>
-          <div class="mt-0 pr-1">
+          <div v-if="false" class="mt-0 pr-1">
             <b-button size="sm" :disabled="!transferHelper" @click="newTransfer(null); " variant="link" v-b-popover.hover.ds500="'New Stealth Transfer'"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
           </div>
           <div class="mt-0 flex-grow-1">
@@ -82,7 +97,10 @@ const Agents = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 1,
+        newTokenAgent: {
+          show: true,
+        },
+        version: 2,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
@@ -190,6 +208,31 @@ const Agents = {
 
   },
   methods: {
+    async deployNewTokenAgent() {
+      console.log(now() + " INFO Agents:methods.deployNewTokenAgent");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
+        const contractWithSigner = contract.connect(provider.getSigner());
+        try {
+          const tx = await contractWithSigner.newTokenAgent();
+          console.log(now() + " INFO Agents:methods.deployNewTokenAgent - tx: " + JSON.stringify(tx));
+          this.$bvToast.toast(`${tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)}`, {
+            title: 'Transaction submitted. Resync in a minute',
+            autoHideDelay: 5000,
+            href: this.explorer + 'tx/' + tx.hash,
+          });
+          this.$refs['modalnewtokenagent'].hide();
+        } catch (e) {
+          console.log(now() + " ERROR Agents:methods.deployNewTokenAgent: " + JSON.stringify(e));
+          this.$bvToast.toast(`${e.message}`, {
+            title: 'Error!',
+            autoHideDelay: 5000,
+          });
+        }
+      }
+    },
     saveSettings() {
       console.log(now() + " INFO Agents:methods.saveSettings - tokenAgentAgentsSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentAgentsSettings = JSON.stringify(this.settings);

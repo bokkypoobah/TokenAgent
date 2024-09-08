@@ -478,7 +478,7 @@ describe("TokenAgentFactory", function () {
           [ethers.parseUnits("0.1", 18)],
         ],
         [
-          d.erc1155Token.target, SELL, SINGLE, d.expiry, 40,
+          d.erc1155Token.target, SELL, SINGLE, d.expiry, 26,
           [ethers.parseUnits("0.1", 18), 0, 10, 1, 10, 2, 10, 3, 10],
         ],
         [

@@ -579,7 +579,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
                 }
                 if (Count.unwrap(offer.count) != type(uint16).max) {
-                    offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(input.data.length / 2));
+                    offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(totalCount));
                 }
                 prices_ = new uint[](input.data.length / 2);
                 tokenIds_ = new uint[](input.data.length / 2);

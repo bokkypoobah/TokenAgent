@@ -19,9 +19,6 @@ const ERC1155 = 2;
 const FILL = 0;
 const FILLORKILL = 1;
 
-const SINGLE = 0;
-const MULTIPLE = 1;
-
 // const DATE_FORMAT_OPTIONS = {
 //   year: "numeric",
 //   month: "numeric",

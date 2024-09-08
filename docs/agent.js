@@ -86,6 +86,15 @@ const Agent = {
               <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789" class="w-50"></b-form-input>
               </b-form-group>
+              <b-form-group label="Buy/Sell:" label-for="addoffers-buysell" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-select size="sm" id="addoffers-buysell" v-model="settings.addOffers.buySell" @change="saveSettings" :options="buySellOptions" v-b-popover.hover.ds500="'Owner BUY or SELL'" class="w-25"></b-form-select>
+              </b-form-group>
+              <b-form-group label="Count:" label-for="addoffers-count" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-input size="sm" type="number" id="addoffers-count" v-model.trim="settings.addOffers.count" @change="saveSettings" class="w-25"></b-form-input>
+              </b-form-group>
+              <b-form-group label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricingOptions" v-b-popover.hover.ds500="'Single or multiple prices'" class="w-25"></b-form-select>
+              </b-form-group>
             </b-form-group>
             <b-form-group label-cols-lg="2" label="" label-size="lg" label-class="font-weight-bold pt-0" class="mt-3">
               <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -211,6 +220,14 @@ const Agent = {
         sortOption: 'ownertokenagentasc',
         version: 2,
       },
+      buySellOptions: [
+        { value: 0, text: 'BUY' },
+        { value: 1, text: 'SELL' },
+      ],
+      pricingOptions: [
+        { value: 0, text: 'SINGLE' },
+        { value: 1, text: 'MULTIPLE' },
+      ],
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
         { value: 'ownertokenagentdsc', text: '▼ Owner, ▲ Token Agent' },

@@ -261,7 +261,7 @@ contract TokenInfo {
 /// @notice User owned TokenAgent
 contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
-    struct OrderInput {
+    struct OfferInput {
         Token token;         // 160 bits
         BuySell buySell;     // 8 bits
         Pricing pricing;     // 8 bits
@@ -353,9 +353,9 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     //   Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
     //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-    function addOffers(OrderInput[] calldata inputs) external onlyOwner {
+    function addOffers(OfferInput[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
-            OrderInput memory input = inputs[i];
+            OfferInput memory input = inputs[i];
             TokenType tokenType = _getTokenType(input.token);
             Offer storage offer = offers.push();
             uint index = offers.length - 1;
@@ -458,7 +458,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   prices[price0], tokenIds[], tokenss[]
     //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
     //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-    struct OrderInputNew {
+    struct OfferInputNew {
         Token token;         // 160 bits
         BuySell buySell;     // 8 bits
         Unixtime expiry;     // 40 bits
@@ -467,9 +467,9 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         TokenId[] tokenIds;  // ERC-721/1155
         Tokens[] tokenss;    // ERC-20/1155
     }
-    function addOffersNew(OrderInputNew[] calldata inputs) external onlyOwner {
+    function addOffersNew(OfferInputNew[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
-            OrderInputNew memory input = inputs[i];
+            OfferInputNew memory input = inputs[i];
             TokenType tokenType = _getTokenType(input.token);
             Offer storage offer = offers.push();
             uint index = offers.length - 1;

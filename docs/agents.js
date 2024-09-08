@@ -98,7 +98,7 @@ const Agents = {
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
         newTokenAgent: {
-          show: true,
+          show: false,
         },
         version: 2,
       },

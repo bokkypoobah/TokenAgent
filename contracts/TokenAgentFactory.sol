@@ -377,7 +377,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 for (uint j = 0; j < input.data.length; j += 2) {
                     offer.prices.push(Price.wrap(uint128(input.data[j])));
                     offer.tokenss.push(Tokens.wrap(uint128(input.data[j + 1])));
-                    offer.useds.push(Tokens.wrap(0));
+                    offer.useds.push();
                 }
                 emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, Count.wrap(0), offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
@@ -428,7 +428,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     for (uint j = 1; j < input.data.length; j += 2) {
                         offer.tokenIds.push(TokenId.wrap(input.data[j]));
                         offer.tokenss.push(Tokens.wrap(uint128(input.data[j+1])));
-                        offer.useds.push(Tokens.wrap(0));
+                        offer.useds.push();
                     }
                 } else {
                     if ((input.data.length % 3) != 0) {
@@ -437,7 +437,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     for (uint j = 0; j < input.data.length; j += 3) {
                         offer.prices.push(Price.wrap(uint128(input.data[j])));
                         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
-                        offer.useds.push(Tokens.wrap(0));
+                        offer.useds.push();
                     }
                 }
                 emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));

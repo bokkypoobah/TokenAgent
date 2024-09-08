@@ -216,34 +216,22 @@ const Agents = {
         const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
         try {
-          // const tx = await contractWithSigner.newTokenAgent();
-          const tx = { hash: "0xc1adc078921d096b8898087e8cbe3c53fffa40e5502808c2aa1e7eb3d4139dec" };
+          const tx = await contractWithSigner.newTokenAgent();
           console.log(now() + " INFO Agents:methods.deployNewTokenAgent - tx: " + JSON.stringify(tx));
-
-          // const h = this.$createElement;
-          // const vNodesMsg = h(
-          //   'p',
-          //   { class: ['text-center', 'mb-0'] },
-          //   [
-          //     h('b-spinner', { props: { type: 'grow', small: true } }),
-          //     ' Flashy ',
-          //     h('strong', 'toast'),
-          //     ` message #${tx.hash} `,
-          //     h('b-spinner', { props: { type: 'grow', small: true } }),
-          //     h('a', 'aaaaa', { props: { href: '#grow', target: '_blank' } }),
-          //     h('br'),
-          //     ' Flashy ',
-          //   ]
-          // );
-          // this.$bvToast.toast([vNodesMsg], {
-          //   title: 'Transaction submitted. Resync in a minute',
-          //   autoHideDelay: 5000,
-          //   href: this.explorer + 'tx/' + tx.hash,
-          // });
-          this.$bvToast.toast(`${tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)}`, {
-            title: 'Transaction submitted. Resync in a minute',
+          const h = this.$createElement;
+          const vNodesMsg = h(
+            'p',
+            { class: ['text-left', 'mb-0'] },
+            [
+              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+              h('br'),
+              h('br'),
+              'Resync after this tx has been included',
+            ]
+          );
+          this.$bvToast.toast([vNodesMsg], {
+            title: 'Transaction submitted',
             autoHideDelay: 5000,
-            href: this.explorer + 'tx/' + tx.hash,
           });
           this.$refs['modalnewtokenagent'].hide();
         } catch (e) {

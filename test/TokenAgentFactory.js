@@ -400,7 +400,7 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc20Token.target, SELL, MULTIPLE, d.expiry, 0,
+          d.erc20Token.target, SELL, d.expiry, 0,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
@@ -463,19 +463,19 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc721Token.target, BUY, SINGLE, d.expiry, 4,
+          d.erc721Token.target, BUY, d.expiry, 4,
           [ethers.parseUnits("0.1", 18)],
           [],
           [],
         ],
         [
-          d.erc721Token.target, SELL, SINGLE, d.expiry, 4,
+          d.erc721Token.target, SELL, d.expiry, 4,
           [ethers.parseUnits("0.1", 18)],
           [4, 5, 6, 7],
           [],
         ],
         [
-          d.erc721Token.target, SELL, MULTIPLE, d.expiry, 4,
+          d.erc721Token.target, SELL, d.expiry, 4,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
           [4, 5, 6, 7],
           [],
@@ -507,7 +507,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it.only("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
 
@@ -530,19 +530,19 @@ describe("TokenAgentFactory", function () {
 
       const offers1 = [
         [
-          d.erc1155Token.target, BUY, SINGLE, d.expiry, 40,
+          d.erc1155Token.target, BUY, d.expiry, 40,
           [ethers.parseUnits("0.1", 18)],
           [],
           [],
         ],
         [
-          d.erc1155Token.target, SELL, SINGLE, d.expiry, 26,
+          d.erc1155Token.target, SELL, d.expiry, 26,
           [ethers.parseUnits("0.1", 18)],
           [0, 1, 2, 3],
           [5, 6, 7, 8],
         ],
         [
-          d.erc1155Token.target, SELL, MULTIPLE, d.expiry, 40,
+          d.erc1155Token.target, SELL, d.expiry, 40,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
           [0, 1, 2, 3],
           [10, 10, 10, 10],

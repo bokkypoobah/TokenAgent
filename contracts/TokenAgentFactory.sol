@@ -445,6 +445,98 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         }
     }
 
+    function addOffersNew(OrderInput[] calldata inputs) external onlyOwner {
+        for (uint i = 0; i < inputs.length; i++) {
+            OrderInput memory input = inputs[i];
+            TokenType tokenType = _getTokenType(input.token);
+            Offer storage offer = offers.push();
+            uint index = offers.length - 1;
+            if (tokenType == TokenType.INVALID) {
+                revert InvalidToken(input.token);
+            }
+            if (Token.unwrap(input.token) == address(weth)) {
+                revert CannotOfferWETH();
+            }
+            offer.token = input.token;
+            offer.buySell = input.buySell;
+            offer.expiry = input.expiry;
+            offer.nonce = nonce;
+            offer.count = input.count;
+            if (tokenType == TokenType.ERC20) {
+                if (input.data.length == 0 || (input.data.length % 2) != 0) {
+                    revert InvalidInputData("length");
+                }
+                for (uint j = 0; j < input.data.length; j += 2) {
+                    offer.prices.push(Price.wrap(uint128(input.data[j])));
+                    offer.tokenss.push(Tokens.wrap(uint128(input.data[j + 1])));
+                    offer.useds.push();
+                }
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, Count.wrap(0), offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            } else if (tokenType == TokenType.ERC721) {
+                if (input.data.length == 0) {
+                    revert InvalidInputData("zero length");
+                }
+                if (input.pricing == Pricing.SINGLE) {
+                    // if (input.data[1] >= type(uint16).max) {
+                    //     revert InvalidInputData("count must be < 65535");
+                    // }
+                    if (input.data.length < 1) {
+                        revert InvalidInputData("length < 1");
+                    }
+                    offer.prices.push(Price.wrap(uint128(input.data[0])));
+                    // offer.count = Count.wrap(uint16(input.data[1]));
+                    for (uint j = 1; j < input.data.length; j++) {
+                        offer.tokenIds.push(TokenId.wrap(input.data[j]));
+                    }
+                } else {
+                    if ((input.data.length % 2) != 0) {
+                        revert InvalidInputData("length not even");
+                    }
+                    for (uint j = 0; j < input.data.length; j += 2) {
+                        offer.prices.push(Price.wrap(uint128(input.data[j])));
+                        offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
+                    }
+                }
+                if (offer.tokenIds.length > 1) {
+                    for (uint j = 1; j < offer.tokenIds.length; j++) {
+                        if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
+                            revert TokenIdsMustBeSortedWithNoDuplicates();
+                        }
+                    }
+                }
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            } else if (tokenType == TokenType.ERC1155) {
+                if (input.data.length == 0) {
+                    revert InvalidInputData("zero length");
+                }
+                if (input.pricing == Pricing.SINGLE) {
+                    if (input.data.length < 1) {
+                        revert InvalidInputData("length < 1");
+                    }
+                    if ((input.data.length % 2) != 1) {
+                        revert InvalidInputData("length not odd");
+                    }
+                    offer.prices.push(Price.wrap(uint128(input.data[0])));
+                    for (uint j = 1; j < input.data.length; j += 2) {
+                        offer.tokenIds.push(TokenId.wrap(input.data[j]));
+                        offer.tokenss.push(Tokens.wrap(uint128(input.data[j+1])));
+                        offer.useds.push();
+                    }
+                } else {
+                    if ((input.data.length % 3) != 0) {
+                        revert InvalidInputData("length not divisible by 3");
+                    }
+                    for (uint j = 0; j < input.data.length; j += 3) {
+                        offer.prices.push(Price.wrap(uint128(input.data[j])));
+                        offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
+                        offer.useds.push();
+                    }
+                }
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            }
+        }
+    }
+
     function updateOffer(/*OfferUpdate[] calldata _offerOpdates*/) external onlyOwner {
         // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
     }

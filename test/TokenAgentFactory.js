@@ -83,7 +83,8 @@ describe("TokenAgentFactory", function () {
             ', makerBuySell: ' + (log.args[5] ? 'SELL' : 'BUY') +
             ', prices: ' + JSON.stringify(log.args[6].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[7].map(e => parseInt(e.toString()))) +
-            ', tokenss: ' + JSON.stringify(log.args[8].map(e => parseInt(e.toString()))) +
+            ', tokenss: ' + JSON.stringify(log.args[8].map(e => (log.args[4] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
+            // ', tokenss: ' + JSON.stringify(log.args[8].map(e => parseInt(e.toString()))) +
             ', price: ' + ethers.formatEther(log.args[9]) +
             ', timestamp: ' + new Date(parseInt(log.args[10]) * 1000).toLocaleTimeString() + ')');
         } else {

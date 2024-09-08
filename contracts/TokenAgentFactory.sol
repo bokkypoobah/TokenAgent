@@ -110,15 +110,15 @@ interface IERC1155Partial {
     function safeTransferFrom(address from, address to, uint id, uint amount, bytes calldata data) external;
 }
 
-type Account is address;
-type Count is uint16;
-type Nonce is uint32;
-type Index is uint32;
-type Price is uint128;
-type Token is address;
-type TokenId is uint;
-type Tokens is uint128;
-type Unixtime is uint40;
+type Account is address; // 2^160
+type Count is uint16;    // 2^16  = 65,536
+type Nonce is uint32;    // 2^32  = 4,294,967,296
+type Index is uint32;    // 2^32  = 4,294,967,296
+type Price is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+type Token is address;   // 2^160
+type TokenId is uint;    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+type Tokens is uint128;  // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+type Unixtime is uint40; // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
 
 enum BuySell { BUY, SELL }
 enum Execution { FILL, FILLORKILL }
@@ -263,18 +263,6 @@ contract TokenInfo {
 
 /// @notice User owned TokenAgent
 contract TokenAgent is TokenInfo, Owned, NonReentrancy {
-
-    // ints
-    // 2^128 = -170, 141,183,460,469,231,731, 687,303,715,884,105,728 to 170, 141,183,460,469,231,731, 687,303,715,884,105,727
-    // uints
-    // 2^16  = 65,536
-    // 2^32  = 4,294,967,296
-    // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
-    // 2^48  = 281,474,976,710,656
-    // 2^60  = 1, 152,921,504, 606,846,976
-    // 2^64  = 18, 446,744,073,709,551,616
-    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
 
     struct OrderInput {
         Token token;         // 160 bits
@@ -491,8 +479,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     revert InvalidInputData("Expecting single price input");
                 }
                 uint128 tokens = uint128(input.data[0]);
-                uint128 totalTokens = 0;
-                uint128 totalWETHTokens = 0;
+                uint128 totalTokens;
+                uint128 totalWETHTokens;
                 prices_ = new uint[](offer.prices.length);
                 tokenIds_ = new uint[](0);
                 tokenss_ = new uint[](offer.prices.length);
@@ -587,17 +575,15 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     weth.transferFrom(msg.sender, Account.unwrap(owner), price);
                 }
             } else if (tokenType == TokenType.ERC1155) {
-                {
-                    uint totalCount;
-                    for (uint j = 0; j < input.data.length; j += 2) {
-                        totalCount += input.data[j+1];
-                    }
-                    if (Count.unwrap(offer.count) < totalCount) {
-                        revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
-                    }
-                    if (Count.unwrap(offer.count) != type(uint16).max) {
-                        offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
-                    }
+                uint totalCount;
+                for (uint j = 0; j < input.data.length; j += 2) {
+                    totalCount += input.data[j+1];
+                }
+                if (Count.unwrap(offer.count) < totalCount) {
+                    revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
+                }
+                if (Count.unwrap(offer.count) != type(uint16).max) {
+                    offer.count = Count.wrap(Count.unwrap(offer.count) + 1);
                 }
                 prices_ = new uint[](input.data.length / 2);
                 tokenIds_ = new uint[](input.data.length / 2);
@@ -733,8 +719,7 @@ contract TokenAgentFactory is CloneFactory {
         results = new TokenAgentInfo[](end - start);
         uint k;
         for (uint i = start; i < end; i++) {
-            results[k] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
-            k++;
+            results[k++] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
         }
     }
 
@@ -746,8 +731,19 @@ contract TokenAgentFactory is CloneFactory {
         uint k;
         for (uint i = start; i < end; i++) {
             uint index = Index.unwrap(indices[i]);
-            results[k] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
-            k++;
+            results[k++] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
         }
     }
 }
+
+// ints
+// 2^128 = -170, 141,183,460,469,231,731, 687,303,715,884,105,728 to 170, 141,183,460,469,231,731, 687,303,715,884,105,727
+// uints
+// 2^16  = 65,536
+// 2^32  = 4,294,967,296
+// 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+// 2^48  = 281,474,976,710,656
+// 2^60  = 1, 152,921,504, 606,846,976
+// 2^64  = 18, 446,744,073,709,551,616
+// 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+// 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936

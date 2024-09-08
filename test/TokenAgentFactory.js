@@ -109,8 +109,8 @@ describe("TokenAgentFactory", function () {
   }
   async function printState(d) {
     console.log();
-    console.log("          # Account                         ETH          WETH " + d.weth.target.substring(0, 10) + "        ERC-20 " + d.erc20Token.target.substring(0, 10) + "                 ERC-721 " + d.erc721Token.target.substring(0, 10) + "                ERC-1155 " + d.erc1155Token.target.substring(0, 10));
-    console.log("          - ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------");
+    console.log("            # Account                         ETH          WETH " + d.weth.target.substring(0, 10) + "        ERC-20 " + d.erc20Token.target.substring(0, 10) + "                 ERC-721 " + d.erc721Token.target.substring(0, 10) + "                ERC-1155 " + d.erc1155Token.target.substring(0, 10));
+    console.log("          --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------");
     const erc721Balances = {};
     for (let tokenId = 0; tokenId < 16; tokenId++) {
       const owner = await d.erc721Token.ownerOf(tokenId);
@@ -142,7 +142,7 @@ describe("TokenAgentFactory", function () {
       for (const [tokenId, count] of Object.entries(erc1155TokenIds)) {
         erc1155Info.push(tokenId + ':' + count);
       }
-      console.log("          " + i + " " + d.accounts[i].address.substring(0, 10) + " " +
+      console.log("          " + padLeft(i, 3) + " " + d.accounts[i].address.substring(0, 10) + " " +
         padLeft(ethers.formatEther(balance), 24) + " " +
         padLeft(ethers.formatEther(wethBalance), 24) + " " +
         padLeft(ethers.formatEther(erc20Balance), 24) + " " +
@@ -155,11 +155,11 @@ describe("TokenAgentFactory", function () {
     if (offersInfo.length > 0) {
       console.log();
       console.log("          tokenAgents[1] Offers");
-      console.log("          ## Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds");
-      console.log("          -- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------");
+      console.log("            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds");
+      console.log("          --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------");
       for (let i = 0; i < offersInfo.length; i++) {
         const info = offersInfo[i];
-        console.log("           " + padLeft(info[0]) + " " + info[1].substring(0, 10) + " " +
+        console.log("          " + padLeft(info[0], 3) + " " + info[1].substring(0, 10) + " " +
           padRight(info[2] == 1 ? '20' : (info[2] == 2 ? '721' : '1155'), 4) + " " +
           (info[3] ? 'SELL' : 'BUY ') + " " +
           padRight(new Date(parseInt(info[4]) * 1000).toLocaleTimeString(), 12) + " " +

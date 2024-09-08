@@ -390,7 +390,7 @@ const Agent = {
       store.dispatch('newTransfer/newTransfer', stealthMetaAddress);
     },
     async timeoutCallback() {
-      console.log(now() + " DEBUG Agent:methods.timeoutCallback - count: " + this.count);
+      // console.log(now() + " DEBUG Agent:methods.timeoutCallback - count: " + this.count);
       this.count++;
       var t = this;
       if (this.reschedule) {

@@ -338,7 +338,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     // input.data:
     // ERC-20
     //   [price0, tokens0, price1, tokens1, ...]
-    //     -> count n/a, prices [price0, price1, ...], tokenIds[], tokens [tokens0, tokens1, ...]
+    //     -> count n/a, prices[price0, price1, ...], tokenIds[], tokens [tokens0, tokens1, ...]
     // ERC-721
     //   Single price: [price0] - b/s count @ price0 with any tokenId
     //     -> count, prices[price0], tokenIds[], tokens[]
@@ -348,11 +348,11 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokens[]
     // ERC-1155
     //   Single price: [price0] - b/s count @ price0 with any tokenId and any tokens
-    //     -> count, prices[price0], tokenIds[], tokenss []
+    //     -> count, prices[price0], tokenIds[], tokenss[]
     //   Single price: [price0, tokenId0, tokens0, tokenId1, tokens1, ...] - b/s count @ price0 with specified tokenIds and tokens
-    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
+    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     //   Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
-    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
+    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     function addOffers(OrderInput[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
             OrderInput memory input = inputs[i];
@@ -447,22 +447,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     // input.data:
     // ERC-20
-    //   [price0, tokens0, price1, tokens1, ...]
-    //     -> count n/a, prices [price0, price1, ...], tokenIds[], tokens [tokens0, tokens1, ...]
+    //   prices[price0], tokenIds[], tokenss[]
+    //   prices[price0], tokenIds[], tokenss[tokens0, tokens1, ...]
+    //   prices[price0, price1, ...], tokenIds[], tokenss[tokens0, tokens1, ...]
     // ERC-721
-    //   Single price: [price0] - b/s count @ price0 with any tokenId
-    //     -> count, prices[price0], tokenIds[], tokens[]
-    //   Single price: [price0, tokenId0, tokenId1, ...] - b/s count @ price0 with specified tokenIds
-    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1], tokens[]
-    //   Multiple prices: [price0, tokenId0, price1, tokenId1, ...] - b/s individual tokenIds with specified prices
-    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokens[]
+    //   prices[price0], tokenIds[], tokenss[]
+    //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+    //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[]
     // ERC-1155
-    //   Single price: [price0] - b/s count @ price0 with any tokenId and any tokens
-    //     -> count, prices[price0], tokenIds[], tokenss []
-    //   Single price: [price0, tokenId0, tokens0, tokenId1, tokens1, ...] - b/s count @ price0 with specified tokenIds and tokens
-    //     -> count, prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
-    //   Multiple prices: [price0, tokenId0, tokens0, price1, tokenId1, tokens1, ...] - b/s individual tokenIds and tokens with specified prices
-    //     -> count, prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss [tokens0, tokens1, ...]
+    //   prices[price0], tokenIds[], tokenss[]
+    //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+    //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     struct OrderInputNew {
         Token token;         // 160 bits
         BuySell buySell;     // 8 bits
@@ -494,15 +489,23 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 if (input.prices.length == 0) {
                     revert InvalidInputData("prices array must contain at least one price");
                 } else if (input.prices.length != 1 && input.tokenss.length != input.prices.length) {
-                    revert InvalidInputData("prices array length must match tokenss array length");
+                    revert InvalidInputData("tokenss array length must match prices array length");
                 }
                 offer.prices = input.prices;
+                offer.tokenss = input.tokenss;
                 for (uint j = 0; j < input.prices.length; j++) {
                     offer.useds.push();
                 }
-                offer.tokenss = input.tokenss;
                 emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, Count.wrap(0), offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC721) {
+                if (input.prices.length == 0) {
+                    revert InvalidInputData("prices array must contain at least one price");
+                } else if (input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
+                    revert InvalidInputData("tokenIds array length must match prices array length");
+                }
+                offer.prices = input.prices;
+                offer.tokenIds = input.tokenIds;
+
                 // if (input.data.length == 0) {
                 //     revert InvalidInputData("zero length");
                 // }
@@ -527,14 +530,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 //         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
                 //     }
                 // }
-                // if (offer.tokenIds.length > 1) {
-                //     for (uint j = 1; j < offer.tokenIds.length; j++) {
-                //         if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
-                //             revert TokenIdsMustBeSortedWithNoDuplicates();
-                //         }
-                //     }
-                // }
-                // emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                if (offer.tokenIds.length > 1) {
+                    for (uint j = 1; j < offer.tokenIds.length; j++) {
+                        if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
+                            revert TokenIdsMustBeSortedWithNoDuplicates();
+                        }
+                    }
+                }
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             } else if (tokenType == TokenType.ERC1155) {
                 // if (input.data.length == 0) {
                 //     revert InvalidInputData("zero length");

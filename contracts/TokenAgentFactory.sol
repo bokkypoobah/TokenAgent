@@ -505,6 +505,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
                 offer.prices = input.prices;
                 offer.tokenIds = input.tokenIds;
+                if (offer.tokenIds.length > 1) {
+                    for (uint j = 1; j < offer.tokenIds.length; j++) {
+                        if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
+                            revert TokenIdsMustBeSortedWithNoDuplicates();
+                        }
+                    }
+                }
 
                 // if (input.data.length == 0) {
                 //     revert InvalidInputData("zero length");
@@ -530,6 +537,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 //         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
                 //     }
                 // }
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            } else if (tokenType == TokenType.ERC1155) {
+                if (input.prices.length == 0) {
+                    revert InvalidInputData("prices array must contain at least one price");
+                } else if (input.prices.length != 1 && (input.tokenIds.length != input.prices.length || input.tokenss.length != input.prices.length)) {
+                    revert InvalidInputData("tokenIds and tokenss array length must match prices array length");
+                }
+                offer.prices = input.prices;
+                offer.tokenIds = input.tokenIds;
+                offer.tokenss = input.tokenss;
+                for (uint j = 0; j < input.tokenIds.length; j++) {
+                    offer.useds.push();
+                }
                 if (offer.tokenIds.length > 1) {
                     for (uint j = 1; j < offer.tokenIds.length; j++) {
                         if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
@@ -537,8 +557,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         }
                     }
                 }
-                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
-            } else if (tokenType == TokenType.ERC1155) {
                 // if (input.data.length == 0) {
                 //     revert InvalidInputData("zero length");
                 // }
@@ -565,7 +583,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 //         offer.useds.push();
                 //     }
                 // }
-                // emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+                emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
             }
         }
     }

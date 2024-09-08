@@ -507,26 +507,49 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
+
+      // const offers1 = [
+      //   [
+      //     d.erc1155Token.target, BUY, SINGLE, d.expiry, 40,
+      //     [ethers.parseUnits("0.1", 18)],
+      //   ],
+      //   [
+      //     d.erc1155Token.target, SELL, SINGLE, d.expiry, 26,
+      //     [ethers.parseUnits("0.1", 18), 0, 5, 1, 6, 2, 7, 3, 8],
+      //   ],
+      //   [
+      //     d.erc1155Token.target, SELL, MULTIPLE, d.expiry, 40,
+      //     [ethers.parseUnits("0.1", 18), 0, 10, ethers.parseUnits("0.2", 18), 1, 10, ethers.parseUnits("0.3", 18), 2, 10, ethers.parseUnits("0.4", 18), 3, 10],
+      //   ],
+      // ];
+      // console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
+      // const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
 
       const offers1 = [
         [
           d.erc1155Token.target, BUY, SINGLE, d.expiry, 40,
           [ethers.parseUnits("0.1", 18)],
+          [],
+          [],
         ],
         [
           d.erc1155Token.target, SELL, SINGLE, d.expiry, 26,
-          [ethers.parseUnits("0.1", 18), 0, 5, 1, 6, 2, 7, 3, 8],
+          [ethers.parseUnits("0.1", 18)],
+          [0, 1, 2, 3],
+          [5, 6, 7, 8],
         ],
         [
           d.erc1155Token.target, SELL, MULTIPLE, d.expiry, 40,
-          [ethers.parseUnits("0.1", 18), 0, 10, ethers.parseUnits("0.2", 18), 1, 10, ethers.parseUnits("0.3", 18), 2, 10, ethers.parseUnits("0.4", 18), 3, 10],
+          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
+          [0, 1, 2, 3],
+          [10, 10, 10, 10],
         ],
       ];
       console.log("        * offers1: " + JSON.stringify(offers1.map(e => e.toString())));
-      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffers(offers1);
+      const addOffers1Tx = await d.tokenAgents[1].connect(d.accounts[1]).addOffersNew(offers1);
       const addOffers1TxReceipt = await addOffers1Tx.wait();
       const indices = [];
       addOffers1TxReceipt.logs.forEach((event) => {
@@ -539,7 +562,8 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
+          // [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
+          [indices[2], ethers.parseUnits("7", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));

@@ -127,8 +127,8 @@ bytes4 constant ERC1155_INTERFACE = 0xd9b67a26;
 
 Token constant THEDAO = Token.wrap(0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413);
 
-library ArraySearch {
-    function includesTokenId(TokenId[] memory tokenIds, TokenId target) internal pure returns (uint) {
+library ArrayUtils {
+    function indexOfTokenIds(TokenId[] memory tokenIds, TokenId target) internal pure returns (uint) {
         if (tokenIds.length > 0) {
             uint left;
             uint right = tokenIds.length - 1;
@@ -509,7 +509,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                     uint p;
                     if (offer.tokenIds.length > 0) {
-                        uint k = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        uint k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
@@ -561,7 +561,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
                     uint p;
                     if (offer.tokenIds.length > 0) {
-                        uint k = ArraySearch.includesTokenId(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        uint k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }

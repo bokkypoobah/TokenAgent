@@ -404,6 +404,7 @@ describe("TokenAgentFactory", function () {
         indices.push(parseInt(log.args[0]));
       });
       printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
+      await printState(d);
 
       if (true) {
         const trades1 = [
@@ -453,6 +454,7 @@ describe("TokenAgentFactory", function () {
         indices.push(parseInt(log.args[0]));
       });
       printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
+      await printState(d);
 
       if (true) {
         const trades1 = [
@@ -479,7 +481,7 @@ describe("TokenAgentFactory", function () {
         ],
         [
           d.erc1155Token.target, SELL, SINGLE, d.expiry, 26,
-          [ethers.parseUnits("0.1", 18), 0, 10, 1, 10, 2, 10, 3, 10],
+          [ethers.parseUnits("0.1", 18), 0, 5, 1, 6, 2, 7, 3, 8],
         ],
         [
           d.erc1155Token.target, SELL, MULTIPLE, d.expiry, 40,
@@ -495,6 +497,7 @@ describe("TokenAgentFactory", function () {
         indices.push(parseInt(log.args[0]));
       });
       printLogs(d, "accounts[1]->tokenAgents[1].addOffers(offers1) => [" + indices.join(", ") + "]", addOffers1TxReceipt);
+      await printState(d);
 
       if (true) {
         const trades1 = [

@@ -10,9 +10,6 @@ pragma solidity ^0.8.24;
 // - TokenAgent
 // - TokenAgentFactory
 //
-// TODO:
-// - ERC-1155 Check individual tokenId counts and increment useds
-//
 // SPDX-License-Identifier: MIT
 //
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
@@ -431,6 +428,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     for (uint j = 1; j < input.data.length; j += 2) {
                         offer.tokenIds.push(TokenId.wrap(input.data[j]));
                         offer.tokenss.push(Tokens.wrap(uint128(input.data[j+1])));
+                        offer.useds.push(Tokens.wrap(0));
                     }
                 } else {
                     if ((input.data.length % 3) != 0) {
@@ -439,7 +437,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     for (uint j = 0; j < input.data.length; j += 3) {
                         offer.prices.push(Price.wrap(uint128(input.data[j])));
                         offer.tokenIds.push(TokenId.wrap(input.data[j+1]));
-                        offer.tokenss.push(Tokens.wrap(uint128(input.data[j+2])));
+                        offer.useds.push(Tokens.wrap(0));
                     }
                 }
                 emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, nonce, offer.count, offer.prices, offer.tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
@@ -594,6 +592,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
+                        if (Tokens.unwrap(offer.useds[k]) + uint128(input.data[j+1]) > Tokens.unwrap(offer.tokenss[k])) {
+                            revert InsufficentCountRemaining(Count.wrap(uint16(input.data[j+1])), Count.wrap(uint16(Tokens.unwrap(offer.tokenss[k]))));
+                        }
+                        offer.useds[k] = Tokens.wrap(Tokens.unwrap(offer.useds[k]) + uint128(input.data[j+1]));
                         if (offer.prices.length == offer.tokenIds.length) {
                             p = Price.unwrap(offer.prices[k]);
                         } else {

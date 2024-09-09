@@ -337,7 +337,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     struct TradeInput {
         Index index;             // 32 bits
         Price price;             // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
-        Execution execution;     // 8 bits - ERC-20 unused; ERC-721 single price or multiple prices
+        Execution execution;     // 8 bits - Only for ERC-20 - FILL or FILLORKILL
         uint[] data;
     }
 
@@ -543,37 +543,37 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 if (input.data.length != 1) {
                     revert InvalidInputData("Expecting single price input");
                 }
-                uint128 tokens = uint128(input.data[0]);
-                uint128 totalTokens;
-                uint128 totalWETHTokens;
+                uint tokens = input.data[0];
+                uint totalTokens;
+                uint totalWETHTokens;
                 prices_ = new uint[](offer.prices.length);
                 tokenIds_ = new uint[](0);
                 tokenss_ = new uint[](offer.prices.length);
                 uint k;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
-                    uint128 _price = Price.unwrap(offer.prices[j]);
+                    uint _price = Price.unwrap(offer.prices[j]);
                     if (Tokens.unwrap(offer.tokenss[j]) > Tokens.unwrap(offer.useds[j])) {
-                        uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
-                        if (tokens >= _remaining) {
-                            tokens -= _remaining;
-                            totalTokens += _remaining;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + _remaining);
+                        uint remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
+                        if (tokens >= remaining) {
+                            totalTokens += remaining;
+                            totalWETHTokens += remaining * _price / 10**18;
+                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + uint128(remaining));
                             prices_[k] = _price;
-                            tokenss_[k] = _remaining;
-                            totalWETHTokens += _remaining * _price / 10**18;
+                            tokenss_[k] = remaining;
+                            tokens -= remaining;
                         } else {
                             totalTokens += tokens;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + tokens);
+                            totalWETHTokens += tokens * _price / 10**18;
+                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + uint128(tokens));
                             prices_[k] = _price;
                             tokenss_[k] = tokens;
-                            totalWETHTokens += tokens * _price / 10**18;
                             tokens = 0;
                         }
                         k++;
                     }
                 }
                 if (input.execution == Execution.FILLORKILL && totalTokens < input.data[0]) {
-                    revert InsufficentTokensRemaining(Tokens.wrap(uint128(input.data[0])), Tokens.wrap(totalTokens));
+                    revert InsufficentTokensRemaining(Tokens.wrap(uint128(input.data[0])), Tokens.wrap(uint128(totalTokens)));
                 }
                 if (totalTokens > 0) {
                     price = totalWETHTokens * 10**18 / totalTokens;
@@ -750,7 +750,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 if (offer.tokenIdType == TokenIdType.TOKENID16) {
                     tokenIds = new TokenId[](offer.tokenId16s.length);
                     for (uint j = 0; j < offer.tokenId16s.length; j++) {
-                        tokenIds[j] = TokenId.wrap(uint256(TokenId16.unwrap(offer.tokenId16s[j])));
+                        tokenIds[j] = TokenId.wrap(uint(TokenId16.unwrap(offer.tokenId16s[j])));
                     }
                 } else {
                     tokenIds = offer.tokenIds;

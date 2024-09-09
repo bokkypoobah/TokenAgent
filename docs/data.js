@@ -227,10 +227,10 @@ const dataModule = {
     deleteTokenContract(state, info) {
       console.log(now() + " INFO dataModule:mutations.deleteTokenContract info: " + JSON.stringify(info, null, 2));
       if ((info.address in state.tokenContracts[info.chainId])) {
-        delete state.tokenContracts[info.chainId][info.address];
+        Vue.delete(state.tokenContracts[info.chainId], info.address);
       }
       if (Object.keys(state.tokenContracts[info.chainId]).length == 0) {
-        delete state.tokenContracts[info.chainId];
+        Vue.delete(state.tokenContracts, info.chainId);
       }
     },
 
@@ -668,7 +668,6 @@ const dataModule = {
     async deleteTokenContract(context, info) {
       console.log(now() + " INFO dataModule:actions.deleteTokenContract - info: " + JSON.stringify(info));
       await context.commit('deleteTokenContract', info);
-      context.commit('forceRefresh');
       await context.dispatch('saveData', ['tokenContracts']);
     },
 

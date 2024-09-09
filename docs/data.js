@@ -224,6 +224,15 @@ const dataModule = {
       Vue.set(state.tokenContracts[info.chainId][info.address], info.field, !state.tokenContracts[info.chainId][info.address][info.field]);
       console.log(now() + " INFO dataModule:mutations.toggleTokenContractField - tokenContracts[" + info.chainId + "][" + info.address + "]." + info.field + " = " + state.tokenContracts[info.chainId][info.address][info.field]);
     },
+    deleteTokenContract(state, info) {
+      console.log(now() + " INFO dataModule:mutations.deleteTokenContract info: " + JSON.stringify(info, null, 2));
+      if ((info.address in state.tokenContracts[info.chainId])) {
+        delete state.tokenContracts[info.chainId][info.address];
+      }
+      if (Object.keys(state.tokenContracts[info.chainId]).length == 0) {
+        delete state.tokenContracts[info.chainId];
+      }
+    },
 
     updateBalances(state, info) {
       // console.log(now() + " INFO dataModule:mutations.updateBalances - info: " + JSON.stringify(info, null, 2));
@@ -654,6 +663,12 @@ const dataModule = {
     async toggleTokenContractField(context, info) {
       console.log(now() + " INFO dataModule:actions.toggleTokenContractField - info: " + JSON.stringify(info));
       await context.commit('toggleTokenContractField', info);
+      await context.dispatch('saveData', ['tokenContracts']);
+    },
+    async deleteTokenContract(context, info) {
+      console.log(now() + " INFO dataModule:actions.deleteTokenContract - info: " + JSON.stringify(info));
+      await context.commit('deleteTokenContract', info);
+      context.commit('forceRefresh');
       await context.dispatch('saveData', ['tokenContracts']);
     },
 

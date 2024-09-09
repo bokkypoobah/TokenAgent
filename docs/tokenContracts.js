@@ -280,22 +280,26 @@ const TokenContracts = {
               <b-icon :icon="(data.item.mine && !data.item.junk) ? 'person-fill' : 'person'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.mine) ? 'secondary' : 'primary'">
               </b-icon>
             </b-button> -->
-            <!-- <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.watch" @click="toggleTokenContractField(data.item.account, 'watch')" variant="transparent" v-b-popover.hover.ds500="(data.item.watch ? 'Watch' : 'Do not watch') + ' this address for ETH, ERC-20' + (data.item.account.substring(0, 3) == 'st:' ? ' and ERC-721 stealth ' : ', ERC-721 and ERC-1155 ') + 'transfers'" class="m-0 ml-1 p-0">
+            <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.watch" @click="toggleTokenContractField(data.item.address, 'watch')" variant="transparent" v-b-popover.hover.ds500="(data.item.watch ? 'Watch' : 'Do not watch') + ' this token contract for transfers and approvals'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.watch && !data.item.junk) ? 'eye-fill' : 'eye'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.watch) ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button> -->
+            </b-button>
             <!-- <b-button size="sm" :disabled="data.item.junk || !data.item.mine || data.item.account.substring(0, 3) == 'st:'" :pressed.sync="data.item.sendFrom" @click="toggleTokenContractField(data.item.account, 'sendFrom')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendFrom ? 'can' : 'cannot') + ' be sent from this address'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.sendFrom && data.item.mine && !data.item.junk) ? 'arrow-up-right-circle-fill' : 'arrow-up-right-circle'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.sendFrom) || !data.item.mine || data.item.account.substring(0, 3) == 'st:' ? 'secondary' : 'primary'">
               </b-icon>
             </b-button> -->
-            <!-- <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.sendTo" @click="toggleTokenContractField(data.item.account, 'sendTo')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendTo ? 'can' : 'cannot') + ' be sent to this address'" class="m-0 ml-1 p-0">
-              <b-icon :icon="(data.item.sendTo && !data.item.junk) ? 'arrow-down-right-circle-fill' : 'arrow-down-right-circle'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.sendTo) ? 'secondary' : 'primary'">
+            <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.transfers" @click="toggleTokenContractField(data.item.address, 'transfers')" variant="transparent" v-b-popover.hover.ds500="'Transfers and approvals are ' + (data.item.transfers ? 'permitted' : 'not permitted')" class="m-0 ml-1 p-0">
+              <b-icon :icon="(data.item.transfers && !data.item.junk) ? 'arrow-right-circle-fill' : 'arrow-right-circle'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.transfers) ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button> -->
+            </b-button>
             <!-- <b-button v-if="data.item.account.substring(0, 3) == 'st:'" size="sm" :disabled="!transferHelper || data.item.junk || !data.item.sendTo" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover.ds500="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-1 p-0">
               <b-icon-caret-right shift-v="+1" font-scale="1.2">
               </b-icon-caret-right>
             </b-button> -->
+            <b-button size="sm" @click="deleteTokenContract(data.item.address)" variant="transparent" v-b-popover.hover.ds500="'Delete token contract from this list'" class="m-0 ml-5 p-0">
+              <b-icon-trash shift-v="+1" font-scale="1.1" variant="danger">
+              </b-icon-trash>
+            </b-button>
           </template>
           <template #cell(tokenContract)="data">
             <b-link size="sm" :href="explorer + 'token/' + data.item.address" variant="link" target="_blank">
@@ -634,19 +638,6 @@ const TokenContracts = {
       }
       this.saveSettings();
       console.log(now() + " INFO TokenContracts:methods.loadTokenContract - settings.addTokenContract: " + JSON.stringify(this.settings.addTokenContract, null, 2));
-
-      // addTokenContract: {
-      //   show: false,
-      //   address: null,
-      //   type: null,
-      //   symbol: null,
-      //   name: null,
-      //   decimals: null,
-      //   totalSupply: null,
-      //   slug: null,
-      //   image: null,
-      // },
-
     },
     addTokenContract() {
       console.log(now() + " INFO TokenContracts:methods.addTokenContract - settings.addTokenContract: " + JSON.stringify(this.settings.addTokenContract, null, 2));
@@ -654,6 +645,17 @@ const TokenContracts = {
       store.dispatch('data/addTokenContract', { chainId: this.chainId, ...this.settings.addTokenContract });
       this.settings.addTokenContract.show = false;
       this.saveSettings();
+    },
+    deleteTokenContract(address) {
+      console.log(now() + " INFO TokenContracts:methods.deleteTokenContract - address: " + JSON.stringify(address));
+      this.$bvModal.msgBoxConfirm("Delete " + address.substring(0, 10) + '...' + address.slice(-8) + "?")
+        .then(value => {
+          if (value) {
+            store.dispatch('data/deleteTokenContract', { chainId: this.chainId, address });
+          }
+        })
+        .catch(err => {
+        });
     },
     validAddress(a) {
       if (a) {

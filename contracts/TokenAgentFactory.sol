@@ -486,7 +486,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.expiry = input.expiry;
             offer.count = input.count;
             offer.nonce = nonce;
-            TokenType tokenType = _getTokenType(offer.token);
+            TokenType tokenType = tokenTypes[offer.token];
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
             } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
@@ -553,7 +553,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 revert InvalidIndex(input.index);
             }
             Offer storage offer = offers[Index.unwrap(input.index)];
-            TokenType tokenType = _getTokenType(offer.token);
+            TokenType tokenType = tokenTypes[offer.token];
             if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
                 revert InvalidOffer(offer.nonce, nonce);
             }

@@ -39,7 +39,7 @@ const TokenContracts = {
               </b-img>
             </b-form-group>
             <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-button size="sm" @click="addTokenContract" variant="primary">Add Token Contract</b-button>
+              <b-button size="sm" @click="addTokenContract" variant="link" v-b-popover.hover.ds500="'Add token contract'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
             </b-form-group>
           </div>
 

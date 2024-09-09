@@ -345,6 +345,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     Nonce public nonce;
     Offer[] public offers;
 
+    event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
     event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OfferUpdated(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
@@ -355,6 +356,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     error ExecutedAveragePriceLessThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
     error ExecutedTotalPriceGreaterThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error ExecutedTotalPriceLessThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
+    error InsufficentEthersRemaining(uint ethersRequested, uint ethersRemaining);
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
     error InsufficentCountRemaining(Count requested, Count remaining);
     error InvalidInputData(string reason);
@@ -515,6 +517,9 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     function trade(TradeInput[] calldata inputs, bool paymentsInEth) external payable nonReentrant notOwner {
         uint totalEth = msg.value;
+        if (totalEth > 0) {
+            emit InternalTransfer(msg.sender, address(this), totalEth, Unixtime.wrap(uint40(block.timestamp)));
+        }
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
             uint index = Index.unwrap(input.index);
@@ -579,6 +584,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         if (paymentsInEth) {
                             weth.transferFrom(Account.unwrap(owner), address(this), totalWETHTokens);
                             weth.withdraw(totalWETHTokens);
+                            emit InternalTransfer(address(this), msg.sender, totalWETHTokens, Unixtime.wrap(uint40(block.timestamp)));
                             payable(msg.sender).transfer(totalWETHTokens);
                         } else {
                             weth.transferFrom(Account.unwrap(owner), msg.sender, totalWETHTokens);
@@ -587,7 +593,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         if (price > Price.unwrap(input.price)) {
                             revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
-                        weth.transferFrom(msg.sender, Account.unwrap(owner), totalWETHTokens);
+                        if (paymentsInEth) {
+                            if (totalWETHTokens > totalEth) {
+                                revert InsufficentEthersRemaining(totalWETHTokens, totalEth);
+                            }
+                            totalEth -= totalWETHTokens;
+                            emit InternalTransfer(address(this), address(weth), totalWETHTokens, Unixtime.wrap(uint40(block.timestamp)));
+                            weth.deposit{value: totalWETHTokens}();
+                            weth.transfer(Account.unwrap(owner), totalWETHTokens);
+                        } else {
+                            weth.transferFrom(msg.sender, Account.unwrap(owner), totalWETHTokens);
+                        }
                         IERC20(Token.unwrap(offer.token)).transferFrom(Account.unwrap(owner), msg.sender, totalTokens);
                     }
                 }
@@ -638,6 +654,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (paymentsInEth) {
                         weth.transferFrom(Account.unwrap(owner), address(this), price);
                         weth.withdraw(price);
+                        emit InternalTransfer(address(this), msg.sender, price, Unixtime.wrap(uint40(block.timestamp)));
                         payable(msg.sender).transfer(price);
                     } else {
                         weth.transferFrom(Account.unwrap(owner), msg.sender, price);
@@ -646,7 +663,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, Account.unwrap(owner), price);
+                    if (paymentsInEth) {
+                        if (price > totalEth) {
+                            revert InsufficentEthersRemaining(price, totalEth);
+                        }
+                        totalEth -= price;
+                        emit InternalTransfer(address(this), address(weth), price, Unixtime.wrap(uint40(block.timestamp)));
+                        weth.deposit{value: price}();
+                        weth.transfer(Account.unwrap(owner), price);
+                    } else {
+                        weth.transferFrom(msg.sender, Account.unwrap(owner), price);
+                    }
                 }
             } else if (tokenType == TokenType.ERC1155) {
                 uint totalCount;
@@ -707,6 +734,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (paymentsInEth) {
                         weth.transferFrom(Account.unwrap(owner), address(this), price);
                         weth.withdraw(price);
+                        emit InternalTransfer(address(this), msg.sender, price, Unixtime.wrap(uint40(block.timestamp)));
                         payable(msg.sender).transfer(price);
                     } else {
                         weth.transferFrom(Account.unwrap(owner), msg.sender, price);
@@ -715,10 +743,24 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(msg.sender, Account.unwrap(owner), price);
+                    if (paymentsInEth) {
+                        if (price > totalEth) {
+                            revert InsufficentEthersRemaining(price, totalEth);
+                        }
+                        totalEth -= price;
+                        emit InternalTransfer(address(this), address(weth), price, Unixtime.wrap(uint40(block.timestamp)));
+                        weth.deposit{value: price}();
+                        weth.transfer(Account.unwrap(owner), price);
+                    } else {
+                        weth.transferFrom(msg.sender, Account.unwrap(owner), price);
+                    }
                 }
             }
             emit Traded(Index.wrap(uint32(index)), Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+        }
+        if (totalEth > 0) {
+            emit InternalTransfer(address(this), msg.sender, totalEth, Unixtime.wrap(uint40(block.timestamp)));
+            payable(msg.sender).transfer(totalEth);
         }
     }
 

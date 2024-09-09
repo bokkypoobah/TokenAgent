@@ -606,8 +606,11 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (offer.tokenIds.length > 0) {
                         uint k;
                         if (offer.tokenIdType == TokenIdType.TOKENID16) {
-                            // TODO: Check uint16
-                            k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                            if (input.data[j] < 2 ** 16) {
+                                k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                            } else {
+                                k = type(uint).max;
+                            }
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
                         }
@@ -664,8 +667,11 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (offer.tokenIds.length > 0) {
                         uint k;
                         if (offer.tokenIdType == TokenIdType.TOKENID16) {
-                            // TODO: Check uint16
-                            k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                            if (input.data[j] < 2 ** 16) {
+                                k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                            } else {
+                                k = type(uint).max;
+                            }
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
                         }

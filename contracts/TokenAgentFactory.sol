@@ -98,6 +98,12 @@ interface IERC20 {
     function transferFrom(address from, address to, uint tokens) external returns (bool success);
 }
 
+interface WETH is IERC20 {
+    receive() external payable;
+    function deposit() external payable;
+    function withdraw(uint wad) external;
+}
+
 interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
@@ -335,11 +341,12 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         uint[] data;
     }
 
-    IERC20 public weth;
+    WETH public weth;
     Nonce public nonce;
     Offer[] public offers;
 
     event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event OfferUpdated(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded(Index index, Account indexed taker, Account indexed maker, Token indexed token, TokenType tokenType, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
 
@@ -361,13 +368,16 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     constructor() {
     }
 
-    function init(IERC20 _weth, Account owner) external {
+    function init(WETH _weth, Account owner) external {
         super.initOwned(owner);
         weth = _weth;
     }
     function invalidateOrders() external onlyOwner {
         nonce = Nonce.wrap(Nonce.unwrap(nonce) + 1);
         emit OffersInvalidated(nonce, Unixtime.wrap(uint40(block.timestamp)));
+    }
+
+    receive() external payable {
     }
 
     // ERC-20
@@ -496,11 +506,15 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.tokenIds = input.tokenIds;
                 }
             }
-            emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
+                offer.tokenss = input.tokenss;
+            }
+            emit OfferUpdated(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
-    function trade(TradeInput[] calldata inputs) external nonReentrant notOwner {
+    function trade(TradeInput[] calldata inputs, bool paymentsInEth) external payable nonReentrant notOwner {
+        uint totalEth = msg.value;
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
             uint index = Index.unwrap(input.index);
@@ -562,7 +576,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                             revert ExecutedAveragePriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                         }
                         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, Account.unwrap(owner), totalTokens);
-                        weth.transferFrom(Account.unwrap(owner), msg.sender, totalWETHTokens);
+                        if (paymentsInEth) {
+                            weth.transferFrom(Account.unwrap(owner), address(this), totalWETHTokens);
+                            weth.withdraw(totalWETHTokens);
+                            payable(msg.sender).transfer(totalWETHTokens);
+                        } else {
+                            weth.transferFrom(Account.unwrap(owner), msg.sender, totalWETHTokens);
+                        }
                     } else {
                         if (price > Price.unwrap(input.price)) {
                             revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
@@ -615,7 +635,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (price < Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(Account.unwrap(owner), msg.sender, price);
+                    if (paymentsInEth) {
+                        weth.transferFrom(Account.unwrap(owner), address(this), price);
+                        weth.withdraw(price);
+                        payable(msg.sender).transfer(price);
+                    } else {
+                        weth.transferFrom(Account.unwrap(owner), msg.sender, price);
+                    }
                 } else {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
@@ -678,7 +704,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     if (price < Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
                     }
-                    weth.transferFrom(Account.unwrap(owner), msg.sender, price);
+                    if (paymentsInEth) {
+                        weth.transferFrom(Account.unwrap(owner), address(this), price);
+                        weth.withdraw(price);
+                        payable(msg.sender).transfer(price);
+                    } else {
+                        weth.transferFrom(Account.unwrap(owner), msg.sender, price);
+                    }
                 } else {
                     if (price > Price.unwrap(input.price)) {
                         revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
@@ -739,7 +771,7 @@ contract TokenAgentFactory is CloneFactory {
         Account owner;
     }
 
-    IERC20 public weth;
+    WETH public weth;
     TokenAgent public tokenAgentTemplate;
     TokenAgentRecord[] public tokenAgentRecords;
     mapping(Account => Index[]) public tokenAgentIndicesByOwners;
@@ -753,7 +785,7 @@ contract TokenAgentFactory is CloneFactory {
         tokenAgentTemplate = new TokenAgent();
     }
 
-    function init(IERC20 _weth, TokenAgent _tokenAgentTemplate) public {
+    function init(WETH _weth, TokenAgent _tokenAgentTemplate) public {
         if (address(weth) == address(0)) {
             weth = _weth;
             tokenAgentTemplate = _tokenAgentTemplate;
@@ -772,7 +804,7 @@ contract TokenAgentFactory is CloneFactory {
         if (address(weth) == address(0)) {
             revert NotInitialised();
         }
-        TokenAgent tokenAgent = TokenAgent(createClone(address(tokenAgentTemplate)));
+        TokenAgent tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
         tokenAgent.init(weth, Account.wrap(msg.sender));
         tokenAgentRecords.push(TokenAgentRecord(tokenAgent, Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length))));
         tokenAgentIndicesByOwners[Account.wrap(msg.sender)].push(Index.wrap(uint32(tokenAgentRecords.length - 1)));

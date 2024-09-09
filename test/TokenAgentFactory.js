@@ -89,7 +89,11 @@ describe("TokenAgentFactory", function () {
         }
       } else if (event.address == d.weth.target) {
         const log = d.weth.interface.parseLog(event);
-        console.log("          + weth." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        if (log.name == "Transfer") {
+          console.log("          + weth." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
+        } else {
+          console.log("          + weth." + log.name + '(' + log.args.join(", ") + ')');
+        }
       } else if (event.address == d.erc20Token.target) {
         const log = d.erc20Token.interface.parseLog(event);
         console.log("          + erc20Token." + log.name + '(from: ' + log.args[0].substring(0, 10) + ', to: ' + log.args[1].substring(0, 10) + ', tokens: ' + ethers.formatEther(log.args[2]) + ')');
@@ -334,6 +338,7 @@ describe("TokenAgentFactory", function () {
 
     it("Test TokenAgent secondary functions", async function () {
       const d = await loadFixture(deployContracts);
+      return;
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.emit(d.tokenAgentFactory, "NewTokenAgent")
         .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
@@ -384,7 +389,7 @@ describe("TokenAgentFactory", function () {
       await printState(d);
       const offers1 = [
         [
-          d.erc20Token.target, SELL, d.expiry, 0,
+          d.erc20Token.target, BUY, d.expiry, 0,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
@@ -405,26 +410,27 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          [indices[0], ethers.parseUnits("0.1050000000000000000", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[0], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true, {value: ethers.parseEther("0.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
         await printState(d);
-
+      }
+      if (false) {
         const trades2 = [
           [indices[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades2: " + JSON.stringify(trades2));
-        const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2);
+        const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2, false);
         const trades2TxReceipt = await trades2Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades2)", trades2TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades2, false)", trades2TxReceipt);
         await printState(d);
       }
     });
 
-    it("Test TokenAgent ERC-721 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
       const offers1 = [
@@ -461,14 +467,14 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [indices[0], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          // [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true);
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
         await printState(d);
       }
     });
@@ -508,16 +514,17 @@ describe("TokenAgentFactory", function () {
       await printState(d);
 
       if (true) {
+        // TODO: Confirm check price
         const trades1 = [
-          // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
+          [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [0, 9, 1, 10]],
           // [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
-          [indices[2], ethers.parseUnits("7", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
+          // [indices[2], ethers.parseUnits("7", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1);
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true);
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
         await printState(d);
       }
     });

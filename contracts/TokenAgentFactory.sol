@@ -414,6 +414,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         offer.tokenIdType = TokenIdType.TOKENID16;
                     }
                 }
+                if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                    for (uint j = 0; j < input.tokenIds.length; j++) {
+                        offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
+                    }
+                } else {
+                    offer.tokenIds = input.tokenIds;
+                }
                 console.log("tokenIdType: ", uint(offer.tokenIdType));
                 if (offer.tokenIds.length > 1) {
                     for (uint j = 1; j < offer.tokenIds.length; j++) {
@@ -429,14 +436,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.useds.push();
                 }
             }
-            if (tokenType == TokenType.ERC20) {
-                // offer.tokenss = input.tokenss;
-            } else if (tokenType == TokenType.ERC721) {
-                offer.tokenIds = input.tokenIds;
-            } else if (tokenType == TokenType.ERC1155) {
-                offer.tokenIds = input.tokenIds;
-                // offer.tokenss = input.tokenss;
-            }
+            // if (tokenType == TokenType.ERC20) {
+            //     // offer.tokenss = input.tokenss;
+            // } else if (tokenType == TokenType.ERC721) {
+            //     offer.tokenIds = input.tokenIds;
+            // } else if (tokenType == TokenType.ERC1155) {
+            //     offer.tokenIds = input.tokenIds;
+            //     // offer.tokenss = input.tokenss;
+            // }
             emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
@@ -631,10 +638,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         uint end = to < offers.length ? to : offers.length;
         results = new OfferInfo[](end - start);
         uint k;
-        for (uint i = from; i < to && i < offers.length; i++) {
+        for (uint i = start; i < end; i++) {
             if (i < offers.length) {
                 Offer memory offer = offers[i];
-                results[k] = OfferInfo(
+                console.log("offer.tokenIdType", uint(offer.tokenIdType));
+                TokenId[] memory tokenIds;
+                if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                    tokenIds = new TokenId[](offer.tokenId16s.length);
+                    for (uint j = 0; j < offer.tokenId16s.length; j++) {
+                        tokenIds[j] = TokenId.wrap(uint256(TokenId16.unwrap(offer.tokenId16s[j])));
+                    }
+                } else {
+                    tokenIds = offer.tokenIds;
+                }
+                results[k++] = OfferInfo(
                     i,
                     offer.token,
                     tokenTypes[offer.token],
@@ -643,11 +660,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.count,
                     offer.nonce,
                     offer.prices,
-                    offer.tokenIds,
+                    tokenIds,
                     offer.tokenss,
                     offer.useds
                 );
-                k++;
             }
         }
     }

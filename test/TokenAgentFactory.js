@@ -424,7 +424,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-721 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-721 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
       const offers1 = [

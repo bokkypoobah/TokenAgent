@@ -292,6 +292,16 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         TokenId[] tokenIds;      // ERC-721/1155
         Tokens[] tokenss;        // ERC-20/1155
     }
+    struct UpdateOffer {
+        Index index;             // 160 bits
+        // Token token;             // 160 bits
+        // BuySell buySell;         // 8 bits
+        Unixtime expiry;         // 40 bits
+        Count count;             // 16 bits
+        // Price[] prices;          // token/WETH 18dp
+        // TokenId[] tokenIds;      // ERC-721/1155
+        // Tokens[] tokenss;        // ERC-20/1155
+    }
     struct Offer {
         Token token;             // 160 bits
         BuySell buySell;         // 8 bits
@@ -433,12 +443,31 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.useds.push();
                 }
             }
-            emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
-    function updateOffer(/*OfferUpdate[] calldata _offerOpdates*/) external onlyOwner {
-        // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
+    // TODO: Update offer.tokenIds, offer.tokenss, price, expiry?
+    function updateOffers(UpdateOffer[] calldata inputs) external onlyOwner {
+        for (uint i = 0; i < inputs.length; i++) {
+            UpdateOffer memory input = inputs[i];
+            uint index = Index.unwrap(input.index);
+            Offer storage offer = offers[index];
+            offer.expiry = input.expiry;
+            offer.count = input.count;
+            offer.nonce = nonce;
+            TokenType tokenType = _getTokenType(offer.token);
+            TokenId[] memory tokenIds;
+            if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                tokenIds = new TokenId[](offer.tokenId16s.length);
+                for (uint j = 0; j < offer.tokenId16s.length; j++) {
+                    tokenIds[j] = TokenId.wrap(uint256(TokenId16.unwrap(offer.tokenId16s[j])));
+                }
+            } else {
+                tokenIds = offer.tokenIds;
+            }
+            emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, offer.prices, tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+        }
     }
 
     function trade(TradeInput[] calldata inputs) external nonReentrant notOwner {
@@ -639,7 +668,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         for (uint i = start; i < end; i++) {
             if (i < offers.length) {
                 Offer memory offer = offers[i];
-                // console.log("offer.tokenIdType", uint(offer.tokenIdType));
                 TokenId[] memory tokenIds;
                 if (offer.tokenIdType == TokenIdType.TOKENID16) {
                     tokenIds = new TokenId[](offer.tokenId16s.length);

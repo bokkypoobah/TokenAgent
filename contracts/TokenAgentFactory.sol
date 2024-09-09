@@ -520,19 +520,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         if (totalEth > 0) {
             emit InternalTransfer(msg.sender, address(this), totalEth, Unixtime.wrap(uint40(block.timestamp)));
         }
+        // uint[2] memory payments; // [0] = taker received from maker, [2] = taker pay to maker
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
-            uint index = Index.unwrap(input.index);
-            if (index >= offers.length) {
-                revert InvalidIndex(Index.wrap(uint32(index)));
+            if (Index.unwrap(input.index) >= offers.length) {
+                revert InvalidIndex(input.index);
             }
-            Offer storage offer = offers[index];
+            Offer storage offer = offers[Index.unwrap(input.index)];
             TokenType tokenType = _getTokenType(offer.token);
             if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
                 revert InvalidOffer(offer.nonce, nonce);
             }
             if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
-                revert OfferExpired(Index.wrap(uint32(index)), offer.expiry);
+                revert OfferExpired(input.index, offer.expiry);
             }
             uint price;
             uint[] memory prices_;
@@ -756,7 +756,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
             }
-            emit Traded(Index.wrap(uint32(index)), Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            emit Traded(input.index, Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
         if (totalEth > 0) {
             emit InternalTransfer(address(this), msg.sender, totalEth, Unixtime.wrap(uint40(block.timestamp)));

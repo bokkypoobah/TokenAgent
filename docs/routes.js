@@ -42,6 +42,10 @@ const routes = [{
     path: '/addresses',
     component: Addresses,
     name: 'Addresses',
+  }, {
+    path: '/tokenContracts',
+    component: TokenContracts,
+    name: 'TokenContracts',
   // }, {
   //   path: '/assets',
   //   component: Assets,

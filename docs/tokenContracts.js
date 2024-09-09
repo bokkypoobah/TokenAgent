@@ -2,6 +2,16 @@ const TokenContracts = {
   template: `
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
+
+        <b-modal ref="modaladdtokencontract" v-model="settings.addTokenContract.show" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="sm">
+          <template #modal-title>Add Token Contract</template>
+          <div class="m-0 p-1">
+            <b-form-group label="Add Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
+              <!-- <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button> -->
+            </b-form-group>
+          </div>
+        </b-modal>
+
         <!-- :TOOLBAR -->
         <div class="d-flex flex-wrap m-0 p-0">
           <div v-if="false" class="mt-0 pr-1">
@@ -119,7 +129,8 @@ const TokenContracts = {
           <div class="mt-0 flex-grow-1">
           </div>
           <div v-if="sync.section == null" class="mt-0 pr-1">
-            <b-button size="sm" :disabled="!networkSupported" @click="viewModalAddAccount" variant="link" v-b-popover.hover.ds500="'Add new account'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+            <!-- <b-button size="sm" :disabled="!networkSupported" @click="viewModalAddAccount" variant="link" v-b-popover.hover.ds500="'Add new account'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> -->
+            <b-button size="sm" :disabled="!networkSupported" @click="settings.addTokenContract.show = true; " variant="link" v-b-popover.hover.ds500="'Add new Token Contract'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
@@ -296,6 +307,10 @@ const TokenContracts = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'typenameasc',
+
+        addTokenContract: {
+          show: false,
+        },
         version: 0,
       },
       defaultPhrase: "I want to login into my stealth wallet on Ethereum mainnet.",
@@ -379,28 +394,28 @@ const TokenContracts = {
     filteredTokenContracts() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       const filterLower = this.settings.filter && this.settings.filter.toLowerCase() || null;
-      for (const [account, accountData] of Object.entries(this.addresses)) {
-        const ensName = this.ens && account.substring(0, 2) == "0x" && this.ens[account] || null;
-        const accountName = accountData.name || null;
-        let include = filterLower == null ||
-          (account.toLowerCase().includes(filterLower)) ||
-          (accountName && accountName.toLowerCase().includes(filterLower));
-        if (include && this.settings.myAccountsFilter != null) {
-          if (this.settings.myAccountsFilter == 'mine' && accountData.mine) {
-          } else if (this.settings.myAccountsFilter == 'notmine' && !accountData.mine) {
-          } else {
-            include = false;
-          }
-        }
-        if (include) {
-          results.push({
-            account,
-            ensName,
-            ...accountData,
-            viewingPrivateKey: undefined,
-          });
-        }
-      }
+      // for (const [account, accountData] of Object.entries(this.addresses)) {
+      //   const ensName = this.ens && account.substring(0, 2) == "0x" && this.ens[account] || null;
+      //   const accountName = accountData.name || null;
+      //   let include = filterLower == null ||
+      //     (account.toLowerCase().includes(filterLower)) ||
+      //     (accountName && accountName.toLowerCase().includes(filterLower));
+      //   if (include && this.settings.myAccountsFilter != null) {
+      //     if (this.settings.myAccountsFilter == 'mine' && accountData.mine) {
+      //     } else if (this.settings.myAccountsFilter == 'notmine' && !accountData.mine) {
+      //     } else {
+      //       include = false;
+      //     }
+      //   }
+      //   if (include) {
+      //     results.push({
+      //       account,
+      //       ensName,
+      //       ...accountData,
+      //       viewingPrivateKey: undefined,
+      //     });
+      //   }
+      // }
       return results;
     },
     filteredSortedTokenContracts() {
@@ -640,7 +655,7 @@ const TokenContracts = {
     store.dispatch('data/restoreState');
     if ('tokenAgentTokenContractsSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.tokenAgentTokenContractsSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }

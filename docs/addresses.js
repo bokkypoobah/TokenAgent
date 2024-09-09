@@ -640,7 +640,7 @@ const Addresses = {
     store.dispatch('data/restoreState');
     if ('tokenAgentAddressesSettings' in localStorage) {
       const tempSettings = JSON.parse(localStorage.tokenAgentAddressesSettings);
-      if ('version' in tempSettings && tempSettings.version == 0) {
+      if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
       }

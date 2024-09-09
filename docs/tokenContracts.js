@@ -19,10 +19,28 @@ const TokenContracts = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-
-            <!-- <b-form-group label="Add Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0"> -->
-              <!-- <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button> -->
-            <!-- </b-form-group> -->
+            <b-form-group label="Type:" label-for="modaladdtokencontract-tokentype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modaladdtokencontract-tokentype" :value="settings.addTokenContract.type" class="pl-2 w-25"></b-form-input>
+            </b-form-group>
+            <b-form-group label="Symbol:" label-for="modaladdtokencontract-symbol" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modaladdtokencontract-symbol" :value="settings.addTokenContract.symbol" class="pl-2 w-25"></b-form-input>
+            </b-form-group>
+            <b-form-group label="Name:" label-for="modaladdtokencontract-name" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modaladdtokencontract-name" :value="settings.addTokenContract.name" class="pl-2 w-50"></b-form-input>
+            </b-form-group>
+            <b-form-group v-if="settings.addTokenContract.type == 20" label="Decimals:" label-for="modaladdtokencontract-decimals" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modaladdtokencontract-decimals" :value="settings.addTokenContract.decimals" class="pl-2 w-25"></b-form-input>
+            </b-form-group>
+            <b-form-group v-if="settings.addTokenContract.type == 20" label="Total Supply:" label-for="modaladdtokencontract-totalsupply" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modaladdtokencontract-totalsupply" :value="formatDecimals(settings.addTokenContract.totalSupply, settings.addTokenContract.decimals)" class="pl-2 w-25"></b-form-input>
+            </b-form-group>
+            <b-form-group v-if="settings.addTokenContract.image" label="Image:" label-for="modaladdtokencontract-image" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-img button rounded fluid size="15rem" :src="settings.addTokenContract.image" class="m-0 p-0" style="width: 100px;">
+              </b-img>
+            </b-form-group>
+            <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-button size="sm" @click="addTokenContract" variant="primary">Add Token Contract</b-button>
+            </b-form-group>
           </div>
 
           <!--
@@ -34,6 +52,8 @@ const TokenContracts = {
             name: null,
             decimals: null,
             totalSupply: null,
+            slug: null,
+            image: null,
           }, -->
 
         </b-modal>
@@ -219,7 +239,7 @@ const TokenContracts = {
           </div>
         </b-card>
 
-        <b-table ref="addressesTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="tokenContractsFields" :items="pagedFilteredSortedTokenContracts" show-empty head-variant="light" class="m-0 mt-1">
+        <b-table ref="tokenContractsTable" small fixed striped responsive hover selectable select-mode="single" @row-selected='rowSelected' :fields="tokenContractsFields" :items="pagedFilteredSortedTokenContracts" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
             <div v-if="totalTokenContracts == 0">
@@ -252,7 +272,7 @@ const TokenContracts = {
             <!-- </b-form-checkbox> -->
           </template>
           <template #cell(options)="data">
-            <b-button size="sm" :pressed.sync="data.item.junk" @click="toggleAddressField(data.item.account, 'junk')" variant="transparent" v-b-popover.hover.ds500="data.item.junk ? 'Junk' : 'Not junk'" class="m-0 ml-1 p-0">
+            <!-- <b-button size="sm" :pressed.sync="data.item.junk" @click="toggleAddressField(data.item.account, 'junk')" variant="transparent" v-b-popover.hover.ds500="data.item.junk ? 'Junk' : 'Not junk'" class="m-0 ml-1 p-0">
               <b-icon :icon="data.item.junk ? 'trash-fill' : 'trash'" shift-v="+1" font-scale="1.2" :variant="data.item.junk ? 'primary' : 'secondary'">
               </b-icon>
             </b-button>
@@ -275,34 +295,24 @@ const TokenContracts = {
             <b-button v-if="data.item.account.substring(0, 3) == 'st:'" size="sm" :disabled="!transferHelper || data.item.junk || !data.item.sendTo" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover.ds500="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-1 p-0">
               <b-icon-caret-right shift-v="+1" font-scale="1.2">
               </b-icon-caret-right>
-            </b-button>
+            </b-button> -->
           </template>
-          <template #cell(address)="data">
-            <div v-if="data.item.account.substring(0, 3) == 'st:'">
-              {{ data.item.account }}
-            </div>
-            <div v-else>
-              <b-icon-circle-fill v-if="data.item.type == 'stealthAddress'" shift-v="+7" font-scale="0.5" v-b-popover.hover.ds500="'Stealth Address'">
-              </b-icon-circle-fill>
-              <b-link size="sm" :href="explorer + 'address/' + data.item.account" variant="link" target="_blank">
-                {{ formatAddress(data.item.account) }}
-              </b-link>
-            </div>
-            <font size="-1">
-              <b-badge v-if="data.item.ensName" :href="'https://app.ens.domains/' + data.item.ensName" variant="light" v-b-popover.hover.ds500="'Click to view in the ENS dapp'" target="_blank">
-                {{ data.item.ensName }}
-              </b-badge>
-            </font>
+          <template #cell(tokenContract)="data">
+            <b-link size="sm" :href="explorer + 'token/' + data.item.address" variant="link" target="_blank">
+              {{ data.item.address }}
+            </b-link>
+            <br />
+            <b-badge variant="light">{{ data.item.type }}</b-badge>
           </template>
           <template #cell(name)="data">
             {{ data.item.name }}
             <br />
             <font size="-1">
-              {{ data.item.notes || '&nbsp;' }}
+              {{ data.item.symbol || '&nbsp;' }}
             </font>
           </template>
           <template #cell(image)="data">
-            <b-img v-if="data.item.ensName" button rounded fluid size="15rem" :src="'https://metadata.ens.domains/mainnet/avatar/' + data.item.ensName" class="m-2" style="width: 60px;">
+            <b-img v-if="data.item.image" button rounded fluid size="15rem" :src="data.item.image" class="m-0" style="width: 60px;">
             </b-img>
 
             <!-- <div v-if="data.item.type == 'preerc721' || data.item.type == 'erc721' || data.item.type == 'erc1155'">
@@ -342,8 +352,10 @@ const TokenContracts = {
           name: null,
           decimals: null,
           totalSupply: null,
+          slug: null,
+          image: null,
         },
-        version: 0,
+        version: 1,
       },
       defaultPhrase: "I want to login into my stealth wallet on Ethereum mainnet.",
       addressTypeInfo: {
@@ -377,6 +389,12 @@ const TokenContracts = {
         { value: 'mine', text: 'My Accounts' },
         { value: 'notmine', text: 'Not My Accounts' },
       ],
+      tokenTypeOptions: [
+        { value: null, text: '(not token)' },
+        { value: 20, text: 'ERC-20' },
+        { value: 721, text: 'ERC-721' },
+        { value: 1155, text: 'ERC-1155' },
+      ],
       sortOptions: [
         { value: 'typenameasc', text: '▲ Type, ▲ Name' },
         { value: 'typenamedsc', text: '▼ Type, ▲ Name' },
@@ -407,6 +425,9 @@ const TokenContracts = {
     explorer() {
       return store.getters['connection/explorer'];
     },
+    tokenContracts() {
+      return store.getters['data/tokenContracts'];
+    },
     addresses() {
       return store.getters['data/addresses'];
     },
@@ -428,7 +449,6 @@ const TokenContracts = {
       for (const token of tokens) {
         results.push(token);
       }
-      // console.log(now() + " INFO TokenContracts:computed.sampleTokenContracts - results: " + JSON.stringify(results, null, 2));
       return results;
     },
 
@@ -438,6 +458,14 @@ const TokenContracts = {
     filteredTokenContracts() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       const filterLower = this.settings.filter && this.settings.filter.toLowerCase() || null;
+      console.log("this.tokenContracts: " + JSON.stringify(this.tokenContracts, null, 2));
+      for (const [address, data] of Object.entries(this.tokenContracts[this.chainId] || {})) {
+        console.log(address + " => " + JSON.stringify(data));
+        results.push({
+          address,
+          ...data,
+        });
+      }
       // for (const [account, accountData] of Object.entries(this.addresses)) {
       //   const ensName = this.ens && account.substring(0, 2) == "0x" && this.ens[account] || null;
       //   const accountName = accountData.name || null;
@@ -464,59 +492,59 @@ const TokenContracts = {
     },
     filteredSortedTokenContracts() {
       const results = this.filteredTokenContracts;
-      if (this.settings.sortOption == 'typenameasc') {
-        results.sort((a, b) => {
-          if (('' + a.type).localeCompare(b.type) == 0) {
-            if (('' + a.name).localeCompare(b.name) == 0) {
-              return ('' + a.account).localeCompare(b.account);
-            } else {
-              return ('' + a.name).localeCompare(b.name);
-            }
-          } else {
-            return ('' + a.type).localeCompare(b.type);
-          }
-        });
-      } else if (this.settings.sortOption == 'typenamedsc') {
-        results.sort((a, b) => {
-          if (('' + a.type).localeCompare(b.type) == 0) {
-            if (('' + a.name).localeCompare(b.name) == 0) {
-              return ('' + a.account).localeCompare(b.account);
-            } else {
-              return ('' + a.name).localeCompare(b.name);
-            }
-          } else {
-            return ('' + b.type).localeCompare(a.type);
-          }
-        });
-      } else if (this.settings.sortOption == 'nameaddressasc') {
-        results.sort((a, b) => {
-          if (('' + a.name).localeCompare(b.name) == 0) {
-            return ('' + a.account).localeCompare(b.account);
-          } else {
-            return ('' + a.name).localeCompare(b.name);
-          }
-        });
-      } else if (this.settings.sortOption == 'nameaddressdsc') {
-        results.sort((a, b) => {
-          if (('' + a.name).localeCompare(b.name) == 0) {
-            return ('' + b.account).localeCompare(a.account);
-          } else {
-            return ('' + b.name).localeCompare(a.name);
-          }
-        });
-      } else if (this.settings.sortOption == 'addressasc') {
-        results.sort((a, b) => {
-          return ('' + a.account).localeCompare(b.account);
-        });
-      } else if (this.settings.sortOption == 'addressdsc') {
-        results.sort((a, b) => {
-          return ('' + b.account).localeCompare(a.account);
-        });
-      }
+      // if (this.settings.sortOption == 'typenameasc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.type).localeCompare(b.type) == 0) {
+      //       if (('' + a.name).localeCompare(b.name) == 0) {
+      //         return ('' + a.account).localeCompare(b.account);
+      //       } else {
+      //         return ('' + a.name).localeCompare(b.name);
+      //       }
+      //     } else {
+      //       return ('' + a.type).localeCompare(b.type);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'typenamedsc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.type).localeCompare(b.type) == 0) {
+      //       if (('' + a.name).localeCompare(b.name) == 0) {
+      //         return ('' + a.account).localeCompare(b.account);
+      //       } else {
+      //         return ('' + a.name).localeCompare(b.name);
+      //       }
+      //     } else {
+      //       return ('' + b.type).localeCompare(a.type);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'nameaddressasc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.name).localeCompare(b.name) == 0) {
+      //       return ('' + a.account).localeCompare(b.account);
+      //     } else {
+      //       return ('' + a.name).localeCompare(b.name);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'nameaddressdsc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.name).localeCompare(b.name) == 0) {
+      //       return ('' + b.account).localeCompare(a.account);
+      //     } else {
+      //       return ('' + b.name).localeCompare(a.name);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'addressasc') {
+      //   results.sort((a, b) => {
+      //     return ('' + a.account).localeCompare(b.account);
+      //   });
+      // } else if (this.settings.sortOption == 'addressdsc') {
+      //   results.sort((a, b) => {
+      //     return ('' + b.account).localeCompare(a.account);
+      //   });
+      // }
       return results;
     },
     pagedFilteredSortedTokenContracts() {
-      // console.log(now() + " INFO TokenContracts:computed.filteredSortedTokenContracts - results[0..1]: " + JSON.stringify(this.filteredSortedTokenContracts.slice(0, 2), null, 2));
+      console.log(now() + " INFO TokenContracts:computed.filteredSortedTokenContracts - results[0..1]: " + JSON.stringify(this.filteredSortedTokenContracts.slice(0, 2), null, 2));
       return this.filteredSortedTokenContracts.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
   },
@@ -530,6 +558,8 @@ const TokenContracts = {
       this.settings.addTokenContract.name = null;
       this.settings.addTokenContract.decimals = null;
       this.settings.addTokenContract.totalSupply = null;
+      this.settings.addTokenContract.slug = null;
+      this.settings.addTokenContract.image = null;
 
       const code = await provider.getCode(address);
       if (code && code.length > 2) {
@@ -559,29 +589,50 @@ const TokenContracts = {
           } catch (e) {
           }
         }
-        try {
-          const symbol = await erc20.symbol();
-          if (symbol != null) {
-            this.settings.addTokenContract.symbol = symbol;
+        if (this.settings.addTokenContract.type == 20) {
+          try {
+            const symbol = await erc20.symbol();
+            if (symbol != null) {
+              this.settings.addTokenContract.symbol = symbol;
+            }
+          } catch (e) {
           }
-        } catch (e) {
+          try {
+            const name = await erc20.name();
+            if (name != null) {
+              this.settings.addTokenContract.name = name;
+            }
+          } catch (e) {
+          }
+          try {
+            const totalSupply = await erc20.totalSupply();
+            if (totalSupply != null) {
+              this.settings.addTokenContract.totalSupply = totalSupply.toString();
+            }
+          } catch (e) {
+          }
         }
-        try {
-          const name = await erc20.name();
-          if (name != null) {
-            this.settings.addTokenContract.name = name;
+        if (this.settings.addTokenContract.type == 721 || this.settings.addTokenContract.type == 1155) {
+          const reservoirPrefix = this.chainId && NETWORKS[this.chainId] && NETWORKS[this.chainId].reservoir || null;
+          console.log(now() + " INFO TokenContracts:methods.loadTokenContract - reservoirPrefix: " + reservoirPrefix);
+          if (reservoirPrefix) {
+            let url = reservoirPrefix + "collections/v7?id=" + address;
+            console.log(now() + " INFO TokenContracts:methods.loadTokenContract - url: " + url);
+            const data = await fetch(url).then(response => response.json());
+            console.log(now() + " INFO TokenContracts:methods.loadTokenContract - data: " + JSON.stringify(data, null, 2));
+            if (data.collections && data.collections.length > 0) {
+              const collection = data.collections[0];
+              console.log(now() + " INFO TokenContracts:methods.loadTokenContract - collection: " + JSON.stringify(collection, null, 2));
+              this.settings.addTokenContract.symbol = collection.symbol;
+              this.settings.addTokenContract.name = collection.name;
+              this.settings.addTokenContract.slug = collection.slug;
+              this.settings.addTokenContract.image = collection.image;
+            }
           }
-        } catch (e) {
-        }
-        try {
-          const totalSupply = await erc20.totalSupply();
-          if (totalSupply != null) {
-            this.settings.addTokenContract.totalSupply = totalSupply.toString();
-          }
-        } catch (e) {
         }
 
       }
+      this.saveSettings();
       console.log(now() + " INFO TokenContracts:methods.loadTokenContract - settings.addTokenContract: " + JSON.stringify(this.settings.addTokenContract, null, 2));
 
       // addTokenContract: {
@@ -592,8 +643,17 @@ const TokenContracts = {
       //   name: null,
       //   decimals: null,
       //   totalSupply: null,
+      //   slug: null,
+      //   image: null,
       // },
 
+    },
+    addTokenContract() {
+      console.log(now() + " INFO TokenContracts:methods.addTokenContract - settings.addTokenContract: " + JSON.stringify(this.settings.addTokenContract, null, 2));
+      this.$refs['modaladdtokencontract'].hide();
+      store.dispatch('data/addTokenContract', { chainId: this.chainId, ...this.settings.addTokenContract });
+      this.settings.addTokenContract.show = false;
+      this.saveSettings();
     },
     validAddress(a) {
       if (a) {
@@ -604,6 +664,9 @@ const TokenContracts = {
         }
       }
       return false;
+    },
+    formatDecimals(e, decimals = 0) {
+      return e != null ? ethers.utils.formatUnits(e, decimals).replace(/(?<!(\.\d*|^.{0}))(?=(\d{3})+(?!\d))/g, ',') : null;
     },
     saveSettings() {
       console.log(now() + " INFO TokenContracts:methods.saveSettings - tokenAgentTokenContractsSettings: " + JSON.stringify(this.settings, null, 2));
@@ -643,7 +706,7 @@ const TokenContracts = {
         } else {
           store.dispatch('viewAddress/viewAddress', item[0].account);
         }
-        this.$refs.addressesTable.clearSelected();
+        this.$refs.tokenContractsTable.clearSelected();
       }
     },
 

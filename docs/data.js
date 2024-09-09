@@ -210,7 +210,7 @@ const dataModule = {
     },
     toggleAddressField(state, info) {
       Vue.set(state.addresses[info.address], info.field, !state.addresses[info.address][info.field]);
-      // console.log(now() + " INFO dataModule:mutations.toggleAddressField - addresses[" + info.address + "]." + info.field + " = " + state.addresses[info.address][info.field]);
+      console.log(now() + " INFO dataModule:mutations.toggleAddressField - addresses[" + info.address + "]." + info.field + " = " + state.addresses[info.address][info.field]);
     },
     setAddressField(state, info) {
       Vue.set(state.addresses[info.address], info.field, info.value);
@@ -428,6 +428,25 @@ const dataModule = {
         }
       }
     },
+    addTokenContract(state, info) {
+      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(info, null, 2));
+      if (!(info.chainId in state.tokenContracts)) {
+        Vue.set(state.tokenContracts, info.chainId, {});
+      }
+      if (!(info.address in state.tokenContracts[info.chainId])) {
+        Vue.set(state.tokenContracts[info.chainId], info.address, {
+          type: info.type,
+          symbol: info.symbol,
+          name: info.name,
+          slug: info.slug,
+          image: info.image,
+          watch: false,
+          transfers: false,
+          junk: false,
+        });
+      }
+      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(state.tokenContracts[info.chainId][info.address], null, 2));
+    },
     addNonFungibleContractMetadata(state, info) {
       // console.log(now() + " INFO dataModule:mutations.addNonFungibleContractMetadata info: " + JSON.stringify(info, null, 2));
       if (!(info.chainId in state.tokens)) {
@@ -621,14 +640,20 @@ const dataModule = {
       db0.close();
     },
 
-    async toggleAddressField(context, info) {
-      // console.log(now() + " INFO dataModule:actions.toggleAddressField - info: " + JSON.stringify(info));
-      await context.commit('toggleAddressField', info);
-      await context.dispatch('saveData', ['addresses']);
+    async addTokenContract(context, info) {
+      console.log(now() + " INFO dataModule:actions.addTokenContract - info: " + JSON.stringify(info));
+      await context.commit('addTokenContract', info);
+      await context.dispatch('saveData', ['tokenContracts']);
     },
+
     async setAddressField(context, info) {
       // console.log(now() + " INFO dataModule:actions.setAddressField - info: " + JSON.stringify(info));
       await context.commit('setAddressField', info);
+      await context.dispatch('saveData', ['addresses']);
+    },
+    async toggleAddressField(context, info) {
+      console.log(now() + " INFO dataModule:actions.toggleAddressField - info: " + JSON.stringify(info));
+      await context.commit('toggleAddressField', info);
       await context.dispatch('saveData', ['addresses']);
     },
     async updateFungibleTotalSupply(context, info) {

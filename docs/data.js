@@ -132,8 +132,8 @@ const dataModule = {
     DB_PROCESSING_BATCH_SIZE: 12345,
 
     addresses: {},
-    tokenAgentFactories: {}, // TODO: Remove?
     tokenAgents: {},
+    tokenContracts: {},
 
     // Ignore this block
     balances: {},
@@ -174,8 +174,8 @@ const dataModule = {
   },
   getters: {
     addresses: state => state.addresses,
-    tokenAgentFactories: state => state.tokenAgentFactories, // TODO: Remove?
     tokenAgents: state => state.tokenAgents,
+    tokenContracts: state => state.tokenContracts,
 
     // Ignore this block
     balances: state => state.balances,

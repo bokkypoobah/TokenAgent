@@ -10,12 +10,15 @@ pragma solidity ^0.8.24;
 // - TokenAgent template
 // - TokenAgentFactory
 //
+// TODO:
+// - FILL for ERC-721/1155?
+//
 // SPDX-License-Identifier: MIT
 //
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
 // ----------------------------------------------------------------------------
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
@@ -107,16 +110,16 @@ interface IERC1155Partial {
     function safeTransferFrom(address from, address to, uint id, uint amount, bytes calldata data) external;
 }
 
-type Account is address; // 2^160
-type Count is uint16;    // 2^16  = 65,536
-type Index is uint32;    // 2^32  = 4,294,967,296
-type Nonce is uint24;    // 2^24  = 16,777,216
-type Price is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-type Token is address;   // 2^160
-type TokenId is uint;    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+type Account is address;  // 2^160
+type Count is uint16;     // 2^16  = 65,536
+type Index is uint32;     // 2^32  = 4,294,967,296
+type Nonce is uint24;     // 2^24  = 16,777,216
+type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+type Token is address;    // 2^160
+type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
 type TokenId16 is uint16; // 2^16 = 65,536
 type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-type Unixtime is uint40; // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
 
 enum BuySell { BUY, SELL }
 enum Execution { FILL, FILLORKILL }
@@ -280,7 +283,7 @@ contract TokenInfo {
 /// @notice User owned TokenAgent
 contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
-    struct OfferInput {
+    struct AddOffer {
         Token token;             // 160 bits
         BuySell buySell;         // 8 bits
         Unixtime expiry;         // 40 bits
@@ -369,9 +372,9 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   prices[price0], tokenIds[], tokenss[]
     //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
     //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-    function addOffers(OfferInput[] calldata inputs) external onlyOwner {
+    function addOffers(AddOffer[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
-            OfferInput memory input = inputs[i];
+            AddOffer memory input = inputs[i];
             TokenType tokenType = _getTokenType(input.token);
             if (tokenType == TokenType.INVALID) {
                 revert InvalidToken(input.token);
@@ -385,7 +388,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.expiry = input.expiry;
             offer.count = input.count;
             offer.nonce = nonce;
-
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
             } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
@@ -398,7 +400,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
             offer.prices = input.prices;
-
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
                 if (input.tokenIds.length > 1) {
                     for (uint j = 1; j < input.tokenIds.length; j++) {
@@ -407,31 +408,24 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         }
                     }
                 }
-                // uint start = gasleft();
-                if (false) {
-                    offer.tokenIds = input.tokenIds;
-                } else {
-                    if (input.tokenIds.length > 0) {
-                        uint maxTokenId;
-                        for (uint j = 0; j < input.tokenIds.length; j++) {
-                            if (maxTokenId < TokenId.unwrap(input.tokenIds[j])) {
-                                maxTokenId = TokenId.unwrap(input.tokenIds[j]);
-                            }
-                        }
-                        if (maxTokenId < 2 ** 16) {
-                            offer.tokenIdType = TokenIdType.TOKENID16;
+                if (input.tokenIds.length > 0) {
+                    uint maxTokenId;
+                    for (uint j = 0; j < input.tokenIds.length; j++) {
+                        if (maxTokenId < TokenId.unwrap(input.tokenIds[j])) {
+                            maxTokenId = TokenId.unwrap(input.tokenIds[j]);
                         }
                     }
-                    if (offer.tokenIdType == TokenIdType.TOKENID16) {
-                        for (uint j = 0; j < input.tokenIds.length; j++) {
-                            offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
-                        }
-                    } else {
-                        offer.tokenIds = input.tokenIds;
+                    if (maxTokenId < 2 ** 16) {
+                        offer.tokenIdType = TokenIdType.TOKENID16;
                     }
                 }
-                // uint end = gasleft();
-                // console.log("Gas: ", (start - end));
+                if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                    for (uint j = 0; j < input.tokenIds.length; j++) {
+                        offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
+                    }
+                } else {
+                    offer.tokenIds = input.tokenIds;
+                }
             }
             if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
                 offer.tokenss = input.tokenss;

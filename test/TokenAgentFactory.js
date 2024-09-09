@@ -344,7 +344,6 @@ describe("TokenAgentFactory", function () {
 
     it("Test TokenAgent secondary functions", async function () {
       const d = await loadFixture(deployContracts);
-      return;
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.emit(d.tokenAgentFactory, "NewTokenAgent")
         .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
@@ -365,7 +364,7 @@ describe("TokenAgentFactory", function () {
       await expect(tokenAgent.connect(d.accounts[1]).acceptOwnership())
         .to.emit(tokenAgent, "OwnershipTransferred")
         .withArgs(d.accounts[0].address, d.accounts[1].address, anyValue);
-      // await printState(d);
+      expect((await tokenAgent.getTokenTypes([d.weth, d.erc20Token, d.erc721Token, d.erc1155Token, d.accounts[0]])).toString()).to.equal("1,1,2,3,4");
     });
 
     it("Test TokenAgent invalid offers", async function () {
@@ -423,7 +422,7 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [indices[0], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
-          [indices[1], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[1], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
         const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
@@ -433,7 +432,7 @@ describe("TokenAgentFactory", function () {
       }
       if (false) {
         const trades2 = [
-          [indices[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades2: " + JSON.stringify(trades2));
         const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2, false);
@@ -481,7 +480,7 @@ describe("TokenAgentFactory", function () {
       if (true) {
         const trades1 = [
           // [indices[0], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [8, 9, 10, 11]],
-          [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
+          [indices[1], ethers.parseUnits("0.4", 18).toString(), FILLORKILL, [4, 5, 6, 7], []],
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
@@ -530,7 +529,7 @@ describe("TokenAgentFactory", function () {
         // TODO: Confirm check price
         const trades1 = [
           // [indices[0], ethers.parseUnits("0.157142857142857142", 18).toString(), FILLORKILL, [0, 9, 1, 10]],
-          [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
+          [indices[1], ethers.parseUnits("2.6", 18).toString(), FILLORKILL, [0, 1, 2, 3], [5, 6, 7, 8]],
           // [indices[2], ethers.parseUnits("7", 18).toString(), FILLORKILL, [0, 5, 1, 6, 2, 7, 3, 8]],
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];

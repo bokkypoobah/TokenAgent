@@ -200,6 +200,31 @@ const dataModule = {
       // console.log(now() + " INFO dataModule:mutations.setState - info: " + JSON.stringify(info, null, 2));
       Vue.set(state, info.name, info.data);
     },
+
+    addTokenContract(state, info) {
+      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(info, null, 2));
+      if (!(info.chainId in state.tokenContracts)) {
+        Vue.set(state.tokenContracts, info.chainId, {});
+      }
+      if (!(info.address in state.tokenContracts[info.chainId])) {
+        Vue.set(state.tokenContracts[info.chainId], info.address, {
+          type: info.type,
+          symbol: info.symbol,
+          name: info.name,
+          slug: info.slug,
+          image: info.image,
+          watch: false,
+          transfers: false,
+          junk: false,
+        });
+      }
+      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(state.tokenContracts[info.chainId][info.address], null, 2));
+    },
+    toggleTokenContractField(state, info) {
+      Vue.set(state.tokenContracts[info.chainId][info.address], info.field, !state.tokenContracts[info.chainId][info.address][info.field]);
+      console.log(now() + " INFO dataModule:mutations.toggleTokenContractField - tokenContracts[" + info.chainId + "][" + info.address + "]." + info.field + " = " + state.tokenContracts[info.chainId][info.address][info.field]);
+    },
+
     updateBalances(state, info) {
       // console.log(now() + " INFO dataModule:mutations.updateBalances - info: " + JSON.stringify(info, null, 2));
       Vue.set(state.balances, info.chainId, info.balances);
@@ -428,25 +453,6 @@ const dataModule = {
         }
       }
     },
-    addTokenContract(state, info) {
-      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(info, null, 2));
-      if (!(info.chainId in state.tokenContracts)) {
-        Vue.set(state.tokenContracts, info.chainId, {});
-      }
-      if (!(info.address in state.tokenContracts[info.chainId])) {
-        Vue.set(state.tokenContracts[info.chainId], info.address, {
-          type: info.type,
-          symbol: info.symbol,
-          name: info.name,
-          slug: info.slug,
-          image: info.image,
-          watch: false,
-          transfers: false,
-          junk: false,
-        });
-      }
-      console.log(now() + " INFO dataModule:mutations.addTokenContract info: " + JSON.stringify(state.tokenContracts[info.chainId][info.address], null, 2));
-    },
     addNonFungibleContractMetadata(state, info) {
       // console.log(now() + " INFO dataModule:mutations.addNonFungibleContractMetadata info: " + JSON.stringify(info, null, 2));
       if (!(info.chainId in state.tokens)) {
@@ -643,6 +649,11 @@ const dataModule = {
     async addTokenContract(context, info) {
       console.log(now() + " INFO dataModule:actions.addTokenContract - info: " + JSON.stringify(info));
       await context.commit('addTokenContract', info);
+      await context.dispatch('saveData', ['tokenContracts']);
+    },
+    async toggleTokenContractField(context, info) {
+      console.log(now() + " INFO dataModule:actions.toggleTokenContractField - info: " + JSON.stringify(info));
+      await context.commit('toggleTokenContractField', info);
       await context.dispatch('saveData', ['tokenContracts']);
     },
 

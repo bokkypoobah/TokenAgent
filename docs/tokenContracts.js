@@ -272,27 +272,27 @@ const TokenContracts = {
             <!-- </b-form-checkbox> -->
           </template>
           <template #cell(options)="data">
-            <!-- <b-button size="sm" :pressed.sync="data.item.junk" @click="toggleAddressField(data.item.account, 'junk')" variant="transparent" v-b-popover.hover.ds500="data.item.junk ? 'Junk' : 'Not junk'" class="m-0 ml-1 p-0">
+            <b-button size="sm" :pressed.sync="data.item.junk" @click="toggleTokenContractField(data.item.address, 'junk')" variant="transparent" v-b-popover.hover.ds500="data.item.junk ? 'Junk' : 'Not junk'" class="m-0 ml-1 p-0">
               <b-icon :icon="data.item.junk ? 'trash-fill' : 'trash'" shift-v="+1" font-scale="1.2" :variant="data.item.junk ? 'primary' : 'secondary'">
               </b-icon>
             </b-button>
-            <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.mine" @click="toggleAddressField(data.item.account, 'mine')" variant="transparent" v-b-popover.hover.ds500="data.item.mine ? 'My account' : 'Not my account'" class="m-0 ml-1 p-0">
+            <!-- <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.mine" @click="toggleTokenContractField(data.item.account, 'mine')" variant="transparent" v-b-popover.hover.ds500="data.item.mine ? 'My account' : 'Not my account'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.mine && !data.item.junk) ? 'person-fill' : 'person'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.mine) ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button>
-            <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.watch" @click="toggleAddressField(data.item.account, 'watch')" variant="transparent" v-b-popover.hover.ds500="(data.item.watch ? 'Watch' : 'Do not watch') + ' this address for ETH, ERC-20' + (data.item.account.substring(0, 3) == 'st:' ? ' and ERC-721 stealth ' : ', ERC-721 and ERC-1155 ') + 'transfers'" class="m-0 ml-1 p-0">
+            </b-button> -->
+            <!-- <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.watch" @click="toggleTokenContractField(data.item.account, 'watch')" variant="transparent" v-b-popover.hover.ds500="(data.item.watch ? 'Watch' : 'Do not watch') + ' this address for ETH, ERC-20' + (data.item.account.substring(0, 3) == 'st:' ? ' and ERC-721 stealth ' : ', ERC-721 and ERC-1155 ') + 'transfers'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.watch && !data.item.junk) ? 'eye-fill' : 'eye'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.watch) ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button>
-            <b-button size="sm" :disabled="data.item.junk || !data.item.mine || data.item.account.substring(0, 3) == 'st:'" :pressed.sync="data.item.sendFrom" @click="toggleAddressField(data.item.account, 'sendFrom')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendFrom ? 'can' : 'cannot') + ' be sent from this address'" class="m-0 ml-1 p-0">
+            </b-button> -->
+            <!-- <b-button size="sm" :disabled="data.item.junk || !data.item.mine || data.item.account.substring(0, 3) == 'st:'" :pressed.sync="data.item.sendFrom" @click="toggleTokenContractField(data.item.account, 'sendFrom')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendFrom ? 'can' : 'cannot') + ' be sent from this address'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.sendFrom && data.item.mine && !data.item.junk) ? 'arrow-up-right-circle-fill' : 'arrow-up-right-circle'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.sendFrom) || !data.item.mine || data.item.account.substring(0, 3) == 'st:' ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button>
-            <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.sendTo" @click="toggleAddressField(data.item.account, 'sendTo')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendTo ? 'can' : 'cannot') + ' be sent to this address'" class="m-0 ml-1 p-0">
+            </b-button> -->
+            <!-- <b-button size="sm" :disabled="data.item.junk" :pressed.sync="data.item.sendTo" @click="toggleTokenContractField(data.item.account, 'sendTo')" variant="transparent" v-b-popover.hover.ds500="'ETH and tokens ' + (data.item.sendTo ? 'can' : 'cannot') + ' be sent to this address'" class="m-0 ml-1 p-0">
               <b-icon :icon="(data.item.sendTo && !data.item.junk) ? 'arrow-down-right-circle-fill' : 'arrow-down-right-circle'" shift-v="+1" font-scale="1.2" :variant="(data.item.junk || !data.item.sendTo) ? 'secondary' : 'primary'">
               </b-icon>
-            </b-button>
-            <b-button v-if="data.item.account.substring(0, 3) == 'st:'" size="sm" :disabled="!transferHelper || data.item.junk || !data.item.sendTo" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover.ds500="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-1 p-0">
+            </b-button> -->
+            <!-- <b-button v-if="data.item.account.substring(0, 3) == 'st:'" size="sm" :disabled="!transferHelper || data.item.junk || !data.item.sendTo" @click="newTransfer(data.item.account);" variant="link" v-b-popover.hover.ds500="'New Stealth Transfer to ' + data.item.account" class="m-0 ml-1 p-0">
               <b-icon-caret-right shift-v="+1" font-scale="1.2">
               </b-icon-caret-right>
             </b-button> -->
@@ -742,9 +742,9 @@ const TokenContracts = {
       this.settings.selectedAccounts = {};
       this.saveSettings();
     },
-    async toggleAddressField(address, field) {
-      console.log(now() + " INFO TokenContracts:methods.toggleAddressField - address: " + address + ", field: " + field);
-      store.dispatch('data/toggleAddressField', { address, field });
+    async toggleTokenContractField(address, field) {
+      console.log(now() + " INFO TokenContracts:methods.toggleTokenContractField - address: " + address + ", field: " + field);
+      store.dispatch('data/toggleTokenContractField', { chainId: this.chainId, address, field });
     },
     async setAddressField(address, field, value) {
       console.log(now() + " INFO TokenContracts:methods.setAddressField - address: " + address + ", field: " + field + ", value: " + value);

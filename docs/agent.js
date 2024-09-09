@@ -8,7 +8,7 @@ const Agent = {
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pr-0" style="width: 25.0rem;">
                 <b-form-group :state="!settings.tokenAgentAddress || validAddress(settings.tokenAgentAddress)" :invalid-feedback="'Invalid address'" class="m-0 p-0">
-                  <b-form-input type="text" size="sm" id="explorer-tokenAgentAddress" v-model="settings.tokenAgentAddress" @change="saveSettings(); loadData(settings.contract);" placeholder="Enter token agent address, or select from dropdown"></b-form-input>
+                  <b-form-input type="text" size="sm" id="explorer-tokenAgentAddress" v-model="settings.tokenAgentAddress" @change="saveSettings(); loadData(settings.contract);" placeholder="Token agent address, or select from dropdown"></b-form-input>
                 </b-form-group>
               </div>
               <!-- TODO WIP -->
@@ -84,18 +84,17 @@ const Agent = {
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
-
               <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
-                <b-input-group  style="width: 25.0rem;">
-                  <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789"></b-form-input>
+                <b-input-group  style="width: 27.0rem;">
+                  <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, or select from dropdown"></b-form-input>
                   <b-input-group-append>
                     <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
-                      <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
-                      <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
-                        <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
-                        <b-dropdown-item @click="settings.addOffers.token = item.tokenAgent; saveSettings(); loadToken(settings.addOffers.token);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                      <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts contracts with transfers permitted</b-dropdown-item>
+                      <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
+                        <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name }}</b-dropdown-item>
                       </div>
                     </b-dropdown>
+                    <b-badge v-if="settings.addOffers.type" variant="light" class="mt-1">{{ settings.addOffers.type }}</b-badge>
                   </b-input-group-append>
                 </b-input-group>
               </b-form-group>
@@ -106,7 +105,7 @@ const Agent = {
               <b-form-group label="Buy/Sell:" label-for="addoffers-buysell" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-select size="sm" id="addoffers-buysell" v-model="settings.addOffers.buySell" @change="saveSettings" :options="buySellOptions" v-b-popover.hover.ds500="'Owner BUY or SELL'" class="w-25"></b-form-select>
               </b-form-group>
-              <b-form-group label="Count:" label-for="addoffers-count" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-group v-if="settings.addOffers.type == 721 || settings.addOffers.type == 1155" label="Count:" label-for="addoffers-count" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-count" v-model.trim="settings.addOffers.count" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
               <b-form-group label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -223,6 +222,7 @@ const Agent = {
         addOffers: {
           offers: [],
           token: null,
+          type: null,
           buySell: 0,
           count: null,
           pricing: 0,
@@ -235,7 +235,7 @@ const Agent = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 2,
+        version: 3,
       },
       buySellOptions: [
         { value: 0, text: 'BUY' },
@@ -282,6 +282,9 @@ const Agent = {
     tokenAgents() {
       return store.getters['data/tokenAgents'];
     },
+    tokenContracts() {
+      return store.getters['data/tokenContracts'];
+    },
     names() {
       return store.getters['data/names'];
     },
@@ -304,6 +307,16 @@ const Agent = {
       return results;
     },
 
+    tokenContractsDropdownOptions() {
+      const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
+      for (const [tokenContract, d] of Object.entries(this.tokenContracts[this.chainId] || {})) {
+        if (d.transfers) {
+          results.push({ tokenContract, type: d.type, symbol: d.symbol, name: d.name });
+        }
+      }
+      // console.log(now() + " INFO Agent:computed.tokenAgentsDropdownOptions - results[0..9]: " + JSON.stringify(this.filteredSortedItems.slice(0, 10), null, 2));
+      return results;
+    },
 
     totalRegistryEntries() {
       return Object.keys(this.registry[this.chainId] || {}).length + ((store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0);

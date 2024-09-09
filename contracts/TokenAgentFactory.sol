@@ -789,19 +789,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 } else {
                     tokenIds = offer.tokenIds;
                 }
-                results[k++] = OfferInfo(
-                    i,
-                    offer.token,
-                    tokenTypes[offer.token],
-                    offer.buySell,
-                    offer.expiry,
-                    offer.count,
-                    offer.nonce,
-                    offer.prices,
-                    tokenIds,
-                    offer.tokenss,
-                    offer.useds
-                );
+                results[k++] = OfferInfo(i, offer.token, tokenTypes[offer.token], offer.buySell, offer.expiry, offer.count, offer.nonce, offer.prices, tokenIds, offer.tokenss, offer.useds);
             }
         }
     }
@@ -830,16 +818,18 @@ contract TokenAgentFactory is CloneFactory {
     event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
 
     error NotInitialised();
+    error GoAway();
 
     constructor() {
         tokenAgentTemplate = new TokenAgent();
     }
 
     function init(WETH _weth, TokenAgent _tokenAgentTemplate) public {
-        if (address(weth) == address(0)) {
-            weth = _weth;
-            tokenAgentTemplate = _tokenAgentTemplate;
+        if (address(weth) != address(0)) {
+            revert GoAway();
         }
+        weth = _weth;
+        tokenAgentTemplate = _tokenAgentTemplate;
     }
 
     function newTokenAgent() public {

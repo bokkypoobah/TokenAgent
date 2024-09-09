@@ -6,7 +6,7 @@ const Agent = {
         <b-tabs card v-model="settings.tabIndex" @changed="saveSettings();" content-class="mt-0" align="left">
           <template #tabs-start>
             <div class="d-flex flex-wrap m-0 p-0">
-              <div class="mt-0 pr-0" style="width: 25.0rem;">
+              <div class="mt-0 pr-0" style="width: 24.0rem;">
                 <b-form-group :state="!settings.tokenAgentAddress || validAddress(settings.tokenAgentAddress)" :invalid-feedback="'Invalid address'" class="m-0 p-0">
                   <b-form-input type="text" size="sm" id="explorer-tokenAgentAddress" v-model="settings.tokenAgentAddress" @change="saveSettings(); loadData(settings.contract);" placeholder="Token agent address, or select from dropdown"></b-form-input>
                 </b-form-group>
@@ -25,7 +25,7 @@ const Agent = {
                 </b-dropdown>
               </div>
               <div class="mt-0 pr-1">
-                <b-button size="sm" :disabled="!validAddress(settings.tokenAgentAddress)" :href="explorer + 'token/' + settings.tokenAgentAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                <b-button size="sm" :disabled="!validAddress(settings.tokenAgentAddress)" :href="explorer + 'address/' + settings.tokenAgentAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
               </div>
               <div class="mt-0 pr-1">
                 <b-button size="sm" :disabled="sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
@@ -85,16 +85,19 @@ const Agent = {
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
               <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
-                <b-input-group  style="width: 27.0rem;">
+                <b-input-group style="width: 29.0rem;">
                   <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, or select from dropdown"></b-form-input>
                   <b-input-group-append>
-                    <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
+                    <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Token contracts'" class="m-0 ml-1 p-0">
                       <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts contracts with transfers permitted</b-dropdown-item>
                       <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
                         <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name }}</b-dropdown-item>
                       </div>
                     </b-dropdown>
-                    <b-badge v-if="settings.addOffers.type" variant="light" class="mt-1">{{ settings.addOffers.type }}</b-badge>
+                    <b-button size="sm" :disabled="!validAddress(settings.addOffers.token)" :href="explorer + 'token/' + settings.addOffers.token" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                    <font size="-1">
+                      <b-badge v-if="settings.addOffers.type" variant="light" class="mt-2" v-b-popover.hover.ds500="'ERC-20/721/1155'">{{ settings.addOffers.type }}</b-badge>
+                    </font>
                   </b-input-group-append>
                 </b-input-group>
               </b-form-group>

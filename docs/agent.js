@@ -84,8 +84,8 @@ const Agent = {
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
-              <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
-                <b-input-group style="width: 29.0rem;">
+              <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" :description="settings.addOffers.token && validAddress(settings.addOffers.token) && settings.addOffers.type && ('ERC-' + settings.addOffers.type) || 'Enter address'" class="mx-0 my-1 p-0">
+                <b-input-group style="width: 28.0rem;">
                   <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, or select from dropdown"></b-form-input>
                   <b-input-group-append>
                     <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Token contracts'" class="m-0 ml-1 p-0">
@@ -95,9 +95,9 @@ const Agent = {
                       </div>
                     </b-dropdown>
                     <b-button size="sm" :disabled="!validAddress(settings.addOffers.token)" :href="explorer + 'token/' + settings.addOffers.token" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
-                    <font size="-1">
-                      <b-badge v-if="settings.addOffers.type" variant="light" class="mt-2" v-b-popover.hover.ds500="'ERC-20/721/1155'">{{ settings.addOffers.type }}</b-badge>
-                    </font>
+                    <!-- <font size="-1">
+                      <b-badge v-if="settings.addOffers.type" variant="light" class="mt-2" v-b-popover.hover.ds500="'ERC-20/721/1155'">{{ 'ERC-' + settings.addOffers.type }}</b-badge>
+                    </font> -->
                   </b-input-group-append>
                 </b-input-group>
               </b-form-group>
@@ -111,7 +111,7 @@ const Agent = {
               <b-form-group v-if="settings.addOffers.type == 721 || settings.addOffers.type == 1155" label="Count:" label-for="addoffers-count" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-count" v-model.trim="settings.addOffers.count" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
-              <b-form-group label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-group v-if="settings.addOffers.type == 721 || settings.addOffers.type == 1155" label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricingOptions" v-b-popover.hover.ds500="'Single or multiple prices'" class="w-25"></b-form-select>
               </b-form-group>
             </b-form-group>

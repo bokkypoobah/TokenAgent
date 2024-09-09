@@ -11,10 +11,43 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 ##### Screenshots
 
 ###### Addresses
-<kbd><img src="images/Screenshot_Addresses_20240906.png" /></kbd>
+<kbd><img src="images/Screenshot_Addresses_20240909.png" width="600"/></kbd>
 
 ###### Agents
-<kbd><img src="images/Screenshot_Agents_20240906.png" /></kbd>
+
+Click on the [+] button to deploy your new Token Agent
+
+<kbd><img src="images/Screenshot_Agents_1_20240909.png" width="600"/></kbd>
+
+<br />
+
+Click on [Deploy] and confirm your web3 transaction
+
+<kbd><img src="images/Screenshot_Agents_2_20240909.png" width="600"/></kbd>
+
+<br />
+
+Click on the link on the top right to view the transaction
+
+<kbd><img src="images/Screenshot_Agents_3_20240909.png" width="600"/></kbd>
+
+<br />
+
+Click on the [Sync] button
+
+<kbd><img src="images/Screenshot_Agents_4_20240909.png" width="600"/></kbd>
+
+<br />
+
+Select Token Agent Factory and click [Do It!].
+
+<kbd><img src="images/Screenshot_Agents_5_20240909.png" width="600"/></kbd>
+
+<br />
+
+Your newly deployed Token Agent should appear
+
+<kbd><img src="images/Screenshot_Agents_6_20240909.png" width="600"/></kbd>
 
 ##### Contract
 

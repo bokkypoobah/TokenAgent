@@ -157,7 +157,7 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata080a",
+      name: "tokenagentdata081a",
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
@@ -944,7 +944,8 @@ const dataModule = {
             if (!log.removed) {
               try {
                 const logData = interface.parseLog(log);
-                const [ contract, tokenAgent, owner, index, timestamp ] = [ log.address, ...logData.args ];
+                // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
+                const [ contract, tokenAgent, owner, index, indexByOwner, timestamp ] = [ log.address, ...logData.args ];
                 records.push( {
                   chainId: parameter.chainId,
                   blockNumber: parseInt(log.blockNumber),
@@ -956,6 +957,7 @@ const dataModule = {
                   tokenAgent: ethers.utils.getAddress(tokenAgent),
                   owner: ethers.utils.getAddress(owner),
                   index: parseInt(index),
+                  indexByOwner: parseInt(indexByOwner),
                   confirmations: parameter.blockNumber - log.blockNumber,
                   timestamp,
                   tx: null,
@@ -986,8 +988,8 @@ const dataModule = {
                 toBlock,
                 topics: [
                   [
-                    // event NewTokenAgent(TokenAgent indexed tokenAgent, address indexed owner, uint indexed index, Unixtime timestamp);
-                    ethers.utils.id("NewTokenAgent(address,address,uint256,uint40)"),
+                    // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
+                    ethers.utils.id("NewTokenAgent(address,address,uint32,uint32,uint40)"),
                   ],
                   null,
                   null

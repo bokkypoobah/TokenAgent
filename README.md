@@ -23,7 +23,11 @@ Enter an ERC-20/721/1155 token contract address on the Sepolia network, or selec
 
 <kbd><img src="images/Screenshot_TokenContracts_2_20240910.png" width="600"/></kbd>
 
-List of token contracts. Click on the [eye] checkbox for this app to watch for transfers and approval events from this token contract. Click on the [right arrow] checkbox to permit transfers and approvals of this token contract within this app
+List of token contracts.
+
+Click on the [eye] checkbox for this app to watch for transfers and approval events from this token contract.
+
+Click on the [right arrow] checkbox to permit transfers and approvals of this token contract within this app
 
 <kbd><img src="images/Screenshot_TokenContracts_3_20240910.png" width="600"/></kbd>
 

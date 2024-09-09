@@ -298,9 +298,9 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         // BuySell buySell;         // 8 bits
         Unixtime expiry;         // 40 bits
         Count count;             // 16 bits
-        // Price[] prices;          // token/WETH 18dp
-        // TokenId[] tokenIds;      // ERC-721/1155
-        // Tokens[] tokenss;        // ERC-20/1155
+        Price[] prices;          // token/WETH 18dp
+        TokenId[] tokenIds;      // ERC-721/1155
+        Tokens[] tokenss;        // ERC-20/1155
     }
     struct Offer {
         Token token;             // 160 bits
@@ -457,16 +457,46 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.count = input.count;
             offer.nonce = nonce;
             TokenType tokenType = _getTokenType(offer.token);
-            TokenId[] memory tokenIds;
-            if (offer.tokenIdType == TokenIdType.TOKENID16) {
-                tokenIds = new TokenId[](offer.tokenId16s.length);
-                for (uint j = 0; j < offer.tokenId16s.length; j++) {
-                    tokenIds[j] = TokenId.wrap(uint256(TokenId16.unwrap(offer.tokenId16s[j])));
-                }
-            } else {
-                tokenIds = offer.tokenIds;
+            if (input.prices.length == 0) {
+                revert InvalidInputData("all: prices array must contain at least one price");
+            } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
+                revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
+            } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
+                revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
+            } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
+                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
+            } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
+                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
-            emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, offer.prices, tokenIds, offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            offer.prices = input.prices;
+            if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
+                if (input.tokenIds.length > 1) {
+                    for (uint j = 1; j < input.tokenIds.length; j++) {
+                        if (TokenId.unwrap(input.tokenIds[j - 1]) >= TokenId.unwrap(input.tokenIds[j])) {
+                            revert TokenIdsMustBeSortedWithNoDuplicates();
+                        }
+                    }
+                }
+                if (input.tokenIds.length > 0) {
+                    uint maxTokenId;
+                    for (uint j = 0; j < input.tokenIds.length; j++) {
+                        if (maxTokenId < TokenId.unwrap(input.tokenIds[j])) {
+                            maxTokenId = TokenId.unwrap(input.tokenIds[j]);
+                        }
+                    }
+                    if (maxTokenId < 2 ** 16) {
+                        offer.tokenIdType = TokenIdType.TOKENID16;
+                    }
+                }
+                if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                    for (uint j = 0; j < input.tokenIds.length; j++) {
+                        offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
+                    }
+                } else {
+                    offer.tokenIds = input.tokenIds;
+                }
+            }
+            emit Offered(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -502,8 +532,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 uint k;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
                     uint128 _price = Price.unwrap(offer.prices[j]);
-                    uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
-                    if (_remaining > 0) {
+                    if (Tokens.unwrap(offer.tokenss[j]) > Tokens.unwrap(offer.useds[j])) {
+                        uint128 _remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
                         if (tokens >= _remaining) {
                             tokens -= _remaining;
                             totalTokens += _remaining;

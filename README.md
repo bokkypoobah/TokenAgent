@@ -22,6 +22,7 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
 ##### Deployments to Sepolia
 * v0.8.0 template [TokenAgent](https://sepolia.etherscan.io/address/0x0514e4402fe93b6ba0b014b30e5b715ed0943c25#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x598b17e44c3e8894dfcc9aaec16dad81756f5651#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.0](deployed/TokenAgentFactory_v0.8.0_Sepolia_0x598b17E44c3e8894DfcC9aAec16DaD81756F5651.sol)
+* v0.8.1 template [TokenAgent](https://sepolia.etherscan.io/address/0x35e401362D24a2243b9a441542a4D4FFe50db1bF#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.1](deployed/TokenAgentFactory_v0.8.1_Sepolia_0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914.sol)
 
 ##### Notes
 This project is currently heavily under development. Clear your browser's LocalStorage and IndexedDB if this dapp is not operating as expected as the configuration data may have a new format.

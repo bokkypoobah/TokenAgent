@@ -114,8 +114,8 @@ type Nonce is uint24;    // 2^24  = 16,777,216
 type Price is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
 type Token is address;   // 2^160
 type TokenId is uint;    // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
-type TokenId16 is uint;  // 2^16 = 65,536
-type Tokens is uint128;  // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+type TokenId16 is uint16; // 2^16 = 65,536
+type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
 type Unixtime is uint40; // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
 
 enum BuySell { BUY, SELL }
@@ -255,7 +255,6 @@ contract TokenInfo {
         }
     }
     function _getTokenType(Token token) internal returns (TokenType _tokenType) {
-        // uint startGas = gasleft();
         _tokenType = tokenTypes[token];
         if (_tokenType == TokenType.UNKNOWN) {
             if (Token.unwrap(token).code.length > 0) {
@@ -275,8 +274,6 @@ contract TokenInfo {
             }
             tokenTypes[token] = _tokenType;
         }
-        // uint usedGas = startGas - gasleft();
-        // console.log("        > _getTokenType()", Token.unwrap(token), uint(_tokenType), usedGas);
     }
 }
 
@@ -403,32 +400,38 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.prices = input.prices;
 
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
-                if (input.tokenIds.length > 0) {
-                    uint maxTokenId;
-                    for (uint j = 0; j < input.tokenIds.length; j++) {
-                        if (maxTokenId < TokenId.unwrap(input.tokenIds[j])) {
-                            maxTokenId = TokenId.unwrap(input.tokenIds[j]);
-                        }
-                    }
-                    if (maxTokenId < 2 ** 16) {
-                        offer.tokenIdType = TokenIdType.TOKENID16;
-                    }
-                }
-                if (offer.tokenIdType == TokenIdType.TOKENID16) {
-                    for (uint j = 0; j < input.tokenIds.length; j++) {
-                        offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
-                    }
-                } else {
-                    offer.tokenIds = input.tokenIds;
-                }
-                console.log("tokenIdType: ", uint(offer.tokenIdType));
-                if (offer.tokenIds.length > 1) {
-                    for (uint j = 1; j < offer.tokenIds.length; j++) {
-                        if (TokenId.unwrap(offer.tokenIds[j - 1]) >= TokenId.unwrap(offer.tokenIds[j])) {
+                if (input.tokenIds.length > 1) {
+                    for (uint j = 1; j < input.tokenIds.length; j++) {
+                        if (TokenId.unwrap(input.tokenIds[j - 1]) >= TokenId.unwrap(input.tokenIds[j])) {
                             revert TokenIdsMustBeSortedWithNoDuplicates();
                         }
                     }
                 }
+                // uint start = gasleft();
+                if (false) {
+                    offer.tokenIds = input.tokenIds;
+                } else {
+                    if (input.tokenIds.length > 0) {
+                        uint maxTokenId;
+                        for (uint j = 0; j < input.tokenIds.length; j++) {
+                            if (maxTokenId < TokenId.unwrap(input.tokenIds[j])) {
+                                maxTokenId = TokenId.unwrap(input.tokenIds[j]);
+                            }
+                        }
+                        if (maxTokenId < 2 ** 16) {
+                            offer.tokenIdType = TokenIdType.TOKENID16;
+                        }
+                    }
+                    if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                        for (uint j = 0; j < input.tokenIds.length; j++) {
+                            offer.tokenId16s.push(TokenId16.wrap(uint16(TokenId.unwrap(input.tokenIds[j]))));
+                        }
+                    } else {
+                        offer.tokenIds = input.tokenIds;
+                    }
+                }
+                // uint end = gasleft();
+                // console.log("Gas: ", (start - end));
             }
             if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
                 offer.tokenss = input.tokenss;
@@ -436,14 +439,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.useds.push();
                 }
             }
-            // if (tokenType == TokenType.ERC20) {
-            //     // offer.tokenss = input.tokenss;
-            // } else if (tokenType == TokenType.ERC721) {
-            //     offer.tokenIds = input.tokenIds;
-            // } else if (tokenType == TokenType.ERC1155) {
-            //     offer.tokenIds = input.tokenIds;
-            //     // offer.tokenss = input.tokenss;
-            // }
             emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), input.token, tokenType, input.buySell, input.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
@@ -534,12 +529,15 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 tokenIds_ = new uint[](input.data.length);
                 tokenss_ = new uint[](0);
                 for (uint j = 0; j < input.data.length; j++) {
-                    // - prices[price0], tokenIds[]
-                    // - prices[price0], tokenIds[tokenId0, tokenId1, ...]
-                    // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...]
                     uint p;
                     if (offer.tokenIds.length > 0) {
-                        uint k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        uint k;
+                        if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                            // TODO: Check uint16
+                            k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                        } else {
+                            k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        }
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
@@ -591,7 +589,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     // - prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
                     uint p;
                     if (offer.tokenIds.length > 0) {
-                        uint k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        uint k;
+                        if (offer.tokenIdType == TokenIdType.TOKENID16) {
+                            // TODO: Check uint16
+                            k = ArrayUtils.indexOfTokenId16s(offer.tokenId16s, TokenId16.wrap(uint16(input.data[j])));
+                        } else {
+                            k = ArrayUtils.indexOfTokenIds(offer.tokenIds, TokenId.wrap(input.data[j]));
+                        }
                         if (k == type(uint).max) {
                             revert InvalidTokenId(TokenId.wrap(input.data[j]));
                         }
@@ -641,7 +645,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         for (uint i = start; i < end; i++) {
             if (i < offers.length) {
                 Offer memory offer = offers[i];
-                console.log("offer.tokenIdType", uint(offer.tokenIdType));
+                // console.log("offer.tokenIdType", uint(offer.tokenIdType));
                 TokenId[] memory tokenIds;
                 if (offer.tokenIdType == TokenIdType.TOKENID16) {
                     tokenIds = new TokenId[](offer.tokenId16s.length);

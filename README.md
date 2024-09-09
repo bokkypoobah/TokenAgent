@@ -70,7 +70,7 @@ $ ./10_testIt.sh
 
   TokenAgentFactory
     Deploy TokenAgentFactory And TokenAgent
-        * accounts[0]->TokenAgentFactory.deploy() => 0x5FC8d326 - gasUsed: 4,334,954 0.004334954Ξ 10.84 USD @ 1.0 gwei 2500.00 ETH/USD
+        * accounts[0]->TokenAgentFactory.deploy() => 0x5FC8d326 - gasUsed: 4,394,012 0.004394012Ξ 10.99 USD @ 1.0 gwei 2500.00 ETH/USD
         * accounts[0]->tokenAgentFactory.newTokenAgent() => 0x23dB4a08 - gasUsed: 187,023 0.000187023Ξ 0.47 USD @ 1.0 gwei 2500.00 ETH/USD
         * accounts[1]->tokenAgentFactory.newTokenAgent() => 0x8EFa1819 - gasUsed: 189,823 0.000189823Ξ 0.47 USD @ 1.0 gwei 2500.00 ETH/USD
         * accounts[2]->tokenAgentFactory.newTokenAgent() => 0x6743E5c6 - gasUsed: 189,823 0.000189823Ξ 0.47 USD @ 1.0 gwei 2500.00 ETH/USD
@@ -81,100 +81,100 @@ $ ./10_testIt.sh
               1              0 0x8EFa1819 0x70997970
               2              0 0x6743E5c6 0x3C44CdDd
               3              0 0xA14d9C7a 0x90F79bf6
-        * now: 1:38:28 PM, expiry: 1:40:28 PM
-      ✔ Test TokenAgent secondary functions (747ms)
-      ✔ Test TokenAgent invalid offers (38ms)
+        * now: 10:50:12 AM, expiry: 10:52:12 AM
+      ✔ Test TokenAgent secondary functions (783ms)
+      ✔ Test TokenAgent invalid offers
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998938487644808975                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998938392070743351                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
-        * offers1: [["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",1,1,1725766828,0,["0.1","1.0","0.2","1.0","0.3","0.1"]]]
-        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0] - gasUsed: 280,270 0.00028027Ξ 0.70 USD @ 1.0 gwei 2500.00 ETH/USD
-          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, buySell: SELL, expiry: 1:40:28 PM, nonce: 0, count: 0, prices: [0.1,0.2,0.3], tokenIds: [], tokenss: [1,1,0.1], timestamp: 1:40:12 PM)
+        * offers1: [["0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",1,1725843132,0,["0.1","0.2","0.3"],[],["1.0","1.0","0.1"]]]
+        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0] - gasUsed: 274,394 0.000274394Ξ 0.69 USD @ 1.0 gwei 2500.00 ETH/USD
+          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, buySell: SELL, expiry: 10:52:12 AM, count: 0, nonce: 0, prices: [0.1,0.2,0.3], tokenIds: [], tokenss: [1,1,0.1], timestamp: 10:51:55 AM)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998658217333429005                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998663997765342829                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0xe7f1725E 20   SELL 1:40:28 PM       0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               0.00, 0.00, 0.00
+            0 0xe7f1725E 20   SELL 10:52:12 AM      0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               0.00, 0.00, 0.00
 
         * trades1: [[0,"105000000000000000",1,["1050000000000000000"]]]
-        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 130,099 0.000130099Ξ 0.33 USD @ 1.0 gwei 2500.00 ETH/USD
+        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 130,089 0.000130089Ξ 0.33 USD @ 1.0 gwei 2500.00 ETH/USD
           + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 0.11)
           + erc20Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokens: 1.05)
-          + tokenAgents[1].Traded(index:0, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, makerBuySell: SELL, prices: [0.1,0.2,0], tokenIds: [], tokenss: [1,0.05,0], price: 0.104761904761904761, timestamp: 1:40:13 PM)
+          + tokenAgents[1].Traded(index:0, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, makerBuySell: SELL, prices: [0.1,0.2,0], tokenIds: [], tokenss: [1,0.05,0], price: 0.104761904761904761, timestamp: 10:51:56 AM)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998658217333429005                   100.11                   998.95                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998823513391462124                    99.89                  1001.05                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998663997765342829                   100.11                   998.95                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd   9899.99882344420417257                    99.89                  1001.05                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0xe7f1725E 20   SELL 1:40:28 PM       0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               1.00, 0.05, 0.00
+            0 0xe7f1725E 20   SELL 10:52:12 AM      0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               1.00, 0.05, 0.00
 
         * trades2: [[0,"209523809523809523",1,["1050000000000000000"]]]
-        * accounts[2]->tokenAgents[1].trade(trades2) - gasUsed: 140,531 0.000140531Ξ 0.35 USD @ 1.0 gwei 2500.00 ETH/USD
+        * accounts[2]->tokenAgents[1].trade(trades2) - gasUsed: 140,521 0.000140521Ξ 0.35 USD @ 1.0 gwei 2500.00 ETH/USD
           + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 0.22)
           + erc20Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokens: 1.05)
-          + tokenAgents[1].Traded(index:0, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, makerBuySell: SELL, prices: [0.2,0.3,0], tokenIds: [], tokenss: [0.95,0.1,0], price: 0.209523809523809523, timestamp: 1:40:14 PM)
+          + tokenAgents[1].Traded(index:0, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xe7f1725E, tokenType: 20, makerBuySell: SELL, prices: [0.2,0.3,0], tokenIds: [], tokenss: [0.95,0.1,0], price: 0.209523809523809523, timestamp: 10:51:57 AM)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998658217333429005                   100.33                    997.9                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998682982271308119                    99.67                   1002.1                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998663997765342829                   100.33                    997.9                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998682923083886594                    99.67                   1002.1                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0xe7f1725E 20   SELL 1:40:28 PM       0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               1.00, 1.00, 0.10
+            0 0xe7f1725E 20   SELL 10:52:12 AM      0     0               0.10, 0.20, 0.30                                              1.00, 1.00, 0.10               1.00, 1.00, 0.10
 
-      ✔ Test TokenAgent ERC-20 offers and trades (73ms)
-
-            # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
-          --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998938487644808975                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
-
-        * offers1: ["0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,0,0,1725766828,4,100000000000000000,4","0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,1,0,1725766828,4,100000000000000000,4,5,6,7","0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,1,1,1725766828,4,100000000000000000,4,200000000000000000,5,300000000000000000,6,400000000000000000,7"]
-        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0, 1, 2] - gasUsed: 633,158 0.000633158Ξ 1.58 USD @ 1.0 gwei 2500.00 ETH/USD
-          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: BUY, expiry: 1:40:28 PM, nonce: 0, count: 4, prices: [0.1], tokenIds: [4], tokenss: [], timestamp: 1:40:12 PM)
-          + tokenAgents[1].Offered(index:1, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: SELL, expiry: 1:40:28 PM, nonce: 0, count: 4, prices: [0.1], tokenIds: [4,5,6,7], tokenss: [], timestamp: 1:40:12 PM)
-          + tokenAgents[1].Offered(index:2, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: SELL, expiry: 1:40:28 PM, nonce: 0, count: 4, prices: [0.1,0.2,0.3,0.4], tokenIds: [4,5,6,7], tokenss: [], timestamp: 1:40:12 PM)
+      ✔ Test TokenAgent ERC-20 offers and trades (71ms)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998305328941370437                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998938392070743351                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+
+        * offers1: ["0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,0,1725843132,4,100000000000000000,,","0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,1,1725843132,4,100000000000000000,4,5,6,7,","0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0,1,1725843132,4,100000000000000000,200000000000000000,300000000000000000,400000000000000000,4,5,6,7,"]
+        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0, 1, 2] - gasUsed: 447,560 0.00044756Ξ 1.12 USD @ 1.0 gwei 2500.00 ETH/USD
+          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: BUY, expiry: 10:52:12 AM, count: 4, nonce: 0, prices: [0.1], tokenIds: [], tokenss: [], timestamp: 10:51:55 AM)
+          + tokenAgents[1].Offered(index:1, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: SELL, expiry: 10:52:12 AM, count: 4, nonce: 0, prices: [0.1], tokenIds: [4,5,6,7], tokenss: [], timestamp: 10:51:55 AM)
+          + tokenAgents[1].Offered(index:2, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, buySell: SELL, expiry: 10:52:12 AM, count: 4, nonce: 0, prices: [0.1,0.2,0.3,0.4], tokenIds: [4,5,6,7], tokenss: [], timestamp: 10:51:55 AM)
+
+            # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
+          --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998490831572609071                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0x9fE46736 721  BUY  1:40:28 PM       0     4                           0.10                              4                                                              
-            1 0x9fE46736 721  SELL 1:40:28 PM       0     4                           0.10                     4, 5, 6, 7                                                              
-            2 0x9fE46736 721  SELL 1:40:28 PM       0     4         0.10, 0.20, 0.30, 0.40                     4, 5, 6, 7                                                              
+            0 0x9fE46736 721  BUY  10:52:12 AM      4     0                           0.10                                                                                             
+            1 0x9fE46736 721  SELL 10:52:12 AM      4     0                           0.10                     4, 5, 6, 7                                                              
+            2 0x9fE46736 721  SELL 10:52:12 AM      4     0         0.10, 0.20, 0.30, 0.40                     4, 5, 6, 7                                                              
 
         * trades1: [[1,"400000000000000000",1,[4,5,6,7]]]
-        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 171,045 0.000171045Ξ 0.43 USD @ 1.0 gwei 2500.00 ETH/USD
+        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 154,274 0.000154274Ξ 0.39 USD @ 1.0 gwei 2500.00 ETH/USD
           + erc721Token.Approval(from: 0x70997970, to: 0x00000000, tokenId: 4)
           + erc721Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokenId: 4)
           + erc721Token.Approval(from: 0x70997970, to: 0x00000000, tokenId: 5)
@@ -184,78 +184,78 @@ $ ./10_testIt.sh
           + erc721Token.Approval(from: 0x70997970, to: 0x00000000, tokenId: 7)
           + erc721Token.Transfer(from: 0x70997970, to: 0x3C44CdDd, tokenId: 7)
           + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 0.4)
-          + tokenAgents[1].Traded(index:1, taker: 0x3C44CdDd, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, makerBuySell: SELL, prices: [0.1,0.1,0.1,0.1], tokenIds: [4,5,6,7], tokenss: [], price: 0.4, timestamp: 1:40:13 PM)
+          + tokenAgents[1].Traded(index:1, taker: 0x3C44CdDd, maker: 0x70997970, token: 0x9fE46736, tokenType: 721, makerBuySell: SELL, prices: [0.1,0.1,0.1,0.1], tokenIds: [4,5,6,7], tokenss: [], price: 0.4, timestamp: 10:51:56 AM)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998305328941370437                    100.4                   1000.0                                                0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998782567351026639                     99.6                   1000.0           4, 5, 6, 7, 8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998490831572609071                    100.4                   1000.0                                                0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998799259180235277                     99.6                   1000.0           4, 5, 6, 7, 8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0x9fE46736 721  BUY  1:40:28 PM       0     4                           0.10                              4                                                              
-            1 0x9fE46736 721  SELL 1:40:28 PM       0     0                           0.10                     4, 5, 6, 7                                                              
-            2 0x9fE46736 721  SELL 1:40:28 PM       0     4         0.10, 0.20, 0.30, 0.40                     4, 5, 6, 7                                                              
+            0 0x9fE46736 721  BUY  10:52:12 AM      4     0                           0.10                                                                                             
+            1 0x9fE46736 721  SELL 10:52:12 AM      0     0                           0.10                     4, 5, 6, 7                                                              
+            2 0x9fE46736 721  SELL 10:52:12 AM      4     0         0.10, 0.20, 0.30, 0.40                     4, 5, 6, 7                                                              
 
-      ✔ Test TokenAgent ERC-721 offers and trades (55ms)
-
-            # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
-          --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998938487644808975                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
-
-        * offers1: ["0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,0,0,1725766828,40,100000000000000000","0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,1,0,1725766828,26,100000000000000000,0,5,1,6,2,7,3,8","0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,1,1,1725766828,40,100000000000000000,0,10,200000000000000000,1,10,300000000000000000,2,10,400000000000000000,3,10"]
-        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0, 1, 2] - gasUsed: 673,349 0.000673349Ξ 1.68 USD @ 1.0 gwei 2500.00 ETH/USD
-          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: BUY, expiry: 1:40:28 PM, nonce: 0, count: 40, prices: [0.1], tokenIds: [], tokenss: [], timestamp: 1:40:12 PM)
-          + tokenAgents[1].Offered(index:1, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: SELL, expiry: 1:40:28 PM, nonce: 0, count: 26, prices: [0.1], tokenIds: [0,1,2,3], tokenss: [5,6,7,8], timestamp: 1:40:12 PM)
-          + tokenAgents[1].Offered(index:2, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: SELL, expiry: 1:40:28 PM, nonce: 0, count: 40, prices: [0.1,0.2,0.3,0.4], tokenIds: [0,1,2,3], tokenss: [], timestamp: 1:40:12 PM)
+      ✔ Test TokenAgent ERC-721 offers and trades (54ms)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998265137896718236                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
-            2 0x3C44CdDd  9899.998953612518308649                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998938392070743351                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+
+        * offers1: ["0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,0,1725843132,40,100000000000000000,,","0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,1,1725843132,26,100000000000000000,0,1,2,3,5,6,7,8","0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9,1,1725843132,40,100000000000000000,200000000000000000,300000000000000000,400000000000000000,0,1,2,3,10,10,10,10"]
+        * accounts[1]->tokenAgents[1].addOffers(offers1) => [0, 1, 2] - gasUsed: 638,676 0.000638676Ξ 1.60 USD @ 1.0 gwei 2500.00 ETH/USD
+          + tokenAgents[1].Offered(index:0, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: BUY, expiry: 10:52:12 AM, count: 40, nonce: 0, prices: [0.1], tokenIds: [], tokenss: [], timestamp: 10:51:55 AM)
+          + tokenAgents[1].Offered(index:1, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: SELL, expiry: 10:52:12 AM, count: 26, nonce: 0, prices: [0.1], tokenIds: [0,1,2,3], tokenss: [5,6,7,8], timestamp: 10:51:55 AM)
+          + tokenAgents[1].Offered(index:2, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, buySell: SELL, expiry: 10:52:12 AM, count: 40, nonce: 0, prices: [0.1,0.2,0.3,0.4], tokenIds: [0,1,2,3], tokenss: [10,10,10,10], timestamp: 10:51:55 AM)
+
+            # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
+          --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998299715359896963                    100.0                   1000.0                         4, 5, 6, 7             0:20, 1:20, 2:20, 3:20
+            2 0x3C44CdDd  9899.998953533331269523                    100.0                   1000.0                       8, 9, 10, 11             0:30, 1:30, 2:30, 3:30
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0xCf7Ed3Ac 1155 BUY  1:40:28 PM       0    40                           0.10                                                                                             
-            1 0xCf7Ed3Ac 1155 SELL 1:40:28 PM       0    26                           0.10                     0, 1, 2, 3                     5, 6, 7, 8                     0, 0, 0, 0
-            2 0xCf7Ed3Ac 1155 SELL 1:40:28 PM       0    40         0.10, 0.20, 0.30, 0.40                     0, 1, 2, 3                                                    0, 0, 0, 0
+            0 0xCf7Ed3Ac 1155 BUY  10:52:12 AM     40     0                           0.10                                                                                             
+            1 0xCf7Ed3Ac 1155 SELL 10:52:12 AM     26     0                           0.10                     0, 1, 2, 3                     5, 6, 7, 8                     0, 0, 0, 0
+            2 0xCf7Ed3Ac 1155 SELL 10:52:12 AM     40     0         0.10, 0.20, 0.30, 0.40                     0, 1, 2, 3                 10, 10, 10, 10                     0, 0, 0, 0
 
-        * trades1: [[1,"2600000000000000000",1,[0,5,1,6,2,7,3,8]]]
-        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 239,936 0.000239936Ξ 0.60 USD @ 1.0 gwei 2500.00 ETH/USD
+        * trades1: [[2,"7000000000000000000",1,[0,5,1,6,2,7,3,8]]]
+        * accounts[2]->tokenAgents[1].trade(trades1) - gasUsed: 162,289 0.000162289Ξ 0.41 USD @ 1.0 gwei 2500.00 ETH/USD
           + erc1155Token.TransferSingle(operator: 0x8EFa1819, from: 0x70997970, to: 0x3C44CdDd, tokenId: 0, tokens: 5)
           + erc1155Token.TransferSingle(operator: 0x8EFa1819, from: 0x70997970, to: 0x3C44CdDd, tokenId: 1, tokens: 6)
           + erc1155Token.TransferSingle(operator: 0x8EFa1819, from: 0x70997970, to: 0x3C44CdDd, tokenId: 2, tokens: 7)
           + erc1155Token.TransferSingle(operator: 0x8EFa1819, from: 0x70997970, to: 0x3C44CdDd, tokenId: 3, tokens: 8)
           + weth.Transfer(from: 0x3C44CdDd, to: 0x70997970, tokens: 2.6)
-          + tokenAgents[1].Traded(index:1, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, makerBuySell: SELL, prices: [0.1,0.1,0.1,0.1], tokenIds: [0,1,2,3], tokenss: [5,6,7,8], price: 2.6, timestamp: 1:40:13 PM)
+          + tokenAgents[1].Traded(index:2, taker: 0x3C44CdDd, maker: 0x70997970, token: 0xCf7Ed3Ac, tokenType: 1155, makerBuySell: SELL, prices: [0.1,0.1,0.1,0.1], tokenIds: [0,1,2,3], tokenss: [5,6,7,8], price: 2.6, timestamp: 10:51:56 AM)
 
             # Account                         ETH          WETH 0x5FbDB231        ERC-20 0xe7f1725E                 ERC-721 0x9fE46736                ERC-1155 0xCf7Ed3Ac
           --- ---------- ------------------------ ------------------------ ------------------------ ---------------------------------- ----------------------------------
-            0 0xf39Fd6e5   9899.97694051448013288                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
-            1 0x70997970  9899.998265137896718236                    102.6                   1000.0                         4, 5, 6, 7             0:15, 1:14, 2:13, 3:12
-            2 0x3C44CdDd  9899.998713676283411305                     97.4                   1000.0                       8, 9, 10, 11             0:35, 1:36, 2:37, 3:38
-            3 0x90F79bf6  9899.998965124555331864                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
+            0 0xf39Fd6e5   9899.97676071128573114                    100.0                   1000.0                         0, 1, 2, 3             0:10, 1:10, 2:10, 3:10
+            1 0x70997970  9899.998299715359896963                    102.6                   1000.0                         4, 5, 6, 7             0:15, 1:14, 2:13, 3:12
+            2 0x3C44CdDd  9899.998791244172226303                     97.4                   1000.0                       8, 9, 10, 11             0:35, 1:36, 2:37, 3:38
+            3 0x90F79bf6  9899.998965057840909748                    100.0                   1000.0                     12, 13, 14, 15             0:40, 1:40, 2:40, 3:40
 
           tokenAgents[1] Offers
-            # Token      Type B/S  Expiry       Nonce Count                         Prices                       TokenIds                        Tokenss                          Useds
+            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss                          Useds
           --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------ ------------------------------
-            0 0xCf7Ed3Ac 1155 BUY  1:40:28 PM       0    40                           0.10                                                                                             
-            1 0xCf7Ed3Ac 1155 SELL 1:40:28 PM       0     0                           0.10                     0, 1, 2, 3                     5, 6, 7, 8                     5, 6, 7, 8
-            2 0xCf7Ed3Ac 1155 SELL 1:40:28 PM       0    40         0.10, 0.20, 0.30, 0.40                     0, 1, 2, 3                                                    0, 0, 0, 0
+            0 0xCf7Ed3Ac 1155 BUY  10:52:12 AM     40     0                           0.10                                                                                             
+            1 0xCf7Ed3Ac 1155 SELL 10:52:12 AM     26     0                           0.10                     0, 1, 2, 3                     5, 6, 7, 8                     0, 0, 0, 0
+            2 0xCf7Ed3Ac 1155 SELL 10:52:12 AM     14     0         0.10, 0.20, 0.30, 0.40                     0, 1, 2, 3                 10, 10, 10, 10                     0, 0, 0, 0
 
       ✔ Test TokenAgent ERC-1155 offers and trades (56ms)
 
 
-  5 passing (975ms)
+  5 passing (979ms)
 ```
 
 <br />

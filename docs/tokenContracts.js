@@ -3,7 +3,7 @@ const TokenContracts = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modaladdtokencontract" v-model="settings.addTokenContract.show" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="sm">
+        <b-modal ref="modaladdtokencontract" v-model="settings.addTokenContract.show" @close="settings.addTokenContract.show = false; saveSettings();" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="md">
           <template #modal-title>Add Token Contract</template>
           <div class="m-0 p-1">
             <b-form-group label="Add Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -130,7 +130,7 @@ const TokenContracts = {
           </div>
           <div v-if="sync.section == null" class="mt-0 pr-1">
             <!-- <b-button size="sm" :disabled="!networkSupported" @click="viewModalAddAccount" variant="link" v-b-popover.hover.ds500="'Add new account'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> -->
-            <b-button size="sm" :disabled="!networkSupported" @click="settings.addTokenContract.show = true; " variant="link" v-b-popover.hover.ds500="'Add new Token Contract'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+            <b-button size="sm" :disabled="!networkSupported" @click="settings.addTokenContract.show = true; saveSettings();" variant="link" v-b-popover.hover.ds500="'Add new Token Contract'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
@@ -310,6 +310,12 @@ const TokenContracts = {
 
         addTokenContract: {
           show: false,
+          address: null,
+          type: null,
+          symbol: null,
+          name: null,
+          decimals: null,
+          totalSupply: null,
         },
         version: 0,
       },

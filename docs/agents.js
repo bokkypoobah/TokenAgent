@@ -3,7 +3,7 @@ const Agents = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modalnewtokenagent" v-model="settings.newTokenAgent.show" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="sm">
+        <b-modal ref="modalnewtokenagent" v-model="settings.newTokenAgent.show" @close="settings.newTokenAgent.show = false; saveSettings();" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="sm">
           <template #modal-title>New Token Agent</template>
           <div class="m-0 p-1">
             <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -16,7 +16,7 @@ const Agents = {
           <div class="mt-0 flex-grow-1">
           </div>
           <div class="mt-0 pr-1">
-            <b-button size="sm" :disabled="!networkSupported" @click="settings.newTokenAgent.show = true; " variant="link" v-b-popover.hover.ds500="'Deploy new Token Agent'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+            <b-button size="sm" :disabled="!networkSupported" @click="settings.newTokenAgent.show = true; saveSettings();" variant="link" v-b-popover.hover.ds500="'Deploy new Token Agent'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
           </div>
           <div class="mt-0 flex-grow-1">
           </div>
@@ -216,7 +216,8 @@ const Agents = {
         const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
         try {
-          const tx = await contractWithSigner.newTokenAgent();
+          // const tx = await contractWithSigner.newTokenAgent();
+          const tx = { hash: "blah" };
           console.log(now() + " INFO Agents:methods.deployNewTokenAgent - tx: " + JSON.stringify(tx));
           const h = this.$createElement;
           const vNodesMsg = h(
@@ -234,6 +235,8 @@ const Agents = {
             autoHideDelay: 5000,
           });
           this.$refs['modalnewtokenagent'].hide();
+          this.settings.newTokenAgent.show = false;
+          this.saveSettings();
         } catch (e) {
           console.log(now() + " ERROR Agents:methods.deployNewTokenAgent: " + JSON.stringify(e));
           this.$bvToast.toast(`${e.message}`, {

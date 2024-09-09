@@ -426,9 +426,9 @@ describe("TokenAgentFactory", function () {
           [indices[1], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
         await printState(d);
       }
       if (false) {
@@ -485,9 +485,9 @@ describe("TokenAgentFactory", function () {
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
         await printState(d);
       }
     });
@@ -535,9 +535,9 @@ describe("TokenAgentFactory", function () {
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, true, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, true)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
         await printState(d);
       }
     });

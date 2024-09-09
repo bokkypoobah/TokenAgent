@@ -1,3 +1,7 @@
+const ERC165ABI =[{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}];
+const ERC721_INTERFACE = "0x80ac58cd";
+const ERC1155_INTERFACE = "0xd9b67a26";
+
 const ENS_ERC721_ADDRESS = "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85";
 const ENS_ERC1155_ADDRESS = "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401";
 

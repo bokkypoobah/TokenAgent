@@ -3,13 +3,39 @@ const TokenContracts = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modaladdtokencontract" v-model="settings.addTokenContract.show" @close="settings.addTokenContract.show = false; saveSettings();" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="md">
+        <b-modal ref="modaladdtokencontract" v-model="settings.addTokenContract.show" @close="settings.addTokenContract.show = false; saveSettings();" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
           <template #modal-title>Add Token Contract</template>
           <div class="m-0 p-1">
-            <b-form-group label="Add Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
-              <!-- <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button> -->
+            <b-form-group label="Token:" label-for="modaladdtokencontract-address" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addTokenContract.address || validAddress(settings.addTokenContract.address)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
+              <b-input-group  style="width: 25.0rem;">
+                <b-form-input size="sm" id="modaladdtokencontract-address" v-model.trim="settings.addTokenContract.address" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789"></b-form-input>
+                <b-input-group-append>
+                  <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Sample Token Contracts'" class="m-0 ml-1 p-0">
+                    <b-dropdown-item v-if="sampleTokenContracts.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
+                    <div v-for="(item, index) of sampleTokenContracts" v-bind:key="index">
+                      <b-dropdown-item @click="settings.addTokenContract.address = item.address; saveSettings(); loadTokenContract(settings.addTokenContract.address);">{{ index }}. {{ item.address.substring(0, 8) + '...' + item.address.slice(-6) }} <b-badge variant="light">{{ item.type }}</b-badge>{{ item.symbol + ' ' + item.name }}</b-dropdown-item>
+                    </div>
+                  </b-dropdown>
+                </b-input-group-append>
+              </b-input-group>
             </b-form-group>
+
+            <!-- <b-form-group label="Add Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0"> -->
+              <!-- <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button> -->
+            <!-- </b-form-group> -->
           </div>
+
+          <!--
+          addTokenContract: {
+            show: false,
+            address: null,
+            type: null,
+            symbol: null,
+            name: null,
+            decimals: null,
+            totalSupply: null,
+          }, -->
+
         </b-modal>
 
         <!-- :TOOLBAR -->
@@ -369,6 +395,9 @@ const TokenContracts = {
     }
   },
   computed: {
+    chainId() {
+      return store.getters['connection/chainId'];
+    },
     networkSupported() {
       return store.getters['connection/networkSupported'];
     },
@@ -392,6 +421,15 @@ const TokenContracts = {
     },
     checkOptions() {
       return store.getters['data/checkOptions'];
+    },
+    sampleTokenContracts() {
+      const results = [];
+      const tokens = this.chainId && NETWORKS[this.chainId] && NETWORKS[this.chainId].tokens || [];
+      for (const token of tokens) {
+        results.push(token);
+      }
+      // console.log(now() + " INFO TokenContracts:computed.sampleTokenContracts - results: " + JSON.stringify(results, null, 2));
+      return results;
     },
 
     totalTokenContracts() {
@@ -483,6 +521,90 @@ const TokenContracts = {
     },
   },
   methods: {
+    async loadTokenContract(address) {
+      console.log(now() + " INFO TokenContracts:methods.loadTokenContract - address: " + address);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      this.settings.addTokenContract.type = null;
+      this.settings.addTokenContract.symbol = null;
+      this.settings.addTokenContract.name = null;
+      this.settings.addTokenContract.decimals = null;
+      this.settings.addTokenContract.totalSupply = null;
+
+      const code = await provider.getCode(address);
+      if (code && code.length > 2) {
+        const erc165 = new ethers.Contract(address, ERC165ABI, provider);
+        const erc20 = new ethers.Contract(address, ERC20ABI, provider);
+        try {
+          if (await erc165.supportsInterface(ERC721_INTERFACE)) {
+            this.settings.addTokenContract.type = 721;
+          }
+        } catch (e) {
+        }
+        if (!this.settings.addTokenContract.type) {
+          try {
+            if (await erc165.supportsInterface(ERC1155_INTERFACE)) {
+              this.settings.addTokenContract.type = 1155;
+            }
+          } catch (e) {
+          }
+        }
+        if (!this.settings.addTokenContract.type) {
+          try {
+            const decimals = await erc20.decimals();
+            if (decimals != null) {
+              this.settings.addTokenContract.type = 20;
+              this.settings.addTokenContract.decimals = decimals;
+            }
+          } catch (e) {
+          }
+        }
+        try {
+          const symbol = await erc20.symbol();
+          if (symbol != null) {
+            this.settings.addTokenContract.symbol = symbol;
+          }
+        } catch (e) {
+        }
+        try {
+          const name = await erc20.name();
+          if (name != null) {
+            this.settings.addTokenContract.name = name;
+          }
+        } catch (e) {
+        }
+        try {
+          const totalSupply = await erc20.totalSupply();
+          if (totalSupply != null) {
+            this.settings.addTokenContract.totalSupply = totalSupply.toString();
+          }
+        } catch (e) {
+        }
+
+      }
+      console.log(now() + " INFO TokenContracts:methods.loadTokenContract - settings.addTokenContract: " + JSON.stringify(this.settings.addTokenContract, null, 2));
+
+      // addTokenContract: {
+      //   show: false,
+      //   address: null,
+      //   type: null,
+      //   symbol: null,
+      //   name: null,
+      //   decimals: null,
+      //   totalSupply: null,
+      // },
+
+    },
+    validAddress(a) {
+      if (a) {
+        try {
+          const address = ethers.utils.getAddress(a);
+          return true;
+        } catch (e) {
+        }
+      }
+      return false;
+    },
     saveSettings() {
       console.log(now() + " INFO TokenContracts:methods.saveSettings - tokenAgentTokenContractsSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTokenContractsSettings = JSON.stringify(this.settings);

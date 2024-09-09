@@ -599,7 +599,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['tokenAgents', 'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers']) {
+        for (let type of ['tokenContracts', 'tokenAgents', 'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers']) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // console.log(now() + " INFO dataModule:actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));

@@ -145,7 +145,27 @@ const Agent = {
             </template>
             <template #cell(when)="data">
               <font size="-1">
-                {{ formatTimestamp(data.item.timestamp) }}
+                <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="data.item.blockNumber + ':' + data.item.txIndex + '.' + data.item.logIndex" target="_blank">
+                  {{ formatTimestamp(data.item.timestamp) }}
+                </b-link>
+              </font>
+
+              <!-- <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="(timestamps[chainId] && timestamps[chainId][data.item.blockNumber]) ? ('Block ' + formatNumber(data.item.blockNumber)) : 'blockNumber:txIndex'" target="_blank">
+                <span v-if="timestamps[chainId] && timestamps[chainId][data.item.blockNumber]">
+                  {{ formatTimestamp(timestamps[chainId][data.item.blockNumber]) }}
+                </span>
+                <span v-else>
+                  {{ data.item.blockNumber + ':' + data.item.txIndex }}
+                </span>
+              </b-link> -->
+
+            </template>
+            <template #cell(token)="data">
+              <font size="-1">
+                {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                <b-badge variant="light" v-b-popover.hover.ds500="data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155')" class="m-0 p-0">
+                  {{ data.item.tokenType == 1 ? '20' : (data.item.tokenType == 2 ? '721' : '1155') }}
+                </b-badge>
               </font>
             </template>
             <template #cell(buySell)="data">
@@ -155,15 +175,12 @@ const Agent = {
             </template>
             <template #cell(expiry)="data">
               <font size="-1">
-                {{ formatTimestamp(data.item.expiry) }}
+                {{ data.item.expiry == 0 ? '(no expiry)' : formatTimestamp(data.item.expiry) }}
               </font>
             </template>
-            <template #cell(token)="data">
+            <template #cell(nonce)="data">
               <font size="-1">
-                {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
-                <b-badge variant="light" v-b-popover.hover.ds500="data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155')" class="m-0 p-0">
-                  {{ data.item.tokenType == 1 ? '20' : (data.item.tokenType == 2 ? '721' : '1155') }}
-                </b-badge>
+                {{ data.item.nonce }}
               </font>
             </template>
             <template #cell(info)="data">
@@ -363,7 +380,8 @@ const Agent = {
         { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 45%;', tdClass: 'text-left' },
+        { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 40%;', tdClass: 'text-left' },
       ],
       eventsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },

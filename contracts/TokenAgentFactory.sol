@@ -734,9 +734,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         } else if (takerToOwnerTotal > ownerToTakerTotal){
             uint diff = takerToOwnerTotal - ownerToTakerTotal;
             if (paymentsInEth) {
-                if (diff > totalEth) {
-                    revert InsufficentEthersRemaining(diff, totalEth);
-                }
+                require(diff <= totalEth, InsufficentEthersRemaining(diff, totalEth));
                 totalEth -= diff;
                 emit InternalTransfer(address(this), address(weth), diff, Unixtime.wrap(uint40(block.timestamp)));
                 weth.deposit{value: diff}();

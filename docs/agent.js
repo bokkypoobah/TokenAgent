@@ -141,6 +141,9 @@ const Agent = {
             <template #cell(number)="data">
               {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
             </template>
+            <template #cell(when)="data">
+              {{ formatTimestamp(data.item.timestamp )}}
+            </template>
             <template #cell(info)="data">
               <font size="-2"><pre>
 {{ JSON.stringify(data.item, null, 2) }}
@@ -153,6 +156,9 @@ const Agent = {
           <b-table ref="offersTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
               {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+            </template>
+            <template #cell(when)="data">
+              {{ formatTimestamp(data.item.timestamp )}}
             </template>
             <template #cell(info)="data">
               <font size="-2"><pre>
@@ -326,7 +332,7 @@ const Agent = {
       offersFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
+        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
       ],
       eventsFields: [
@@ -529,7 +535,7 @@ const Agent = {
     },
 
     offers() {
-      const results = this.events;
+      const results = this.events.filter(e => e.type == "Offered");
       return results;
     },
     filteredSortedOffers() {
@@ -595,6 +601,7 @@ const Agent = {
       // console.log(now() + " INFO Agent:methods.loadData - eventLogs: " + JSON.stringify(eventLogs, null, 2));
       this.events = parseTokenAgentEventLogs(eventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
+      localStorage.tokenAgentAgentEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');
     },
     async addOffer() {
@@ -662,6 +669,16 @@ const Agent = {
       }
     },
 
+    formatTimestamp(ts) {
+      if (ts != null) {
+        // if (this.settings.reportingDateTime == 1) {
+        //   return moment.unix(ts).utc().format("YYYY-MM-DD HH:mm:ss");
+        // } else {
+          return moment.unix(ts).format("YYYY-MM-DD HH:mm:ss");
+        // }
+      }
+      return null;
+    },
     validNumber(n, d) {
       if (n && d != null) {
         // console.log(now() + " DEBUG Agent:methods.validNumber - n: " + n + ", d: " + d);
@@ -721,6 +738,9 @@ const Agent = {
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
+        if ('tokenAgentAgentEvents' in localStorage) {
+          this.events = JSON.parse(localStorage.tokenAgentAgentEvents);
+        }
       }
       // this.loadData(this.settings.tokenAgentAddress);
     }

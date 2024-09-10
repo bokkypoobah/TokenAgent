@@ -216,8 +216,8 @@ const Agents = {
         const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
         try {
-          // const tx = await contractWithSigner.newTokenAgent();
-          const tx = { hash: "blah" };
+          const tx = await contractWithSigner.newTokenAgent();
+          // const tx = { hash: "blah" };
           console.log(now() + " INFO Agents:methods.deployNewTokenAgent - tx: " + JSON.stringify(tx));
           const h = this.$createElement;
           const vNodesMsg = h(

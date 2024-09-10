@@ -120,8 +120,8 @@ const Agent = {
                 <b-form-input size="sm" type="number" id="addoffers-price" v-model.trim="settings.addOffers.price" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 
-              <b-form-group label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricing20Options" v-b-popover.hover.ds500="'Single or multiple prices and/or limits'" class="w-25"></b-form-select>
+              <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!addOffersFeedback" :invalid-feedback="addOffersFeedback" class="mx-0 my-1 p-0">
+                <b-button size="sm" :disabled="!!addOffersFeedback" @click="addOffer" variant="warning">Add Offer</b-button>
               </b-form-group>
 
             </b-form-group>
@@ -351,6 +351,16 @@ const Agent = {
       return results;
     },
 
+    addOffersFeedback() {
+      if (this.settings.addOffers.type == 20) {
+        if (this.settings.addOffers.pricing == 0 && parseFloat(this.settings.addOffers.price) > 0) {
+          return null;
+        }
+        return "Only single price without limit supported"
+      }
+      return "ERC-721/1155 not supported yet";
+    },
+
     totalRegistryEntries() {
       return Object.keys(this.registry[this.chainId] || {}).length + ((store.getters['data/forceRefresh'] % 2) == 0 ? 0 : 0);
     },
@@ -407,6 +417,57 @@ const Agent = {
 
   },
   methods: {
+    async addOffer() {
+      console.log(now() + " INFO Agent:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+
+      if (this.settings.addOffers.type == 20) {
+        if (this.settings.addOffers.pricing == 0 && parseFloat(this.settings.addOffers.price) > 0) {
+          console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Single price without limit - price: " + this.settings.addOffers.price);
+
+
+
+
+        }
+      }
+
+      return;
+      if (network.tokenAgentFactory) {
+        const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
+        const contractWithSigner = contract.connect(provider.getSigner());
+        try {
+          // const tx = await contractWithSigner.newTokenAgent();
+          const tx = { hash: "blah" };
+          console.log(now() + " INFO Agent:methods.addOffer - tx: " + JSON.stringify(tx));
+          const h = this.$createElement;
+          const vNodesMsg = h(
+            'p',
+            { class: ['text-left', 'mb-0'] },
+            [
+              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+              h('br'),
+              h('br'),
+              'Resync after this tx has been included',
+            ]
+          );
+          this.$bvToast.toast([vNodesMsg], {
+            title: 'Transaction submitted',
+            autoHideDelay: 5000,
+          });
+          this.$refs['modalnewtokenagent'].hide();
+          this.settings.newTokenAgent.show = false;
+          this.saveSettings();
+        } catch (e) {
+          console.log(now() + " ERROR Agent:methods.addOffer: " + JSON.stringify(e));
+          this.$bvToast.toast(`${e.message}`, {
+            title: 'Error!',
+            autoHideDelay: 5000,
+          });
+        }
+      }
+    },
+
     validAddress(a) {
       if (a) {
         try {

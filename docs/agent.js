@@ -163,15 +163,38 @@ const Agent = {
             <template #cell(token)="data">
               <font size="-1">
                 {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
-                <b-badge variant="light" v-b-popover.hover.ds500="data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155')" class="m-0 p-0">
-                  {{ data.item.tokenType == 1 ? '20' : (data.item.tokenType == 2 ? '721' : '1155') }}
-                </b-badge>
+              </font>
+            </template>
+            <template #cell(tokenType)="data">
+              <font size="-1">
+                <!-- <b-badge variant="light" class="m-0 p-0"> -->
+                  {{ data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155') }}
+                <!-- </b-badge> -->
               </font>
             </template>
             <template #cell(buySell)="data">
               <font size="-1">
                 {{ data.item.buySell == 0 ? 'Buy' : 'Sell' }}
               </font>
+            </template>
+            <template #cell(price)="data">
+              <div v-if="data.item.tokenType == 1">
+                <font size="-1">
+                  <div v-if="data.item.tokenss.length == 0">
+                    {{ formatDecimals(data.item.prices[0], 18) }}
+                  </div>
+                  <div v-else>
+                    <span v-for="(tokens, index) of data.item.tokenss" v-bind:key="index">
+                      {{ formatDecimals(tokens, 18) }} @ {{ formatDecimals(data.item.prices[index], 18) }}
+                    </span>
+                  </div>
+                </font>
+              </div>
+              <div v-else>
+                <font size="-2"><pre>
+{{ JSON.stringify(data.item, null, 2) }}
+                </pre></font>
+              </div>
             </template>
             <template #cell(expiry)="data">
               <font size="-1">
@@ -182,11 +205,6 @@ const Agent = {
               <font size="-1">
                 {{ data.item.nonce }}
               </font>
-            </template>
-            <template #cell(info)="data">
-              <font size="-2"><pre>
-{{ JSON.stringify(data.item, null, 2) }}
-              </pre></font>
             </template>
           </b-table>
         </b-card>
@@ -378,10 +396,11 @@ const Agent = {
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 35%;', tdClass: 'text-left' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 40%;', tdClass: 'text-left' },
       ],
       eventsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
@@ -726,6 +745,9 @@ const Agent = {
         // }
       }
       return null;
+    },
+    formatDecimals(e, decimals = 18) {
+      return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     validNumber(n, d) {
       if (n && d != null) {

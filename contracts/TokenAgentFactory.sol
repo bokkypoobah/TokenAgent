@@ -1,18 +1,14 @@
-/**
- *Submitted for verification at Etherscan.io on 2024-09-10
-*/
-
 pragma solidity ^0.8.27;
 
 // ----------------------------------------------------------------------------
-// TokenAgent with factory v0.8.2 testing
+// TokenAgent with factory v0.8.3 testing
 //
 // https://github.com/bokkypoobah/TokenAgent
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent template 0x5446e959103b19e983848FB53d9fbD096eDb21A9
-// - TokenAgentFactory 0xB6426d5E4B6515E627Ff510424978eBe223c39C4
+// - TokenAgent template
+// - TokenAgentFactory
 //
 // TODO:
 // - FILL for ERC-721/1155?
@@ -200,22 +196,16 @@ contract Owned {
     error NotNewOwner();
 
     modifier onlyOwner {
-        if (msg.sender != Account.unwrap(owner)) {
-            revert NotOwner();
-        }
+        require(msg.sender == Account.unwrap(owner), NotOwner());
         _;
     }
     modifier notOwner {
-        if (msg.sender == Account.unwrap(owner)) {
-            revert Owner();
-        }
+        require(msg.sender != Account.unwrap(owner), Owner());
         _;
     }
 
     function initOwned(Account _owner) internal {
-        if (Account.unwrap(owner) != address(0)) {
-            revert AlreadyInitialised();
-        }
+        require(Account.unwrap(owner) == address(0), AlreadyInitialised());
         owner = _owner;
     }
     function transferOwnership(Account _pendingOwner) public onlyOwner {
@@ -223,9 +213,7 @@ contract Owned {
         emit OwnershipTransferStarted(owner, _pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
     }
     function acceptOwnership() public {
-        if (msg.sender != Account.unwrap(pendingOwner)) {
-            revert NotNewOwner();
-        }
+        require(msg.sender == Account.unwrap(pendingOwner), NotNewOwner());
         emit OwnershipTransferred(owner, pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
         owner = pendingOwner;
         pendingOwner = Account.wrap(address(0));
@@ -446,14 +434,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         for (uint i = 0; i < inputs.length; i++) {
             AddOffer memory input = inputs[i];
             TokenType tokenType = tokenTypes[input.token];
-            if (Token.unwrap(input.token) == address(weth)) {
-                revert CannotOfferWETH();
-            }
+            require(Token.unwrap(input.token) != address(weth), CannotOfferWETH());
             if (tokenType == TokenType.UNKNOWN) {
                 tokenType = _getTokenType(input.token);
-                if (tokenType == TokenType.INVALID) {
-                    revert InvalidToken(input.token);
-                }
+                require(tokenType != TokenType.INVALID, InvalidToken(input.token));
                 tokenTypes[input.token] = tokenType;
             }
             Offer storage offer = offers.push();
@@ -583,25 +567,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         uint ownerToTakerTotal;
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
-            if (Index.unwrap(input.index) >= offers.length) {
-                revert InvalidIndex(input.index);
-            }
+            require(Index.unwrap(input.index) < offers.length, InvalidIndex(input.index));
             Offer storage offer = offers[Index.unwrap(input.index)];
             TokenType tokenType = tokenTypes[offer.token];
-            if (Nonce.unwrap(offer.nonce) != Nonce.unwrap(nonce)) {
-                revert InvalidOffer(offer.nonce, nonce);
-            }
-            if (Unixtime.unwrap(offer.expiry) != 0 && block.timestamp > Unixtime.unwrap(offer.expiry)) {
-                revert OfferExpired(input.index, offer.expiry);
-            }
+            require(Nonce.unwrap(offer.nonce) == Nonce.unwrap(nonce), InvalidOffer(offer.nonce, nonce));
+            require(Unixtime.unwrap(offer.expiry) == 0 || block.timestamp <= Unixtime.unwrap(offer.expiry), OfferExpired(input.index, offer.expiry));
             uint price;
             uint[] memory prices_;
             uint[] memory tokenIds_;
             uint[] memory tokenss_;
             if (tokenType == TokenType.ERC20) {
-                if (input.tokenss.length != 1) {
-                    revert InvalidInputData("Expecting single tokens input");
-                }
+                require(input.tokenss.length == 1, InvalidInputData("Expecting single tokens input"));
                 uint tokens = uint(Tokens.unwrap(input.tokenss[0]));
                 uint totalTokens;
                 uint totalWETHTokens;
@@ -637,24 +613,18 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 if (totalTokens > 0) {
                     price = totalWETHTokens * 10**18 / totalTokens;
                     if (offer.buySell == BuySell.BUY) {
-                        if (price < Price.unwrap(input.price)) {
-                            revert ExecutedAveragePriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
-                        }
+                        require(price >= Price.unwrap(input.price), ExecutedAveragePriceLessThanSpecified(Price.wrap(uint128(price)), input.price));
                         IERC20(Token.unwrap(offer.token)).transferFrom(msg.sender, Account.unwrap(owner), totalTokens);
                         ownerToTakerTotal += totalWETHTokens;
                     } else {
-                        if (price > Price.unwrap(input.price)) {
-                            revert ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
-                        }
+                        require(price <= Price.unwrap(input.price), ExecutedAveragePriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price));
                         takerToOwnerTotal += totalWETHTokens;
                         IERC20(Token.unwrap(offer.token)).transferFrom(Account.unwrap(owner), msg.sender, totalTokens);
                     }
                 }
             } else if (tokenType == TokenType.ERC721) {
                 if (Count.unwrap(offer.count) != type(uint16).max) {
-                    if (Count.unwrap(offer.count) < input.tokenIds.length) {
-                        revert InsufficentCountRemaining(Count.wrap(uint16(input.tokenIds.length)), offer.count);
-                    }
+                    require(Count.unwrap(offer.count) > input.tokenIds.length, InsufficentCountRemaining(Count.wrap(uint16(input.tokenIds.length)), offer.count));
                     offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(input.tokenIds.length));
                 }
                 prices_ = new uint[](input.tokenIds.length);
@@ -673,9 +643,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, input.tokenIds[j]);
                         }
-                        if (k == type(uint).max) {
-                            revert InvalidTokenId(input.tokenIds[j]);
-                        }
+                        require(k != type(uint).max, InvalidTokenId(input.tokenIds[j]));
                         if (offer.prices.length == offer.tokenIds.length) {
                             p = Price.unwrap(offer.prices[k]);
                         } else {
@@ -694,14 +662,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
-                    if (price < Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
-                    }
+                    require(price >= Price.unwrap(input.price), ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price));
                     ownerToTakerTotal += price;
                 } else {
-                    if (price > Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
-                    }
+                    require(price <= Price.unwrap(input.price), ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price));
                     takerToOwnerTotal += price;
                 }
             } else if (tokenType == TokenType.ERC1155) {
@@ -734,9 +698,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, input.tokenIds[j]);
                         }
-                        if (k == type(uint).max) {
-                            revert InvalidTokenId(input.tokenIds[j]);
-                        }
+                        require(k != type(uint).max, InvalidTokenId(input.tokenIds[j]));
                         if (Tokens.unwrap(offer.useds[k]) + Tokens.unwrap(input.tokenss[j]) > Tokens.unwrap(offer.tokenss[k])) {
                             revert InsufficentCountRemaining(Count.wrap(uint16(Tokens.unwrap(input.tokenss[j]))), Count.wrap(uint16(Tokens.unwrap(offer.tokenss[k]))));
                         }

@@ -3,7 +3,7 @@ const Agent = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-tabs card v-model="settings.tabIndex" @changed="saveSettings();" content-class="mt-0" align="left">
+        <b-tabs card v-model="settings.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
           <template #tabs-start>
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pr-0" style="width: 24.0rem;">
@@ -62,25 +62,28 @@ const Agent = {
           </template>
           <b-tab no-body active>
             <template #title>
-              <!-- <span v-b-popover.hover.ds500="'Token Agent Console'">Console</span> -->
-              Console
+              Offers
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              <!-- <span v-b-popover.hover.ds500="'Token Agent Orders'">Orders</span> -->
-              Orders
-            </template>
-          </b-tab>
-          <b-tab no-body>
-            <template #title>
-              <!-- <span v-b-popover.hover.ds500="'Token Agent Events'">Events</span> -->
               Events
+            </template>
+          </b-tab>
+          <b-tab no-body>
+            <template #title>
+              Console
             </template>
           </b-tab>
         </b-tabs>
 
         <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-2">
+          Offers
+        </b-card>
+        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
+          Events
+        </b-card>
+        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
@@ -140,12 +143,6 @@ const Agent = {
             //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
              -->
           </b-card>
-        </b-card>
-        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
-          Orders
-        </b-card>
-        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-1 p-0">
-          Events
         </b-card>
 
         <div v-if="false" class="d-flex flex-wrap m-0 p-0">
@@ -419,15 +416,18 @@ const Agent = {
 
   },
   methods: {
+    async loadData() {
+      console.log(now() + " INFO Agent:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      // TODO: Later move into data?
+
+      // store.dispatch('syncOptions/loadData');
+    },
     async addOffer() {
       console.log(now() + " INFO Agent:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
       const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
-      // // TestParameters.sol
-      // const contract = new ethers.Contract("0x05c2fcd4aE9CC26AaEEbCEE1F3B44780426d0c3b", network.tokenAgent.abi, provider);
       const contractWithSigner = contract.connect(provider.getSigner());
-
       if (network.tokenAgentFactory) {
         if (this.settings.addOffers.type == 20) {
           let prices = [];
@@ -442,8 +442,6 @@ const Agent = {
           } else {
             console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Multiple prices with limits - UNSUPPORTED");
           }
-          console.log("prices: " + JSON.stringify(prices));
-          console.log("tokens: " + JSON.stringify(tokens));
           if (prices.length > 0) {
             const payload = [
               [
@@ -456,38 +454,9 @@ const Agent = {
                 tokens,
               ],
             ];
-
-            // const payload = [["0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9","0","0","0",["123"],[],[]]];
-            // TestToadz
-            // const payload = [["0x8b73448426797099b6b9a96c4343f528bbAfc55e","0","0","0",["123"],[456],[]]];
-            // const payload = [
-            //   { token: "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9", buySell: "0", expiry: "0", count: "0", prices: [], tokenIds: [], tokenss: [] },
-            // ];
-            // function addOffers(AddOffer[] calldata inputs) external onlyOwner {
-            // "84233ef3": "addOffers((address,uint8,uint40,uint16,uint128[],uint256[],uint128[])[])",
-
-            // const abi = ethers.utils.defaultAbiCoder;
-            // const params = abi.encode(
-            //     ["(address,uint8,uint40,uint16,uint128[],uint256[],uint128[])[]"], // encode as address array
-            //     payload); // array to encode
-            // console.log(now() + " INFO Agent:methods.addOffer - params: " + JSON.stringify(params));
-
             try {
               console.log(now() + " INFO Agent:methods.addOffer - payload: " + JSON.stringify(payload));
               const tx = await contractWithSigner.addOffers(payload, { gasLimit: 500000 });
-
-              // struct AddOffer {
-              //     Token token;             // 160 bits
-              //     BuySell buySell;         // 8 bits
-              //     Unixtime expiry;         // 40 bits
-              //     Count count;             // 16 bits
-              //     Price[] prices;          // token/WETH 18dp
-              //     TokenId[] tokenIds;      // ERC-721/1155
-              //     Tokens[] tokenss;        // ERC-20/1155
-              // }
-
-
-              // const tx = { hash: "blah" };
               console.log(now() + " INFO Agent:methods.addOffer - tx: " + JSON.stringify(tx));
               const h = this.$createElement;
               const vNodesMsg = h(
@@ -504,9 +473,6 @@ const Agent = {
                 title: 'Transaction submitted',
                 autoHideDelay: 5000,
               });
-              // this.$refs['modalnewtokenagent'].hide();
-              // this.settings.newTokenAgent.show = false;
-              // this.saveSettings();
             } catch (e) {
               console.log(now() + " ERROR Agent:methods.addOffer: " + JSON.stringify(e));
               this.$bvToast.toast(`${e.message}`, {
@@ -514,7 +480,6 @@ const Agent = {
                 autoHideDelay: 5000,
               });
             }
-
           }
         } else {
           console.log(now() + " INFO Agent:methods.addOffer - ERC-721/1155 - UNSUPPORTED");
@@ -544,10 +509,6 @@ const Agent = {
         }
       }
       return false;
-    },
-    async loadData() {
-      console.log(now() + " INFO Agent:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
-      // store.dispatch('syncOptions/loadData');
     },
     saveSettings() {
       console.log(now() + " INFO Agent:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));

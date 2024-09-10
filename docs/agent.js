@@ -139,10 +139,32 @@ const Agent = {
           <!-- <b-table ref="offersTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1"> -->
           <b-table ref="offersTable" small fixed striped responsive hover :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
-              {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+              <font size="-1">
+                {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+              </font>
             </template>
             <template #cell(when)="data">
-              {{ formatTimestamp(data.item.timestamp )}}
+              <font size="-1">
+                {{ formatTimestamp(data.item.timestamp) }}
+              </font>
+            </template>
+            <template #cell(buySell)="data">
+              <font size="-1">
+                {{ data.item.buySell == 0 ? 'Buy' : 'Sell' }}
+              </font>
+            </template>
+            <template #cell(expiry)="data">
+              <font size="-1">
+                {{ formatTimestamp(data.item.expiry) }}
+              </font>
+            </template>
+            <template #cell(token)="data">
+              <font size="-1">
+                {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                <b-badge variant="light" v-b-popover.hover.ds500="data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155')" class="m-0 p-0">
+                  {{ data.item.tokenType == 1 ? '20' : (data.item.tokenType == 2 ? '721' : '1155') }}
+                </b-badge>
+              </font>
             </template>
             <template #cell(info)="data">
               <font size="-2"><pre>
@@ -151,14 +173,19 @@ const Agent = {
             </template>
           </b-table>
         </b-card>
+
         <!-- Events -->
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <b-table ref="offersTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
-              {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+              <font size="-1">
+                {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+              </font>
             </template>
             <template #cell(when)="data">
-              {{ formatTimestamp(data.item.timestamp )}}
+              <font size="-1">
+                {{ formatTimestamp(data.item.timestamp) }}
+              </font>
             </template>
             <template #cell(info)="data">
               <font size="-2"><pre>
@@ -167,6 +194,7 @@ const Agent = {
             </template>
           </b-table>
         </b-card>
+
         <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
@@ -331,9 +359,11 @@ const Agent = {
       ],
       offersFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
-        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 45%;', tdClass: 'text-left' },
       ],
       eventsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },

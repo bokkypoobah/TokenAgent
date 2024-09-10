@@ -624,7 +624,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
             } else if (tokenType == TokenType.ERC721) {
                 if (Count.unwrap(offer.count) != type(uint16).max) {
-                    require(Count.unwrap(offer.count) > input.tokenIds.length, InsufficentCountRemaining(Count.wrap(uint16(input.tokenIds.length)), offer.count));
+                    require(Count.unwrap(offer.count) >= input.tokenIds.length, InsufficentCountRemaining(Count.wrap(uint16(input.tokenIds.length)), offer.count));
                     offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(input.tokenIds.length));
                 }
                 prices_ = new uint[](input.tokenIds.length);
@@ -821,17 +821,13 @@ contract TokenAgentFactory is CloneFactory {
     }
 
     function init(WETH _weth, TokenAgent _tokenAgentTemplate) public {
-        if (address(weth) != address(0)) {
-            revert GoAway();
-        }
+        require(address(weth) == address(0), GoAway());
         weth = _weth;
         tokenAgentTemplate = _tokenAgentTemplate;
     }
 
     function newTokenAgent() public {
-        if (address(weth) == address(0)) {
-            revert NotInitialised();
-        }
+        require(address(weth) != address(0), NotInitialised());
         TokenAgent tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
         tokenAgent.init(weth, Account.wrap(msg.sender));
         tokenAgentRecords.push(TokenAgentRecord(tokenAgent, Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length))));

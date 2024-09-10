@@ -116,7 +116,7 @@ const Agent = {
                 <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricing20Options" v-b-popover.hover.ds500="'Single or multiple prices and/or limits'" class="w-25"></b-form-select>
               </b-form-group>
 
-              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing < 2" label="Price:" label-for="addoffers-price" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Enter price to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
+              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing < 2" label="Price:" label-for="addoffers-price" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Enter price in [W]ETH to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-price" v-model.trim="settings.addOffers.price" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 

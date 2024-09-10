@@ -209,11 +209,11 @@ const dataModule = {
       if (!(info.address in state.tokenContracts[info.chainId])) {
         Vue.set(state.tokenContracts[info.chainId], info.address, {
           type: info.type,
-          symbol: info.symbol || null,
-          name: info.name || null,
-          decimals: info.decimals || null,
-          totalSupply: info.totalSupply || null,
-          slug: info.slug || null,
+          symbol: info.symbol,
+          name: info.name,
+          decimals: info.decimals,
+          totalSupply: info.totalSupply,
+          slug: info.slug,
           image: info.image,
           watch: false,
           transfers: false,

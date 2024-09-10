@@ -445,21 +445,21 @@ const Agent = {
           console.log("prices: " + JSON.stringify(prices));
           console.log("tokens: " + JSON.stringify(tokens));
           if (prices.length > 0) {
-            // const payload = [
-            //   [
-            //     this.settings.addOffers.token,
-            //     0, // parseInt(this.settings.addOffers.buySell),
-            //     0, // "2041432206", // Sat Sep 09 2034 16:30:06 GMT+0000
-            //     0,
-            //     prices,
-            //     [],
-            //     tokens,
-            //   ],
-            // ];
+            const payload = [
+              [
+                this.settings.addOffers.token,
+                parseInt(this.settings.addOffers.buySell),
+                "2041432206", // Sat Sep 09 2034 16:30:06 GMT+0000
+                0,
+                prices,
+                [],
+                tokens,
+              ],
+            ];
 
             // const payload = [["0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9","0","0","0",["123"],[],[]]];
             // TestToadz
-            const payload = [["0x8b73448426797099b6b9a96c4343f528bbAfc55e","0","0","0",["123"],[456],[]]];
+            // const payload = [["0x8b73448426797099b6b9a96c4343f528bbAfc55e","0","0","0",["123"],[456],[]]];
             // const payload = [
             //   { token: "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9", buySell: "0", expiry: "0", count: "0", prices: [], tokenIds: [], tokenss: [] },
             // ];
@@ -504,9 +504,9 @@ const Agent = {
                 title: 'Transaction submitted',
                 autoHideDelay: 5000,
               });
-              this.$refs['modalnewtokenagent'].hide();
-              this.settings.newTokenAgent.show = false;
-              this.saveSettings();
+              // this.$refs['modalnewtokenagent'].hide();
+              // this.settings.newTokenAgent.show = false;
+              // this.saveSettings();
             } catch (e) {
               console.log(now() + " ERROR Agent:methods.addOffer: " + JSON.stringify(e));
               this.$bvToast.toast(`${e.message}`, {
@@ -518,41 +518,6 @@ const Agent = {
           }
         } else {
           console.log(now() + " INFO Agent:methods.addOffer - ERC-721/1155 - UNSUPPORTED");
-        }
-      }
-      return;
-
-      if (network.tokenAgentFactory) {
-        const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
-        const contractWithSigner = contract.connect(provider.getSigner());
-        try {
-          // const tx = await contractWithSigner.newTokenAgent();
-          const tx = { hash: "blah" };
-          console.log(now() + " INFO Agent:methods.addOffer - tx: " + JSON.stringify(tx));
-          const h = this.$createElement;
-          const vNodesMsg = h(
-            'p',
-            { class: ['text-left', 'mb-0'] },
-            [
-              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
-              h('br'),
-              h('br'),
-              'Resync after this tx has been included',
-            ]
-          );
-          this.$bvToast.toast([vNodesMsg], {
-            title: 'Transaction submitted',
-            autoHideDelay: 5000,
-          });
-          this.$refs['modalnewtokenagent'].hide();
-          this.settings.newTokenAgent.show = false;
-          this.saveSettings();
-        } catch (e) {
-          console.log(now() + " ERROR Agent:methods.addOffer: " + JSON.stringify(e));
-          this.$bvToast.toast(`${e.message}`, {
-            title: 'Error!',
-            autoHideDelay: 5000,
-          });
         }
       }
     },

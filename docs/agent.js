@@ -91,7 +91,7 @@ const Agent = {
                     <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Token contracts'" class="m-0 ml-1 p-0">
                       <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts contracts with transfers permitted</b-dropdown-item>
                       <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
-                        <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name }}</b-dropdown-item>
+                        <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; settings.addOffers.decimals = item.decimals; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
                       </div>
                     </b-dropdown>
                     <b-button size="sm" :disabled="!validAddress(settings.addOffers.token)" :href="explorer + 'token/' + settings.addOffers.token" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -111,11 +111,38 @@ const Agent = {
               <b-form-group v-if="settings.addOffers.type == 721 || settings.addOffers.type == 1155" label="Count:" label-for="addoffers-count" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-count" v-model.trim="settings.addOffers.count" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
-              <b-form-group v-if="settings.addOffers.type == 721 || settings.addOffers.type == 1155" label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricingOptions" v-b-popover.hover.ds500="'Single or multiple prices'" class="w-25"></b-form-select>
+
+              <b-form-group v-if="settings.addOffers.type == 20" label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricing20Options" v-b-popover.hover.ds500="'Single or multiple prices and/or limits'" class="w-25"></b-form-select>
               </b-form-group>
+
+              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing < 2" label="Price:" label-for="addoffers-price" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Enter price to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
+                <b-form-input size="sm" type="number" id="addoffers-price" v-model.trim="settings.addOffers.price" @change="saveSettings" class="w-25"></b-form-input>
+              </b-form-group>
+
+              <b-form-group label="Pricing:" label-for="addoffers-pricing" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricing20Options" v-b-popover.hover.ds500="'Single or multiple prices and/or limits'" class="w-25"></b-form-select>
+              </b-form-group>
+
             </b-form-group>
-            <b-form-group label-cols-lg="2" label="" label-size="lg" label-class="font-weight-bold pt-0" class="mt-3">
+
+
+            <!--
+            // ERC-20
+            //   prices[price0], tokenIds[], tokenss[]
+            //   prices[price0], tokenIds[], tokenss[tokens0, tokens1, ...]
+            //   prices[price0, price1, ...], tokenIds[], tokenss[tokens0, tokens1, ...]
+            // ERC-721
+            //   prices[price0], tokenIds[], tokenss[]
+            //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+            //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+            // ERC-1155
+            //   prices[price0], tokenIds[], tokenss[]
+            //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+            //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
+             -->
+
+            <!-- <b-form-group label-cols-lg="2" label="" label-size="lg" label-class="font-weight-bold pt-0" class="mt-3">
               <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <font size="-2">
                   <pre>
@@ -123,9 +150,9 @@ const Agent = {
     offers: [],
     token: null,
     buySell: 0,
+    expiry: null,
     count: null,
     pricing: 0,
-    expiry: null,
     prices: [],
     tokenIds: [],
     tokenss: [],
@@ -133,7 +160,7 @@ const Agent = {
                   </pre>
                 </font>
               </b-form-group>
-            </b-form-group>
+            </b-form-group> -->
           </b-card>
         </b-card>
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
@@ -226,10 +253,13 @@ const Agent = {
           offers: [],
           token: null,
           type: null,
+          decimals: null,
           buySell: 0,
+          expiry: null,
           count: null,
           pricing: 0,
-          expiry: null,
+          price: null,
+          tokens: null,
           prices: [],
           tokenIds: [],
           tokenss: [],
@@ -238,15 +268,16 @@ const Agent = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 3,
+        version: 4,
       },
       buySellOptions: [
-        { value: 0, text: 'BUY' },
-        { value: 1, text: 'SELL' },
+        { value: 0, text: 'Buy' },
+        { value: 1, text: 'Sell' },
       ],
-      pricingOptions: [
-        { value: 0, text: 'SINGLE' },
-        { value: 1, text: 'MULTIPLE' },
+      pricing20Options: [
+        { value: 0, text: 'Single price without limit' },
+        { value: 1, text: 'Single price with limit', disabled: true },
+        { value: 1, text: 'Multiple prices and limits', disabled: true },
       ],
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
@@ -314,10 +345,9 @@ const Agent = {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       for (const [tokenContract, d] of Object.entries(this.tokenContracts[this.chainId] || {})) {
         if (d.transfers) {
-          results.push({ tokenContract, type: d.type, symbol: d.symbol, name: d.name });
+          results.push({ tokenContract, type: d.type, symbol: d.symbol, name: d.name, decimals: d.decimals });
         }
       }
-      // console.log(now() + " INFO Agent:computed.tokenAgentsDropdownOptions - results[0..9]: " + JSON.stringify(this.filteredSortedItems.slice(0, 10), null, 2));
       return results;
     },
 

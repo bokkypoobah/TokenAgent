@@ -462,9 +462,9 @@ const TokenContracts = {
     filteredTokenContracts() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       const filterLower = this.settings.filter && this.settings.filter.toLowerCase() || null;
-      console.log("this.tokenContracts: " + JSON.stringify(this.tokenContracts, null, 2));
+      // console.log("this.tokenContracts: " + JSON.stringify(this.tokenContracts, null, 2));
       for (const [address, data] of Object.entries(this.tokenContracts[this.chainId] || {})) {
-        console.log(address + " => " + JSON.stringify(data));
+        // console.log(address + " => " + JSON.stringify(data));
         results.push({
           address,
           ...data,
@@ -585,8 +585,8 @@ const TokenContracts = {
         }
         if (!this.settings.addTokenContract.type) {
           try {
-            const decimals = await erc20.decimals();
-            if (decimals != null) {
+            this.settings.addTokenContract.decimals = await erc20.decimals();
+            if (this.settings.addTokenContract.decimals != null) {
               this.settings.addTokenContract.type = 20;
               this.settings.addTokenContract.decimals = decimals;
             }

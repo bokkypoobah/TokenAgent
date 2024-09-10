@@ -461,9 +461,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
                 if (input.tokenIds.length > 1) {
                     for (uint j = 1; j < input.tokenIds.length; j++) {
-                        if (TokenId.unwrap(input.tokenIds[j - 1]) >= TokenId.unwrap(input.tokenIds[j])) {
-                            revert TokenIdsMustBeSortedWithNoDuplicates();
-                        }
+                        require(TokenId.unwrap(input.tokenIds[j - 1]) < TokenId.unwrap(input.tokenIds[j]), TokenIdsMustBeSortedWithNoDuplicates());
                     }
                 }
                 if (input.tokenIds.length > 0) {
@@ -520,9 +518,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
                 if (input.tokenIds.length > 1) {
                     for (uint j = 1; j < input.tokenIds.length; j++) {
-                        if (TokenId.unwrap(input.tokenIds[j - 1]) >= TokenId.unwrap(input.tokenIds[j])) {
-                            revert TokenIdsMustBeSortedWithNoDuplicates();
-                        }
+                        require(TokenId.unwrap(input.tokenIds[j - 1]) < TokenId.unwrap(input.tokenIds[j]), TokenIdsMustBeSortedWithNoDuplicates());
                     }
                 }
                 if (input.tokenIds.length > 0) {
@@ -669,17 +665,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     takerToOwnerTotal += price;
                 }
             } else if (tokenType == TokenType.ERC1155) {
-                if (input.tokenIds.length != input.tokenss.length) {
-                    revert InvalidInputData("tokenIds must have the same length as tokenss");
-                }
+                require(input.tokenIds.length == input.tokenss.length, InvalidInputData("tokenIds must have the same length as tokenss"));
                 uint totalCount;
                 for (uint j = 0; j < input.tokenss.length; j++) {
                     totalCount += Tokens.unwrap(input.tokenss[j]);
                 }
-                if (Count.unwrap(offer.count) < totalCount) {
-                    revert InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count);
-                }
                 if (Count.unwrap(offer.count) != type(uint16).max) {
+                    require(Count.unwrap(offer.count) >= totalCount, InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count));
                     offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(totalCount));
                 }
                 prices_ = new uint[](input.tokenIds.length);
@@ -699,9 +691,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, input.tokenIds[j]);
                         }
                         require(k != type(uint).max, InvalidTokenId(input.tokenIds[j]));
-                        if (Tokens.unwrap(offer.useds[k]) + Tokens.unwrap(input.tokenss[j]) > Tokens.unwrap(offer.tokenss[k])) {
-                            revert InsufficentCountRemaining(Count.wrap(uint16(Tokens.unwrap(input.tokenss[j]))), Count.wrap(uint16(Tokens.unwrap(offer.tokenss[k]))));
-                        }
+                        require(Tokens.unwrap(offer.useds[k]) + Tokens.unwrap(input.tokenss[j]) <= Tokens.unwrap(offer.tokenss[k]), InsufficentCountRemaining(Count.wrap(uint16(Tokens.unwrap(input.tokenss[j]))), Count.wrap(uint16(Tokens.unwrap(offer.tokenss[k])))));
                         offer.useds[k] = Tokens.wrap(Tokens.unwrap(offer.useds[k]) + uint128(Tokens.unwrap(input.tokenss[j])));
                         if (offer.prices.length == offer.tokenIds.length) {
                             p = Price.unwrap(offer.prices[k]);
@@ -722,14 +712,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
                 if (offer.buySell == BuySell.BUY) {
-                    if (price < Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price);
-                    }
+                    require(price >= Price.unwrap(input.price), ExecutedTotalPriceLessThanSpecified(Price.wrap(uint128(price)), input.price));
                     ownerToTakerTotal += price;
                 } else {
-                    if (price > Price.unwrap(input.price)) {
-                        revert ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price);
-                    }
+                    require(price <= Price.unwrap(input.price), ExecutedTotalPriceGreaterThanSpecified(Price.wrap(uint128(price)), input.price));
                     takerToOwnerTotal += price;
                 }
             }

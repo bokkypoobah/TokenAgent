@@ -419,6 +419,21 @@ const Agent = {
     async loadData() {
       console.log(now() + " INFO Agent:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       // TODO: Later move into data?
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const block = await provider.getBlock();
+      const blockNumber = block && block.number || "latest";
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
+
+      const filter = {
+        address: this.settings.tokenAgentAddress,
+        fromBlock: 0,
+        toBlock: blockNumber,
+        topics: [ [], null, null ],
+      };
+      const eventLogs = await provider.getLogs(filter);
+      // console.log(now() + " INFO Agent:methods.loadData - eventLogs: " + JSON.stringify(eventLogs, null, 2));
+      const records = parseTokenAgentEventLogs(eventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
       // store.dispatch('syncOptions/loadData');
     },

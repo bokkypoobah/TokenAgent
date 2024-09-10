@@ -84,14 +84,14 @@ const Agent = {
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
-              <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" :description="settings.addOffers.token && validAddress(settings.addOffers.token) && settings.addOffers.type && ('ERC-' + settings.addOffers.type) || 'Enter address'" class="mx-0 my-1 p-0">
+              <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" :description="settings.addOffers.token && validAddress(settings.addOffers.token) && settings.addOffers.type && ('ERC-' + settings.addOffers.type + ' ' + settings.addOffers.symbol) || 'Enter address'" class="mx-0 my-1 p-0">
                 <b-input-group style="width: 28.0rem;">
                   <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, or select from dropdown"></b-form-input>
                   <b-input-group-append>
                     <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Token contracts'" class="m-0 ml-1 p-0">
                       <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts contracts with transfers permitted</b-dropdown-item>
                       <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
-                        <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; settings.addOffers.decimals = item.decimals; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
+                        <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; settings.addOffers.symbol = item.symbol; settings.addOffers.decimals = item.decimals; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
                       </div>
                     </b-dropdown>
                     <b-button size="sm" :disabled="!validAddress(settings.addOffers.token)" :href="explorer + 'token/' + settings.addOffers.token" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -102,9 +102,6 @@ const Agent = {
                 </b-input-group>
               </b-form-group>
 
-              <!-- <b-form-group label="Token:" label-for="addoffers-token" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.token || validAddress(settings.addOffers.token)" :invalid-feedback="'Invalid address'" class="mx-0 my-1 p-0">
-                <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, e.g., 0x1234...6789" class="w-50"></b-form-input>
-              </b-form-group> -->
               <b-form-group label="Buy/Sell:" label-for="addoffers-buysell" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                 <b-form-select size="sm" id="addoffers-buysell" v-model="settings.addOffers.buySell" @change="saveSettings" :options="buySellOptions" v-b-popover.hover.ds500="'Owner BUY or SELL'" class="w-25"></b-form-select>
               </b-form-group>
@@ -116,17 +113,18 @@ const Agent = {
                 <b-form-select size="sm" id="addoffers-pricing" v-model="settings.addOffers.pricing" @change="saveSettings" :options="pricing20Options" v-b-popover.hover.ds500="'Single or multiple prices and/or limits'" class="w-25"></b-form-select>
               </b-form-group>
 
-              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing < 2" label="Price:" label-for="addoffers-price" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Enter price in [W]ETH to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
+              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing < 2" label="Price:" label-for="addoffers-price" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.price || validNumber(settings.addOffers.price, 18)" :invalid-feedback="'Invalid price'" :description="'Enter price in [W]ETH to 18 decimal places'" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-price" v-model.trim="settings.addOffers.price" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 
-              <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!addOffersFeedback" :invalid-feedback="addOffersFeedback" class="mx-0 my-1 p-0">
-                <b-button size="sm" :disabled="!!addOffersFeedback" @click="addOffer" variant="warning">Add Offer</b-button>
+              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing == 1" label="Tokens:" label-for="addoffers-tokens" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.tokens || validNumber(settings.addOffers.tokens, settings.addOffers.decimals)" :invalid-feedback="'Invalid tokens'" :description="'Enter number to tokens to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
+                <b-form-input size="sm" type="number" id="addoffers-tokens" v-model.trim="settings.addOffers.tokens" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 
+              <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!addOffersFeedback" :invalid-feedback="addOffersFeedback" class="mx-0 my-1 p-0">
+                <b-button size="sm" :disabled="!networkSupported || !!addOffersFeedback" @click="addOffer" variant="warning">Add Offer</b-button>
+              </b-form-group>
             </b-form-group>
-
-
             <!--
             // ERC-20
             //   prices[price0], tokenIds[], tokenss[]
@@ -141,26 +139,6 @@ const Agent = {
             //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
             //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
              -->
-
-            <!-- <b-form-group label-cols-lg="2" label="" label-size="lg" label-class="font-weight-bold pt-0" class="mt-3">
-              <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                <font size="-2">
-                  <pre>
-  addOffers: {
-    offers: [],
-    token: null,
-    buySell: 0,
-    expiry: null,
-    count: null,
-    pricing: 0,
-    prices: [],
-    tokenIds: [],
-    tokenss: [],
-  }
-                  </pre>
-                </font>
-              </b-form-group>
-            </b-form-group> -->
           </b-card>
         </b-card>
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
@@ -253,6 +231,7 @@ const Agent = {
           offers: [],
           token: null,
           type: null,
+          symbol: null,
           decimals: null,
           buySell: 0,
           expiry: null,
@@ -268,7 +247,7 @@ const Agent = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 4,
+        version: 5,
       },
       buySellOptions: [
         { value: 0, text: 'Buy' },
@@ -276,7 +255,7 @@ const Agent = {
       ],
       pricing20Options: [
         { value: 0, text: 'Single price without limit' },
-        { value: 1, text: 'Single price with limit', disabled: true },
+        { value: 1, text: 'Single price with limit' },
         { value: 1, text: 'Multiple prices and limits', disabled: true },
       ],
       sortOptions: [
@@ -352,13 +331,36 @@ const Agent = {
     },
 
     addOffersFeedback() {
-      if (this.settings.addOffers.type == 20) {
-        if (this.settings.addOffers.pricing == 0 && parseFloat(this.settings.addOffers.price) > 0) {
-          return null;
-        }
-        return "Only single price without limit supported"
+      if (!this.settings.tokenAgentAddress || !this.validAddress(this.settings.tokenAgentAddress)) {
+        return "Enter token agent address";
       }
-      return "ERC-721/1155 not supported yet";
+      if (!this.settings.addOffers.token || !this.validAddress(this.settings.addOffers.token)) {
+        return "Enter token contract address";
+      }
+      if (this.settings.addOffers.type == 20) {
+        if (this.settings.addOffers.pricing == 0) {
+          if (this.validNumber(this.settings.addOffers.price, 18)) {
+            return null;
+          } else {
+            return "Invalid price";
+          }
+        }
+        if (this.settings.addOffers.pricing == 1) {
+          if (this.validNumber(this.settings.addOffers.price, 18)) {
+          } else {
+            return "Invalid price";
+          }
+          if (this.validNumber(this.settings.addOffers.tokens, this.settings.addOffers.decimals)) {
+            return null;
+          } else {
+            return "Invalid tokens";
+          }
+        }
+        return "Only single price with or without tokens limit supported"
+      } else if (this.settings.addOffers.type == 721 || this.settings.addOffers.type == 1155) {
+        return "ERC-721/1155 not supported yet";
+      }
+      return null;
     },
 
     totalRegistryEntries() {
@@ -421,18 +423,105 @@ const Agent = {
       console.log(now() + " INFO Agent:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
+      // // TestParameters.sol
+      // const contract = new ethers.Contract("0x05c2fcd4aE9CC26AaEEbCEE1F3B44780426d0c3b", network.tokenAgent.abi, provider);
+      const contractWithSigner = contract.connect(provider.getSigner());
 
-      if (this.settings.addOffers.type == 20) {
-        if (this.settings.addOffers.pricing == 0 && parseFloat(this.settings.addOffers.price) > 0) {
-          console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Single price without limit - price: " + this.settings.addOffers.price);
+      if (network.tokenAgentFactory) {
+        if (this.settings.addOffers.type == 20) {
+          let prices = [];
+          let tokens = [];
+          if (this.settings.addOffers.pricing == 0) {
+            console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Single price without limit - price: " + this.settings.addOffers.price);
+            prices = [ethers.utils.parseUnits(this.settings.addOffers.price, 18).toString()];
+          } else if (this.settings.addOffers.pricing == 1) {
+            console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Single price with limit - price: " + this.settings.addOffers.price + ", tokens: " + this.settings.addOffers.tokens);
+            prices = [ethers.utils.parseUnits(this.settings.addOffers.price, 18).toString()];
+            tokens = [ethers.utils.parseUnits(this.settings.addOffers.tokens, this.settings.addOffers.decimals).toString()];
+          } else {
+            console.log(now() + " INFO Agent:methods.addOffer - ERC-20 Multiple prices with limits - UNSUPPORTED");
+          }
+          console.log("prices: " + JSON.stringify(prices));
+          console.log("tokens: " + JSON.stringify(tokens));
+          if (prices.length > 0) {
+            // const payload = [
+            //   [
+            //     this.settings.addOffers.token,
+            //     0, // parseInt(this.settings.addOffers.buySell),
+            //     0, // "2041432206", // Sat Sep 09 2034 16:30:06 GMT+0000
+            //     0,
+            //     prices,
+            //     [],
+            //     tokens,
+            //   ],
+            // ];
+
+            // const payload = [["0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9","0","0","0",["123"],[],[]]];
+            // TestToadz
+            const payload = [["0x8b73448426797099b6b9a96c4343f528bbAfc55e","0","0","0",["123"],[456],[]]];
+            // const payload = [
+            //   { token: "0x7439E9Bb6D8a84dd3A23fe621A30F95403F87fB9", buySell: "0", expiry: "0", count: "0", prices: [], tokenIds: [], tokenss: [] },
+            // ];
+            // function addOffers(AddOffer[] calldata inputs) external onlyOwner {
+            // "84233ef3": "addOffers((address,uint8,uint40,uint16,uint128[],uint256[],uint128[])[])",
+
+            // const abi = ethers.utils.defaultAbiCoder;
+            // const params = abi.encode(
+            //     ["(address,uint8,uint40,uint16,uint128[],uint256[],uint128[])[]"], // encode as address array
+            //     payload); // array to encode
+            // console.log(now() + " INFO Agent:methods.addOffer - params: " + JSON.stringify(params));
+
+            try {
+              console.log(now() + " INFO Agent:methods.addOffer - payload: " + JSON.stringify(payload));
+              const tx = await contractWithSigner.addOffers(payload, { gasLimit: 500000 });
+
+              // struct AddOffer {
+              //     Token token;             // 160 bits
+              //     BuySell buySell;         // 8 bits
+              //     Unixtime expiry;         // 40 bits
+              //     Count count;             // 16 bits
+              //     Price[] prices;          // token/WETH 18dp
+              //     TokenId[] tokenIds;      // ERC-721/1155
+              //     Tokens[] tokenss;        // ERC-20/1155
+              // }
 
 
+              // const tx = { hash: "blah" };
+              console.log(now() + " INFO Agent:methods.addOffer - tx: " + JSON.stringify(tx));
+              const h = this.$createElement;
+              const vNodesMsg = h(
+                'p',
+                { class: ['text-left', 'mb-0'] },
+                [
+                  h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+                  h('br'),
+                  h('br'),
+                  'Resync after this tx has been included',
+                ]
+              );
+              this.$bvToast.toast([vNodesMsg], {
+                title: 'Transaction submitted',
+                autoHideDelay: 5000,
+              });
+              this.$refs['modalnewtokenagent'].hide();
+              this.settings.newTokenAgent.show = false;
+              this.saveSettings();
+            } catch (e) {
+              console.log(now() + " ERROR Agent:methods.addOffer: " + JSON.stringify(e));
+              this.$bvToast.toast(`${e.message}`, {
+                title: 'Error!',
+                autoHideDelay: 5000,
+              });
+            }
 
-
+          }
+        } else {
+          console.log(now() + " INFO Agent:methods.addOffer - ERC-721/1155 - UNSUPPORTED");
         }
       }
-
       return;
+
       if (network.tokenAgentFactory) {
         const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
@@ -466,6 +555,19 @@ const Agent = {
           });
         }
       }
+    },
+
+    validNumber(n, d) {
+      if (n && d != null) {
+        // console.log(now() + " DEBUG Agent:methods.validNumber - n: " + n + ", d: " + d);
+        try {
+          const n_ = ethers.utils.parseUnits(n, d);
+          // console.log(now() + " DEBUG Agent:methods.validNumber - n_: " + n_.toString());
+          return true;
+        } catch (e) {
+        }
+      }
+      return false;
     },
 
     validAddress(a) {

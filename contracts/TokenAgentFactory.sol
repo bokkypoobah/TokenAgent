@@ -433,8 +433,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     function addOffers(AddOffer[] calldata inputs) external onlyOwner {
         for (uint i = 0; i < inputs.length; i++) {
             AddOffer memory input = inputs[i];
-            TokenType tokenType = tokenTypes[input.token];
             require(Token.unwrap(input.token) != address(weth), CannotOfferWETH());
+            TokenType tokenType = tokenTypes[input.token];
             if (tokenType == TokenType.UNKNOWN) {
                 tokenType = _getTokenType(input.token);
                 require(tokenType != TokenType.INVALID, InvalidToken(input.token));

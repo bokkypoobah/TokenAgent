@@ -82,6 +82,7 @@ const Agent = {
         </b-card>
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
           Events
+          {{ events }}
         </b-card>
         <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
@@ -246,6 +247,7 @@ const Agent = {
         sortOption: 'ownertokenagentasc',
         version: 5,
       },
+      events: [],
       buySellOptions: [
         { value: 0, text: 'Buy' },
         { value: 1, text: 'Sell' },
@@ -422,7 +424,7 @@ const Agent = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
       const blockNumber = block && block.number || "latest";
-      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      const network = NETWORKS['' + this.chainId] || {};
       const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
       const filter = {
@@ -433,14 +435,14 @@ const Agent = {
       };
       const eventLogs = await provider.getLogs(filter);
       // console.log(now() + " INFO Agent:methods.loadData - eventLogs: " + JSON.stringify(eventLogs, null, 2));
-      const records = parseTokenAgentEventLogs(eventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+      this.events = parseTokenAgentEventLogs(eventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
       // store.dispatch('syncOptions/loadData');
     },
     async addOffer() {
       console.log(now() + " INFO Agent:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      const network = NETWORKS['' + this.chainId] || {};
       const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
       const contractWithSigner = contract.connect(provider.getSigner());
       if (network.tokenAgentFactory) {

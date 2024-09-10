@@ -77,12 +77,89 @@ const Agent = {
           </b-tab>
         </b-tabs>
 
-        <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-2">
-          Offers
+        <div v-if="settings.tabIndex == 0 || settings.tabIndex == 1" class="d-flex flex-wrap m-0 mt-1 p-0">
+          <div class="mt-0 flex-grow-1">
+          </div>
+          <div v-if="false && sync.section == null" class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!networkSupported" @click="viewSyncOptions" variant="link" v-b-popover.hover.ds500="'Sync data from the blockchain'"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button>
+          </div>
+          <div v-if="false && sync.section != null" class="mt-1" style="width: 300px;">
+            <b-progress height="1.5rem" :max="sync.total" show-progress :animated="sync.section != null" :variant="sync.section != null ? 'success' : 'secondary'" v-b-popover.hover.ds500="'Click the button on the right to stop. This process can be continued later'">
+              <b-progress-bar :value="sync.completed">
+                {{ sync.total == null ? (sync.completed + ' ' + sync.section) : (sync.completed + '/' + sync.total + ' ' + ((sync.completed / sync.total) * 100).toFixed(0) + '% ' + sync.section) }}
+              </b-progress-bar>
+            </b-progress>
+          </div>
+          <div v-if="false" class="ml-0 mt-1">
+            <b-button v-if="sync.section != null" size="sm" @click="halt" variant="link" v-b-popover.hover.ds500="'Click to stop. This process can be continued later'"><b-icon-stop-fill shift-v="+1" font-scale="1.0"></b-icon-stop-fill></b-button>
+          </div>
+          <div class="mt-0 flex-grow-1">
+          </div>
+          <div v-if="false" class="mt-0 pr-1">
+            <b-button size="sm" :disabled="!transferHelper" @click="newTransfer(null); " variant="link" v-b-popover.hover.ds500="'New Stealth Transfer'"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
+          </div>
+          <div class="mt-0 flex-grow-1">
+          </div>
+          <div class="mt-0 pr-1">
+            <div v-if="settings.tabIndex == 0">
+              <b-form-select size="sm" v-model="settings.offers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+            </div>
+            <div v-else>
+              <b-form-select size="sm" v-model="settings.events.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+            </div>
+          </div>
+          <div class="mt-0 pr-1">
+            <div v-if="settings.tabIndex == 0">
+              <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedOffers.length + '/' + offers.length }}</font>
+            </div>
+            <div v-else>
+              <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedEvents.length + '/' + events.length }}</font>
+            </div>
+          </div>
+          <div class="mt-0 pr-1">
+            <div v-if="settings.tabIndex == 0">
+              <b-pagination size="sm" v-model="settings.offers.currentPage" @input="saveSettings" :total-rows="filteredSortedOffers.length" :per-page="settings.offers.pageSize" style="height: 0;"></b-pagination>
+            </div>
+            <div v-else>
+              <b-pagination size="sm" v-model="settings.events.currentPage" @input="saveSettings" :total-rows="filteredSortedEvents.length" :per-page="settings.events.pageSize" style="height: 0;"></b-pagination>
+            </div>
+          </div>
+          <div class="mt-0 pl-1">
+            <div v-if="settings.tabIndex == 0">
+              <b-form-select size="sm" v-model="settings.offers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+            </div>
+            <div v-else>
+              <b-form-select size="sm" v-model="settings.events.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Offers -->
+        <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
+          <!-- <b-table ref="offersTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1"> -->
+          <b-table ref="offersTable" small fixed striped responsive hover :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1">
+            <template #cell(number)="data">
+              {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+            </template>
+            <template #cell(info)="data">
+              <font size="-2"><pre>
+{{ JSON.stringify(data.item, null, 2) }}
+              </pre></font>
+            </template>
+          </b-table>
         </b-card>
-        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-1 p-0">
-          Events
-          {{ events }}
+        <!-- Events -->
+        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
+          <b-table ref="offersTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
+            <template #cell(number)="data">
+              {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+            </template>
+            <template #cell(info)="data">
+              <font size="-2"><pre>
+{{ JSON.stringify(data.item, null, 2) }}
+              </pre></font>
+            </template>
+          </b-table>
         </b-card>
         <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
@@ -146,43 +223,6 @@ const Agent = {
           </b-card>
         </b-card>
 
-        <div v-if="false" class="d-flex flex-wrap m-0 p-0">
-          <div class="mt-0 flex-grow-1">
-          </div>
-          <div v-if="sync.section == null" class="mt-0 pr-1">
-            <b-button size="sm" :disabled="!networkSupported" @click="viewSyncOptions" variant="link" v-b-popover.hover.ds500="'Sync data from the blockchain'"><b-icon-arrow-repeat shift-v="+1" font-scale="1.2"></b-icon-arrow-repeat></b-button>
-          </div>
-          <div v-if="sync.section != null" class="mt-1" style="width: 300px;">
-            <b-progress height="1.5rem" :max="sync.total" show-progress :animated="sync.section != null" :variant="sync.section != null ? 'success' : 'secondary'" v-b-popover.hover.ds500="'Click the button on the right to stop. This process can be continued later'">
-              <b-progress-bar :value="sync.completed">
-                {{ sync.total == null ? (sync.completed + ' ' + sync.section) : (sync.completed + '/' + sync.total + ' ' + ((sync.completed / sync.total) * 100).toFixed(0) + '% ' + sync.section) }}
-              </b-progress-bar>
-            </b-progress>
-          </div>
-          <div class="ml-0 mt-1">
-            <b-button v-if="sync.section != null" size="sm" @click="halt" variant="link" v-b-popover.hover.ds500="'Click to stop. This process can be continued later'"><b-icon-stop-fill shift-v="+1" font-scale="1.0"></b-icon-stop-fill></b-button>
-          </div>
-          <div class="mt-0 flex-grow-1">
-          </div>
-          <div class="mt-0 pr-1">
-            <b-button size="sm" :disabled="!transferHelper" @click="newTransfer(null); " variant="link" v-b-popover.hover.ds500="'New Stealth Transfer'"><b-icon-caret-right shift-v="+1" font-scale="1.1"></b-icon-caret-right></b-button>
-          </div>
-          <div class="mt-0 flex-grow-1">
-          </div>
-          <div class="mt-0 pr-1">
-            <b-form-select size="sm" v-model="settings.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
-          </div>
-          <div class="mt-0 pr-1">
-            <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedItems.length + '/' + items.length }}</font>
-          </div>
-          <div class="mt-0 pr-1">
-            <b-pagination size="sm" v-model="settings.currentPage" @input="saveSettings" :total-rows="filteredSortedItems.length" :per-page="settings.pageSize" style="height: 0;"></b-pagination>
-          </div>
-          <div class="mt-0 pl-1">
-            <b-form-select size="sm" v-model="settings.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
-          </div>
-        </div>
-
         <b-table v-if="false" ref="theTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1">
           <template #empty="scope">
             <h6>{{ scope.emptyText }}</h6>
@@ -241,11 +281,26 @@ const Agent = {
           tokenIds: [],
           tokenss: [],
         },
+        offers: {
+          filter: null,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
+        },
+        events: {
+          filter: null,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
+        },
+
+        // TODO: Delete below
         filter: null,
         currentPage: 1,
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
-        version: 5,
+
+        version: 6,
       },
       events: [],
       buySellOptions: [
@@ -258,13 +313,27 @@ const Agent = {
         { value: 1, text: 'Multiple prices and limits', disabled: true },
       ],
       sortOptions: [
-        { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
-        { value: 'ownertokenagentdsc', text: '▼ Owner, ▲ Token Agent' },
-        { value: 'tokenagentasc', text: '▲ Token Agent' },
-        { value: 'tokenagentdsc', text: '▼ Token Agent' },
+        { value: 'txorderasc', text: '▲ TxOrder' },
+        { value: 'txorderdsc', text: '▼ TxOrder' },
+        // { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },
+        // { value: 'ownertokenagentdsc', text: '▼ Owner, ▲ Token Agent' },
+        // { value: 'tokenagentasc', text: '▲ Token Agent' },
+        // { value: 'tokenagentdsc', text: '▼ Token Agent' },
         // TODO: Deploy new TokenContractFactory with index worked out
         // { value: 'indexasc', text: '▲ Index' },
         // { value: 'indexdsc', text: '▼ Index' },
+      ],
+      offersFields: [
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
+      ],
+      eventsFields: [
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
       ],
       fields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
@@ -416,6 +485,95 @@ const Agent = {
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
     },
 
+    filteredSortedEvents() {
+      const results = this.events;
+      // console.log(JSON.stringify(results, null, 2));
+      // if (this.settings.sortOption == 'ownertokenagentasc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + a.owner).localeCompare(b.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'ownertokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + b.owner).localeCompare(a.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentasc') {
+      //   results.sort((a, b) => {
+      //     return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'indexasc') {
+      //   results.sort((a, b) => {
+      //     return a.index - b.index;
+      //   });
+      // } else if (this.settings.sortOption == 'indexdsc') {
+      //   results.sort((a, b) => {
+      //     return b.index - a.index;
+      //   });
+      // }
+      return results;
+    },
+    pagedFilteredSortedEvents() {
+      console.log(now() + " INFO Agent:computed.pagedFilteredSortedEvents - results[0..1]: " + JSON.stringify(this.filteredSortedEvents.slice(0, 2), null, 2));
+      return this.filteredSortedEvents.slice((this.settings.events.currentPage - 1) * this.settings.events.pageSize, this.settings.events.currentPage * this.settings.events.pageSize);
+    },
+
+    offers() {
+      const results = this.events;
+      return results;
+    },
+    filteredSortedOffers() {
+      const results = this.offers;
+      // console.log(JSON.stringify(results, null, 2));
+      // if (this.settings.sortOption == 'ownertokenagentasc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + a.owner).localeCompare(b.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'ownertokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + b.owner).localeCompare(a.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentasc') {
+      //   results.sort((a, b) => {
+      //     return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'indexasc') {
+      //   results.sort((a, b) => {
+      //     return a.index - b.index;
+      //   });
+      // } else if (this.settings.sortOption == 'indexdsc') {
+      //   results.sort((a, b) => {
+      //     return b.index - a.index;
+      //   });
+      // }
+      return results;
+    },
+    pagedFilteredSortedOffers() {
+      console.log(now() + " INFO Agent:computed.pagedFilteredSortedOffers - results[0..1]: " + JSON.stringify(this.filteredSortedOffers.slice(0, 2), null, 2));
+      return this.filteredSortedOffers.slice((this.settings.offers.currentPage - 1) * this.settings.offers.pageSize, this.settings.offers.currentPage * this.settings.offers.pageSize);
+    },
   },
   methods: {
     async loadData() {

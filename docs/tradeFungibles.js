@@ -848,7 +848,16 @@ const TradeFungibles = {
       const network = NETWORKS['' + this.chainId] || {};
 
       if (network.tokenAgentFactory) {
-        
+        const tokenAgentFactoryEventsfilter = {
+          address: network.tokenAgentFactory.address,
+          fromBlock: 0,
+          toBlock: blockNumber,
+          topics: [ [], null, null ],
+        };
+        const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentFactoryEventLogs: " + JSON.stringify(tokenAgentFactoryEventLogs, null, 2));
+        this.events = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
+
       }
       // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 

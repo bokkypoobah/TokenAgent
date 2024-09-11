@@ -88,10 +88,10 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
 // event OwnershipTransferStarted(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 // event OwnershipTransferred(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-// event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-// event OfferUpdated(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+// event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+// event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
 // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-// event Traded(Index index, Account indexed taker, Account indexed maker, Token indexed token, TokenType tokenType, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+// event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
 function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAbi, latestBlockNumber) {
   // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentAbi);
@@ -102,8 +102,8 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
       const contract = log.address;
       let eventRecord = null;
       if (logData.eventFragment.name == "Offered") {
-        // event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-        const [index, maker, token, tokenType, buySell, expiry, count, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
+        // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+        const [index, token, tokenType, maker, buySell, expiry, count, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
         eventRecord = {
           eventType: "Offered", index, maker, token, tokenType, buySell, expiry, count, nonce,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),

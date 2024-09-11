@@ -255,6 +255,13 @@ const Agent = {
                 <!-- </b-badge> -->
               </font>
             </template>
+            <template #cell(token)="data">
+              <font v-if="data.item.token" size="-1">
+                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
+                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                </b-link>
+              </font>
+            </template>
             <template #cell(taker)="data">
               <font v-if="data.item.taker" size="-1">
                 <b-link size="sm" :href="explorer + 'address/' + data.item.taker" variant="link" v-b-popover.hover.ds500="data.item.taker" target="_blank">
@@ -266,13 +273,6 @@ const Agent = {
               <font v-if="data.item.maker" size="-1">
                 <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                   {{ data.item.maker.substring(0, 10) + '...' + data.item.maker.slice(-8) }}
-                </b-link>
-              </font>
-            </template>
-            <template #cell(token)="data">
-              <font v-if="data.item.token" size="-1">
-                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
-                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
                 </b-link>
               </font>
             </template>
@@ -551,9 +551,9 @@ const Agent = {
       eventsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 12%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
         { key: 'taker', label: 'Taker', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
-        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
         { key: 'eventType', label: 'Event Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 37%;', tdClass: 'text-left' },
       ],

@@ -376,7 +376,7 @@ const TradeFungibles = {
                   <b-form-input size="sm" id="addoffers-token" v-model.trim="settings.addOffers.token" @change="saveSettings" placeholder="Token address, or select from dropdown"></b-form-input>
                   <b-input-group-append>
                     <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Token contracts'" class="m-0 ml-1 p-0">
-                      <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts contracts with transfers permitted</b-dropdown-item>
+                      <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts with transfers permitted</b-dropdown-item>
                       <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
                         <b-dropdown-item @click="settings.addOffers.token = item.tokenContract; settings.addOffers.type = item.type; settings.addOffers.symbol = item.symbol; settings.addOffers.decimals = item.decimals; saveSettings();">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
                       </div>
@@ -469,6 +469,9 @@ const TradeFungibles = {
       reschedule: true,
       settings: {
         tabIndex: 0,
+
+        tokenContractAddress: null,
+
         tokenAgentAddress: null,
         tokenAgentOwner: null,
         addOffers: {
@@ -512,7 +515,7 @@ const TradeFungibles = {
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
 
-        version: 7,
+        version: 0,
       },
 
       events: [],

@@ -85,6 +85,12 @@ All offers invalidated after the Token Agent owner call's `invalidateOffers()` t
 
 <kbd><img src="images/Screenshot_Agent_OffersInvalidated_20240911.png" width="600"/></kbd>
 
+<br />
+
+ERC-20/721/1155 token `Approval` and `ApprovalForAll` events with this Token Agent as the `spender` or `operator`.
+
+<kbd><img src="images/Screenshot_Agent_Approvals_20240911.png" width="600"/></kbd>
+
 
 ##### Contract
 

@@ -111,7 +111,7 @@ const Agent = {
             <div v-if="settings.tabIndex == 0">
               <b-form-select size="sm" v-model="settings.offers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
             </div>
-            <div v-if="settings.tabIndex == 1">
+            <div v-else-if="settings.tabIndex == 1">
               <b-form-select size="sm" v-model="settings.events.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
             </div>
             <div v-else>
@@ -122,7 +122,7 @@ const Agent = {
             <div v-if="settings.tabIndex == 0">
               <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedOffers.length + '/' + offers.length }}</font>
             </div>
-            <div v-if="settings.tabIndex == 1">
+            <div v-else-if="settings.tabIndex == 1">
               <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedEvents.length + '/' + events.length }}</font>
             </div>
             <div v-else>
@@ -133,7 +133,7 @@ const Agent = {
             <div v-if="settings.tabIndex == 0">
               <b-pagination size="sm" v-model="settings.offers.currentPage" @input="saveSettings" :total-rows="filteredSortedOffers.length" :per-page="settings.offers.pageSize" style="height: 0;"></b-pagination>
             </div>
-            <div v-if="settings.tabIndex == 1">
+            <div v-else-if="settings.tabIndex == 1">
               <b-pagination size="sm" v-model="settings.events.currentPage" @input="saveSettings" :total-rows="filteredSortedEvents.length" :per-page="settings.events.pageSize" style="height: 0;"></b-pagination>
             </div>
             <div v-else>
@@ -144,7 +144,7 @@ const Agent = {
             <div v-if="settings.tabIndex == 0">
               <b-form-select size="sm" v-model="settings.offers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
-            <div v-if="settings.tabIndex == 1">
+            <div v-else-if="settings.tabIndex == 1">
               <b-form-select size="sm" v-model="settings.events.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
             <div v-else>
@@ -168,7 +168,6 @@ const Agent = {
                   {{ formatTimestamp(data.item.timestamp) }}
                 </b-link>
               </font>
-
               <!-- <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="(timestamps[chainId] && timestamps[chainId][data.item.blockNumber]) ? ('Block ' + formatNumber(data.item.blockNumber)) : 'blockNumber:txIndex'" target="_blank">
                 <span v-if="timestamps[chainId] && timestamps[chainId][data.item.blockNumber]">
                   {{ formatTimestamp(timestamps[chainId][data.item.blockNumber]) }}
@@ -177,7 +176,6 @@ const Agent = {
                   {{ data.item.blockNumber + ':' + data.item.txIndex }}
                 </span>
               </b-link> -->
-
             </template>
             <template #cell(token)="data">
               <font size="-1">
@@ -256,7 +254,67 @@ const Agent = {
 
         <!-- Approvals -->
         <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-0">
-          {{ approvals }}
+          <b-table ref="approvalsTable" small fixed striped responsive hover :fields="approvalsFields" :items="pagedFilteredSortedApprovals" show-empty head-variant="light" class="m-0 mt-1">
+            <template #cell(number)="data">
+              <font size="-1">
+                {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
+              </font>
+            </template>
+            <template #cell(when)="data">
+              <font size="-1">
+                <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="data.item.txHash" target="_blank">
+                  <!-- {{ formatTimestamp(data.item.timestamp) }} -->
+                  {{ data.item.blockNumber + ':' + data.item.txIndex + '.' + data.item.logIndex }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(token)="data">
+              <font size="-1">
+                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
+                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(eventType)="data">
+              <font size="-1">
+                {{ data.item.eventType }}
+              </font>
+            </template>
+            <template #cell(owner)="data">
+              <font size="-1">
+                <b-link size="sm" :href="explorer + 'address/' + data.item.owner" variant="link" v-b-popover.hover.ds500="data.item.owner" target="_blank">
+                  {{ data.item.owner.substring(0, 10) + '...' + data.item.owner.slice(-8) }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(spenderOperator)="data">
+              <font size="-1">
+                <div v-if="data.item.spender">
+                  <b-link size="sm" :href="explorer + 'address/' + data.item.spender" variant="link" v-b-popover.hover.ds500="data.item.spender" target="_blank">
+                    {{ (data.item.spender.substring(0, 10) + '...' + data.item.spender.slice(-8)) }}
+                  </b-link>
+                </div>
+                <div v-else-if="data.item.operator">
+                  <b-link size="sm" :href="explorer + 'address/' + data.item.operator" variant="link" v-b-popover.hover.ds500="data.item.operator" target="_blank">
+                    {{ (data.item.operator.substring(0, 10) + '...' + data.item.operator.slice(-8)) }}
+                  </b-link>
+                </div>
+              </font>
+            </template>
+            <template #cell(tokensApproved)="data">
+              <font size="-1">
+                <div v-if="data.item.tokens">
+                  {{ formatDecimals(data.item.tokens, 18) }}
+                </div>
+                <div v-else-if="data.item.approved">
+                  {{ data.item.approved }}
+                </div>
+              </font>
+              <!-- <font size="-2"><pre>
+{{ JSON.stringify(data.item, null, 2) }}
+              </pre></font> -->
+            </template>
+          </b-table>
         </b-card>
 
         <b-card v-if="settings.tabIndex == 3" class="m-0 p-0 border-0" body-class="m-0 p-2">
@@ -445,6 +503,15 @@ const Agent = {
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
+      ],
+      approvalsFields: [
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'eventType', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
+        { key: 'owner', label: 'Owner', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'spenderOperator', label: 'Spender / Operator', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'tokensApproved', label: 'Tokens / Approved', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
       ],
       fields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },

@@ -5,7 +5,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
   const records = [];
   for (const log of logs) {
     if (!log.removed) {
-      const contract = log.address;
+      // const contract = log.address;
       let eventRecord = null;
       if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
         // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
@@ -13,11 +13,11 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
         if (log.topics.length == 4) {
           const logData = erc721Interface.parseLog(log);
           const [owner, approved, tokenId] = logData.args;
-          eventRecord = { type: "Approval", owner, approved, tokenId: tokenId.toString() /*, contractType: 721*/ };
+          eventRecord = { eventType: "Approval", owner, approved, tokenId: tokenId.toString() /*, contractType: 721*/ };
         } else {
           const logData = erc20Interface.parseLog(log);
           const [owner, spender, tokens] = logData.args;
-          eventRecord = { type: "Approval", owner, spender, tokens: tokens.toString() /*, contractType: 20*/ };
+          eventRecord = { eventType: "Approval", owner, spender, tokens: tokens.toString() /*, contractType: 20*/ };
         }
       } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
         // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
@@ -25,7 +25,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
         const logData = erc721Interface.parseLog(log);
         const [owner, operator, approved] = logData.args;
         // NOTE: Both 721 and 1155 fall into this category, but assigning all to 721
-        eventRecord = { type: "ApprovalForAll", owner, operator, approved /*, contractType: 721*/ };
+        eventRecord = { eventType: "ApprovalForAll", owner, operator, approved /*, contractType: 721*/ };
       }
       if (eventRecord) {
         records.push( {
@@ -34,7 +34,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
           logIndex: parseInt(log.logIndex),
           txIndex: parseInt(log.transactionIndex),
           txHash: log.transactionHash,
-          contract,
+          token: log.address,
           ...eventRecord,
           confirmations: latestBlockNumber - log.blockNumber,
         });

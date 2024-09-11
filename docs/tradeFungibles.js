@@ -93,6 +93,12 @@ const TradeFungibles = {
           </b-tab>
         </b-tabs>
 
+        <font size="-2">
+          <pre>
+tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
+          </pre>
+        </font>
+
         <div v-if="false && (settings.tabIndex == 0 || settings.tabIndex == 1 || settings.tabIndex == 2)" class="d-flex flex-wrap m-0 mt-1 p-0">
           <div class="mt-0 flex-grow-1">
           </div>
@@ -530,6 +536,8 @@ const TradeFungibles = {
         version: 0,
       },
 
+      tokenAgentFactoryEvents: [],
+
       events: [],
       approvals: [],
 
@@ -856,8 +864,8 @@ const TradeFungibles = {
         };
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentFactoryEventLogs: " + JSON.stringify(tokenAgentFactoryEventLogs, null, 2));
-        this.events = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
-
+        this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
+        localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
       }
       // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
@@ -886,7 +894,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
       this.approvals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
       // console.log(now() + " INFO TradeFungibles:methods.loadData - this.approvals: " + JSON.stringify(this.approvals, null, 2));
-      localStorage.tradeFungiblesApprovals = JSON.stringify(this.approvals);
+      localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
 
       const tokenAgentEventsfilter = {
         address: this.settings.tokenAgentAddress,
@@ -898,7 +906,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
       this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
-      localStorage.tradeFungiblesEvents = JSON.stringify(this.events);
+      localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');
     },
     async addOffer() {
@@ -1004,7 +1012,7 @@ const TradeFungibles = {
     },
     saveSettings() {
       console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.tradeFungiblesSettings = JSON.stringify(this.settings);
+      localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -1033,16 +1041,19 @@ const TradeFungibles = {
   mounted() {
     // console.log(now() + " DEBUG TradeFungibles:mounted - $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('tradeFungiblesSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.tradeFungiblesSettings);
+    if ('tokenAgentTradeFungiblesSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.tokenAgentTradeFungiblesSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
-        this.settings.currentPage = 1;
+        // this.settings.currentPage = 1;
+        if ('tokenAgentTradeFungiblesTokenAgentFactoryEvents' in localStorage) {
+          this.tokenAgentFactoryEvents = JSON.parse(localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents);
+        }
         // if ('tradeFungiblesEvents' in localStorage) {
-        //   this.events = JSON.parse(localStorage.tradeFungiblesEvents);
+        //   this.events = JSON.parse(localStorage.tokenAgentTradeFungiblesEvents);
         // }
         // if ('tradeFungiblesApprovals' in localStorage) {
-        //   this.approvals = JSON.parse(localStorage.tradeFungiblesApprovals);
+        //   this.approvals = JSON.parse(localStorage.tokenAgentTradeFungiblesApprovals);
         // }
       }
       // this.loadData(this.settings.tokenAgentAddress);

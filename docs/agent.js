@@ -28,7 +28,7 @@ const Agent = {
                 <b-button size="sm" :disabled="!validAddress(settings.tokenAgentAddress)" :href="explorer + 'address/' + settings.tokenAgentAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
               </div>
               <div class="mt-0 pr-1">
-                <b-button size="sm" :disabled="sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
+                <b-button size="sm" :disabled="!networkSupported || sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
               </div>
               <!-- <div class="mt-0 pr-1">
                 <b-button :disabled="!settings.contract || !validAddress(settings.contract)" @click="copyToClipboard(settings.contract);" variant="link" v-b-popover.hover.ds500="'Copy ERC-20 contract address to clipboard'" class="m-0 ml-2 p-0"><b-icon-clipboard shift-v="+1" font-scale="1.1"></b-icon-clipboard></b-button>
@@ -64,22 +64,27 @@ const Agent = {
           </template>
           <b-tab no-body active>
             <template #title>
-              Offers
+              <span v-b-popover.hover.ds500="'Token Agent offers'">Offers</span>
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              Events
+              <span v-b-popover.hover.ds500="'Token Agent events'">Events</span>
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              Console
+              <span v-b-popover.hover.ds500="'Token Contract Approvals to this Token Agent'">Approvals</span>
+            </template>
+          </b-tab>
+          <b-tab no-body>
+            <template #title>
+              <span v-b-popover.hover.ds500="'Raw command console'">Console</span>
             </template>
           </b-tab>
         </b-tabs>
 
-        <div v-if="settings.tabIndex == 0 || settings.tabIndex == 1" class="d-flex flex-wrap m-0 mt-1 p-0">
+        <div v-if="settings.tabIndex == 0 || settings.tabIndex == 1 || settings.tabIndex == 2" class="d-flex flex-wrap m-0 mt-1 p-0">
           <div class="mt-0 flex-grow-1">
           </div>
           <div v-if="false && sync.section == null" class="mt-0 pr-1">
@@ -106,32 +111,44 @@ const Agent = {
             <div v-if="settings.tabIndex == 0">
               <b-form-select size="sm" v-model="settings.offers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
             </div>
-            <div v-else>
+            <div v-if="settings.tabIndex == 1">
               <b-form-select size="sm" v-model="settings.events.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+            </div>
+            <div v-else>
+              <b-form-select size="sm" v-model="settings.approvals.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
             </div>
           </div>
           <div class="mt-0 pr-1">
             <div v-if="settings.tabIndex == 0">
               <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedOffers.length + '/' + offers.length }}</font>
             </div>
-            <div v-else>
+            <div v-if="settings.tabIndex == 1">
               <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedEvents.length + '/' + events.length }}</font>
+            </div>
+            <div v-else>
+              <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedApprovals.length + '/' + approvals.length }}</font>
             </div>
           </div>
           <div class="mt-0 pr-1">
             <div v-if="settings.tabIndex == 0">
               <b-pagination size="sm" v-model="settings.offers.currentPage" @input="saveSettings" :total-rows="filteredSortedOffers.length" :per-page="settings.offers.pageSize" style="height: 0;"></b-pagination>
             </div>
-            <div v-else>
+            <div v-if="settings.tabIndex == 1">
               <b-pagination size="sm" v-model="settings.events.currentPage" @input="saveSettings" :total-rows="filteredSortedEvents.length" :per-page="settings.events.pageSize" style="height: 0;"></b-pagination>
+            </div>
+            <div v-else>
+              <b-pagination size="sm" v-model="settings.approvals.currentPage" @input="saveSettings" :total-rows="filteredSortedApprovals.length" :per-page="settings.approvals.pageSize" style="height: 0;"></b-pagination>
             </div>
           </div>
           <div class="mt-0 pl-1">
             <div v-if="settings.tabIndex == 0">
               <b-form-select size="sm" v-model="settings.offers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
-            <div v-else>
+            <div v-if="settings.tabIndex == 1">
               <b-form-select size="sm" v-model="settings.events.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+            </div>
+            <div v-else>
+              <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
           </div>
         </div>
@@ -237,7 +254,12 @@ const Agent = {
           </b-table>
         </b-card>
 
-        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-2">
+        <!-- Approvals -->
+        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-0">
+          {{ approvals }}
+        </b-card>
+
+        <b-card v-if="settings.tabIndex == 3" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
@@ -369,6 +391,12 @@ const Agent = {
           pageSize: 10,
           sortOption: 'txorderdsc',
         },
+        approvals: {
+          filter: null,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
+        },
 
         // TODO: Delete below
         filter: null,
@@ -376,9 +404,12 @@ const Agent = {
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
 
-        version: 6,
+        version: 7,
       },
+
       events: [],
+      approvals: [],
+
       buySellOptions: [
         { value: 0, text: 'Buy' },
         { value: 1, text: 'Sell' },
@@ -662,6 +693,50 @@ const Agent = {
       console.log(now() + " INFO Agent:computed.pagedFilteredSortedOffers - results[0..1]: " + JSON.stringify(this.filteredSortedOffers.slice(0, 2), null, 2));
       return this.filteredSortedOffers.slice((this.settings.offers.currentPage - 1) * this.settings.offers.pageSize, this.settings.offers.currentPage * this.settings.offers.pageSize);
     },
+
+    filteredSortedApprovals() {
+      const results = this.approvals;
+      // console.log(JSON.stringify(results, null, 2));
+      // if (this.settings.sortOption == 'ownertokenagentasc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + a.owner).localeCompare(b.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'ownertokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
+      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
+      //     } else {
+      //       return ('' + b.owner).localeCompare(a.owner);
+      //     }
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentasc') {
+      //   results.sort((a, b) => {
+      //     return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'tokenagentdsc') {
+      //   results.sort((a, b) => {
+      //     return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
+      //   });
+      // } else if (this.settings.sortOption == 'indexasc') {
+      //   results.sort((a, b) => {
+      //     return a.index - b.index;
+      //   });
+      // } else if (this.settings.sortOption == 'indexdsc') {
+      //   results.sort((a, b) => {
+      //     return b.index - a.index;
+      //   });
+      // }
+      return results;
+    },
+    pagedFilteredSortedApprovals() {
+      console.log(now() + " INFO Agent:computed.pagedFilteredSortedApprovals - results[0..1]: " + JSON.stringify(this.filteredSortedApprovals.slice(0, 2), null, 2));
+      return this.filteredSortedApprovals.slice((this.settings.approvals.currentPage - 1) * this.settings.approvals.pageSize, this.settings.approvals.currentPage * this.settings.approvals.pageSize);
+    },
+
   },
   methods: {
     async loadData() {
@@ -673,15 +748,41 @@ const Agent = {
       const network = NETWORKS['' + this.chainId] || {};
       const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
-      const filter = {
+      const tokenApprovalsfilter = {
+        address: null,
+        fromBlock: 0,
+        toBlock: blockNumber,
+        topics: [
+          [
+            // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+            ethers.utils.id("Approval(address,address,uint256)"),
+            // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
+            // ethers.utils.id("Approval(address,address,uint256)"),
+            // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+            ethers.utils.id("ApprovalForAll(address,address,bool)"),
+            // ERC-1155 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+            // ethers.utils.id("ApprovalForAll(address,address,bool)"),
+          ],
+          null,
+          [ '0x000000000000000000000000' + this.settings.tokenAgentAddress.substring(2, 42).toLowerCase() ],
+        ],
+      };
+      console.log(now() + " INFO Agent:methods.loadData - tokenApprovalsfilter: " + JSON.stringify(tokenApprovalsfilter, null, 2));
+      const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
+      // console.log(now() + " INFO Agent:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
+      this.approvals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
+      // console.log(now() + " INFO Agent:methods.loadData - this.approvals: " + JSON.stringify(this.approvals, null, 2));
+      localStorage.tokenAgentAgentApprovals = JSON.stringify(this.approvals);
+
+      const tokenAgentEventsfilter = {
         address: this.settings.tokenAgentAddress,
         fromBlock: 0,
         toBlock: blockNumber,
         topics: [ [], null, null ],
       };
-      const eventLogs = await provider.getLogs(filter);
-      // console.log(now() + " INFO Agent:methods.loadData - eventLogs: " + JSON.stringify(eventLogs, null, 2));
-      this.events = parseTokenAgentEventLogs(eventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+      const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
+      // console.log(now() + " INFO Agent:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
+      this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
       localStorage.tokenAgentAgentEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');
@@ -825,6 +926,9 @@ const Agent = {
         this.settings.currentPage = 1;
         if ('tokenAgentAgentEvents' in localStorage) {
           this.events = JSON.parse(localStorage.tokenAgentAgentEvents);
+        }
+        if ('tokenAgentAgentApprovals' in localStorage) {
+          this.approvals = JSON.parse(localStorage.tokenAgentAgentApprovals);
         }
       }
       // this.loadData(this.settings.tokenAgentAddress);

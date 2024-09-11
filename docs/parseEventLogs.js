@@ -4,7 +4,7 @@
 // ENS: ETH Registrar Controller @ 0x253553366Da8546fC250F225fe3d25d0C782303b deployed Mar-28-2023 11:44:59 AM +UTC
 
 function parseEventLogs(logs, chainId, latestBlockNumber) {
-  // console.log(now() + " INFO functions:parseEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  console.log(now() + " INFO functions:parseEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const erc721Interface = new ethers.utils.Interface(ERC721ABI);
   const erc1155Interface = new ethers.utils.Interface(ERC1155ABI);
   // const oldETHRegistarController1Interface = new ethers.utils.Interface(ENS_OLDETHREGISTRARCONTROLLER1_ABI);

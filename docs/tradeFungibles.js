@@ -848,7 +848,7 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
   },
   methods: {
     async loadData() {
-      console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings));
       // TODO: Later move into data?
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
@@ -856,6 +856,7 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
       const network = NETWORKS['' + this.chainId] || {};
 
       if (network.tokenAgentFactory) {
+        // Get list of valid TokenAgents
         const tokenAgentFactoryEventsfilter = {
           address: network.tokenAgentFactory.address,
           fromBlock: 0,
@@ -863,9 +864,70 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
           topics: [ [], null, null ],
         };
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentFactoryEventLogs: " + JSON.stringify(tokenAgentFactoryEventLogs, null, 2));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentFactoryEventLogs: " + JSON.stringify(tokenAgentFactoryEventLogs, null, 2));
         this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
         localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
+        const tokenAgentsMap = {};
+        for (const record of this.tokenAgentFactoryEvents) {
+          tokenAgentsMap[record.tokenAgent] = { owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp };
+        }
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentsMap: " + JSON.stringify(tokenAgentsMap, null, 2));
+
+        const tokenAgentOffersInvalidatedEventsfilter = {
+          address: null,
+          fromBlock: 0,
+          toBlock: blockNumber,
+          topics: [
+            [
+              // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
+              ethers.utils.id("OffersInvalidated(uint24,uint40)"),
+            ],
+            null,
+            null,
+          ],
+        };
+        const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentOffersInvalidatedEventLogs: " + JSON.stringify(tokenAgentOffersInvalidatedEventLogs, null, 2));
+        const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentOffersInvalidated: " + JSON.stringify(tokenAgentOffersInvalidated, null, 2));
+
+        for (const record of tokenAgentOffersInvalidated) {
+          if (record.contract in tokenAgentsMap) {
+            tokenAgentsMap[record.contract].nonce = record.newNonce;
+            tokenAgentsMap[record.contract].blockNumber = record.blockNumber;
+            tokenAgentsMap[record.contract].timestamp = record.timestamp;
+          }
+        }
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentsMap after invalidations: " + JSON.stringify(tokenAgentsMap, null, 2));
+        //
+        // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+
+
+        // const tokenAgentEventsfilter = {
+        //   address: null,
+        //   fromBlock: 0,
+        //   toBlock: blockNumber,
+        //   topics: [
+        //     [
+        //       // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+        //       ethers.utils.id("Approval(address,address,uint256)"),
+        //       // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
+        //       // ethers.utils.id("Approval(address,address,uint256)"),
+        //       // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+        //       ethers.utils.id("ApprovalForAll(address,address,bool)"),
+        //       // ERC-1155 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+        //       // ethers.utils.id("ApprovalForAll(address,address,bool)"),
+        //     ],
+        //     null,
+        //     [ '0x000000000000000000000000' + this.settings.tokenAgentAddress.substring(2, 42).toLowerCase() ],
+        //   ],
+        // };
+        // const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
+        // // this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        // //
+        // // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+
       }
       // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
@@ -1011,7 +1073,7 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
       return false;
     },
     saveSettings() {
-      console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      // console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {

@@ -48,7 +48,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
 // TokenAgentFactory
 // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
 function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress, tokenAgentFactoryAbi, latestBlockNumber) {
-  console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentFactoryAbi);
   const records = [];
   for (const log of logs) {
@@ -60,7 +60,7 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
         // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
         const [tokenAgent, owner, index, indexByOwner, timestamp] = logData.args;
         eventRecord = {
-          eventType: "NewTokenAgent", owner, index, indexByOwner,
+          eventType: "NewTokenAgent", tokenAgent, owner, index, indexByOwner,
           timestamp,
         };
       } else {
@@ -80,7 +80,7 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
       }
     }
   }
-  console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - records: " + JSON.stringify(records, null, 2));
+  // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - records: " + JSON.stringify(records, null, 2));
   return records;
 }
 
@@ -132,6 +132,6 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
       }
     }
   }
-  console.log(now() + " INFO functions:parseTokenAgentEventLogs - records: " + JSON.stringify(records, null, 2));
+  // console.log(now() + " INFO functions:parseTokenAgentEventLogs - records: " + JSON.stringify(records, null, 2));
   return records;
 }

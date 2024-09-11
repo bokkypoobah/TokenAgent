@@ -364,7 +364,7 @@ describe("TokenAgentFactory", function () {
       await expect(tokenAgent.connect(d.accounts[1]).acceptOwnership())
         .to.emit(tokenAgent, "OwnershipTransferred")
         .withArgs(d.accounts[0].address, d.accounts[1].address, anyValue);
-      expect((await tokenAgent.getTokenTypes([d.weth, d.erc20Token, d.erc721Token, d.erc1155Token, d.accounts[0]])).toString()).to.equal("1,1,2,3,4");
+      expect((await d.tokenAgentFactory.getTokenTypes([d.weth, d.erc20Token, d.erc721Token, d.erc1155Token, d.accounts[0]])).toString()).to.equal("1,1,2,3,4");
     });
 
     it("Test TokenAgent invalid offers", async function () {

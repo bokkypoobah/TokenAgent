@@ -315,13 +315,6 @@ contract TokenInfo {
             _tokenType = TokenType.INVALID;
         }
     }
-
-    function getTokenTypes(Token[] memory tokens) public view returns (TokenType[] memory _tokenTypes) {
-        _tokenTypes = new TokenType[](tokens.length);
-        for (uint i = 0; i < tokens.length; i++) {
-            _tokenTypes[i] = _getTokenType(tokens[i]);
-        }
-    }
 }
 
 /// @notice User owned TokenAgent
@@ -776,7 +769,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 }
 
 /// @notice TokenAgent factory
-contract TokenAgentFactory is CloneFactory {
+contract TokenAgentFactory is CloneFactory, TokenInfo {
 
     struct TokenAgentRecord {
         TokenAgent tokenAgent;
@@ -843,6 +836,12 @@ contract TokenAgentFactory is CloneFactory {
         for (uint i = start; i < end; i++) {
             uint index = Index.unwrap(indices[i]);
             results[k++] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
+        }
+    }
+    function getTokenTypes(Token[] memory tokens) public view returns (TokenType[] memory _tokenTypes) {
+        _tokenTypes = new TokenType[](tokens.length);
+        for (uint i = 0; i < tokens.length; i++) {
+            _tokenTypes[i] = _getTokenType(tokens[i]);
         }
     }
 }

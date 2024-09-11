@@ -73,17 +73,17 @@ const TradeFungibles = {
           </template>
           <b-tab no-body active>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent offers'">Offers</span>
+              <span v-b-popover.hover.ds500="'Current market'">Market</span>
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Agent events'">Events</span>
+              <span v-b-popover.hover.ds500="'Trades'">Trades</span>
             </template>
           </b-tab>
           <b-tab no-body>
             <template #title>
-              <span v-b-popover.hover.ds500="'Token Contract Approvals to this Token Agent'">Approvals</span>
+              <span v-b-popover.hover.ds500="'Events'">Events</span>
             </template>
           </b-tab>
           <b-tab no-body>
@@ -847,6 +847,9 @@ const TradeFungibles = {
       const blockNumber = block && block.number || "latest";
       const network = NETWORKS['' + this.chainId] || {};
 
+      if (network.tokenAgentFactory) {
+        
+      }
       // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
       return;

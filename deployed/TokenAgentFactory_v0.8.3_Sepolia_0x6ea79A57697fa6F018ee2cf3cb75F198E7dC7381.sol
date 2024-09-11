@@ -1,3 +1,7 @@
+/**
+ *Submitted for verification at Etherscan.io on 2024-09-11
+*/
+
 pragma solidity ^0.8.27;
 
 // ----------------------------------------------------------------------------
@@ -7,8 +11,8 @@ pragma solidity ^0.8.27;
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent template 0x8aA33A7899FCC8eA5fBe6A608A109c3893A1B8b2
-// - TokenAgentFactory 0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381
+// - TokenAgent template
+// - TokenAgentFactory
 //
 // TODO:
 // - FILL for ERC-721/1155?

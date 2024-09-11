@@ -30,18 +30,18 @@ const Welcome = {
                 <h6>Contracts</h6>
                 <ul>
                   <li>
-                    TokenAgentFactory v0.8.1:
+                    TokenAgentFactory v0.8.3:
                       <span v-if="networkSupported">
-                        <b-link :href="explorer + 'address/0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914#code'" target="_blank">0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914</b-link>
+                        <b-link :href="explorer + 'address/0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381#code'" target="_blank">0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381</b-link>
                       </span>
                       <span v-else-if="networkSupported === false">
                         Not Supported
                       </span>
                   </li>
                   <li>
-                    TokenAgent v0.8.1 template for cloning:
+                    TokenAgent v0.8.3 template for cloning:
                       <span v-if="networkSupported">
-                        <b-link :href="explorer + 'address/0x35e401362D24a2243b9a441542a4D4FFe50db1bF#code'" target="_blank">0x0514E4402Fe93b6bA0B014b30E5b715eD0943c25</b-link>
+                        <b-link :href="explorer + 'address/0x8aA33A7899FCC8eA5fBe6A608A109c3893A1B8b2#code'" target="_blank">0x8aA33A7899FCC8eA5fBe6A608A109c3893A1B8b2</b-link>
                       </span>
                       <span v-else-if="networkSupported === false">
                         Not Supported

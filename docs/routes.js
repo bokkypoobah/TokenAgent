@@ -11,6 +11,10 @@ const routes = [{
   //   component: Account,
   //   name: 'Account',
   }, {
+    path: '/tradeFungibles',
+    component: TradeFungibles,
+    name: 'TradeFungibles',
+  }, {
     path: '/agents',
     component: Agents,
     name: 'Agents',

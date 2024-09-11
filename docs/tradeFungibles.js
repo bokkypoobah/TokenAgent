@@ -20,7 +20,7 @@ const TradeFungibles = {
                   <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts with transfers permitted</b-dropdown-item>
                   <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
                     <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
-                    <b-dropdown-item @click="settings.tokenContractAddress = item.tokenContract; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
+                    <b-dropdown-item @click="settings.tokenContractAddress = item.tokenContract; settings.symbol = item.symbol; settings.name = item.name; settings.decimals = item.decimals; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
                   </div>
                 </b-dropdown>
               </div>
@@ -35,13 +35,22 @@ const TradeFungibles = {
               </div> -->
               <div class="mt-0 pr-1" style="width: 23.0rem;">
                 <font size="-1">
-                  <b-link :href="explorer + 'address/' + settings.tokenAgentOwner" v-b-popover.hover.ds500="'Token Agent owner ' + settings.tokenAgentOwner" target="_blank">
+                  <b-link v-if="false" :href="explorer + 'address/' + settings.tokenAgentOwner" v-b-popover.hover.ds500="'Token Agent owner ' + settings.tokenAgentOwner" target="_blank">
                     <b-badge v-if="settings.tokenAgentOwner" variant="link" class="m-0 mt-1">
                       {{ settings.tokenAgentOwner.substring(0, 10) + '...' + settings.tokenAgentOwner.slice(-8) }}
                     </b-badge>
                   </b-link>
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Nonce'" class="m-0 mt-1">
+                  <b-badge v-if="false" variant="light" v-b-popover.hover.ds500="'Nonce'" class="m-0 mt-1">
                     {{ nonce }}
+                  </b-badge>
+                  <b-badge v-if="settings.symbol" variant="light" v-b-popover.hover.ds500="'Symbol'" class="m-0 mt-1">
+                    {{ settings.symbol }}
+                  </b-badge>
+                  <b-badge v-if="settings.name" variant="light" v-b-popover.hover.ds500="'Name'" class="m-0 mt-1">
+                    {{ settings.name }}
+                  </b-badge>
+                  <b-badge v-if="settings.decimals" variant="light" v-b-popover.hover.ds500="'Decimals'" class="m-0 mt-1">
+                    {{ settings.decimals }}
                   </b-badge>
                   <!-- <b-badge variant="light" v-b-popover.hover.ds500="contract.decimals != null && contract.totalSupply && ('symbol: ' + contract.symbol + ', name: ' + contract.name + ', decimals: ' + contract.decimals + ', totalSupply: ' + formatDecimals(contract.totalSupply, contract.decimals) + ' (' + formatNumber(contract.totalSupply) + ')') || ''" class="m-0 mt-1 ml-2 mr-1">
                     {{ (contract.contractType && ('ERC-' + contract.contractType) || 'Enter token contract address and click [Retrieve]') }}
@@ -84,7 +93,7 @@ const TradeFungibles = {
           </b-tab>
         </b-tabs>
 
-        <div v-if="settings.tabIndex == 0 || settings.tabIndex == 1 || settings.tabIndex == 2" class="d-flex flex-wrap m-0 mt-1 p-0">
+        <div v-if="false && (settings.tabIndex == 0 || settings.tabIndex == 1 || settings.tabIndex == 2)" class="d-flex flex-wrap m-0 mt-1 p-0">
           <div class="mt-0 flex-grow-1">
           </div>
           <div v-if="false && sync.section == null" class="mt-0 pr-1">
@@ -154,7 +163,7 @@ const TradeFungibles = {
         </div>
 
         <!-- Offers -->
-        <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
+        <b-card v-if="false && settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <!-- <b-table ref="offersTable" small fixed striped responsive hover :fields="fields" :items="pagedFilteredSortedItems" show-empty head-variant="light" class="m-0 mt-1"> -->
           <b-table ref="offersTable" small fixed striped responsive hover :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
@@ -234,7 +243,7 @@ const TradeFungibles = {
         </b-card>
 
         <!-- Events -->
-        <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
+        <b-card v-if="false && settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <b-table ref="offersTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
               <font size="-1">
@@ -303,7 +312,7 @@ const TradeFungibles = {
         </b-card>
 
         <!-- Approvals -->
-        <b-card v-if="settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-0">
+        <b-card v-if="false && settings.tabIndex == 2" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <b-table ref="approvalsTable" small fixed striped responsive hover :fields="approvalsFields" :items="pagedFilteredSortedApprovals" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
               <font size="-1">
@@ -367,7 +376,7 @@ const TradeFungibles = {
           </b-table>
         </b-card>
 
-        <b-card v-if="settings.tabIndex == 3" class="m-0 p-0 border-0" body-class="m-0 p-2">
+        <b-card v-if="false && settings.tabIndex == 3" class="m-0 p-0 border-0" body-class="m-0 p-2">
           <b-card bg-variant="light">
             <b-form-group label-cols-lg="2" label="Add Offers" label-size="lg" label-class="font-weight-bold pt-0" class="mb-0">
 
@@ -471,6 +480,9 @@ const TradeFungibles = {
         tabIndex: 0,
 
         tokenContractAddress: null,
+        symbol: null,
+        name: null,
+        decimals: null,
 
         tokenAgentAddress: null,
         tokenAgentOwner: null,
@@ -834,7 +846,7 @@ const TradeFungibles = {
       const block = await provider.getBlock();
       const blockNumber = block && block.number || "latest";
       const network = NETWORKS['' + this.chainId] || {};
-      
+
       // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
       return;
@@ -862,7 +874,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
       this.approvals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
       // console.log(now() + " INFO TradeFungibles:methods.loadData - this.approvals: " + JSON.stringify(this.approvals, null, 2));
-      localStorage.tradeFungiblesAgentApprovals = JSON.stringify(this.approvals);
+      localStorage.tradeFungiblesApprovals = JSON.stringify(this.approvals);
 
       const tokenAgentEventsfilter = {
         address: this.settings.tokenAgentAddress,
@@ -874,7 +886,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
       this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
-      localStorage.tradeFungiblesAgentEvents = JSON.stringify(this.events);
+      localStorage.tradeFungiblesEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');
     },
     async addOffer() {
@@ -980,7 +992,7 @@ const TradeFungibles = {
     },
     saveSettings() {
       console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.tradeFungiblesAgentSettings = JSON.stringify(this.settings);
+      localStorage.tradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -1009,16 +1021,16 @@ const TradeFungibles = {
   mounted() {
     // console.log(now() + " DEBUG TradeFungibles:mounted - $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('tradeFungiblesAgentSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.tradeFungiblesAgentSettings);
+    if ('tradeFungiblesSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.tradeFungiblesSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
-        // if ('tradeFungiblesAgentEvents' in localStorage) {
-        //   this.events = JSON.parse(localStorage.tradeFungiblesAgentEvents);
+        // if ('tradeFungiblesEvents' in localStorage) {
+        //   this.events = JSON.parse(localStorage.tradeFungiblesEvents);
         // }
-        // if ('tradeFungiblesAgentApprovals' in localStorage) {
-        //   this.approvals = JSON.parse(localStorage.tradeFungiblesAgentApprovals);
+        // if ('tradeFungiblesApprovals' in localStorage) {
+        //   this.approvals = JSON.parse(localStorage.tradeFungiblesApprovals);
         // }
       }
       // this.loadData(this.settings.tokenAgentAddress);

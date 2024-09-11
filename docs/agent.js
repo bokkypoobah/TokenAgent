@@ -318,10 +318,10 @@ const Agent = {
                 </b-link>
               </font>
             </template>
-            <template #cell(token)="data">
+            <template #cell(contract)="data">
               <font size="-1">
-                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
-                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                <b-link size="sm" :href="explorer + 'contract/' + data.item.contract" variant="link" v-b-popover.hover.ds500="data.item.contract" target="_blank">
+                  {{ data.item.contract.substring(0, 10) + '...' + data.item.contract.slice(-8) }}
                 </b-link>
               </font>
             </template>
@@ -560,7 +560,7 @@ const Agent = {
       approvalsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'contract', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         { key: 'eventType', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
         { key: 'owner', label: 'Owner', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         { key: 'spenderOperator', label: 'Spender / Operator', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },

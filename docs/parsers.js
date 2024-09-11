@@ -34,7 +34,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
           logIndex: parseInt(log.logIndex),
           txIndex: parseInt(log.transactionIndex),
           txHash: log.transactionHash,
-          token: log.address,
+          contract: log.address,
           ...eventRecord,
           confirmations: latestBlockNumber - log.blockNumber,
         });

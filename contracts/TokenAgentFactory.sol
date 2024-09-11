@@ -377,10 +377,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     Offer[] public offers;
 
     event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-    event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-    event OfferUpdated(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-    event Traded(Index index, Account indexed taker, Account indexed maker, Token indexed token, TokenType tokenType, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+    event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
@@ -482,7 +482,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.useds.push();
                 }
             }
-            emit Offered(Index.wrap(uint32(offers.length - 1)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            emit Offered(Index.wrap(uint32(offers.length - 1)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -536,7 +536,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
                 offer.tokenss = input.tokenss;
             }
-            emit OfferUpdated(Index.wrap(uint32(index)), Account.wrap(msg.sender), offer.token, tokenType, offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            emit OfferUpdated(Index.wrap(uint32(index)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -712,7 +712,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     takerToOwnerTotal += price;
                 }
             }
-            emit Traded(input.index, Account.wrap(msg.sender), owner, offer.token, tokenType, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            emit Traded(input.index, offer.token, tokenType, Account.wrap(msg.sender), owner, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
         if (takerToOwnerTotal < ownerToTakerTotal) {
             uint diff = ownerToTakerTotal - takerToOwnerTotal;

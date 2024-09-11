@@ -864,7 +864,6 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
           topics: [ [], null, null ],
         };
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentFactoryEventLogs: " + JSON.stringify(tokenAgentFactoryEventLogs, null, 2));
         this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
         localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
         const tokenAgentsMap = {};
@@ -873,6 +872,7 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         }
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentsMap: " + JSON.stringify(tokenAgentsMap, null, 2));
 
+        // Get latest nonces
         const tokenAgentOffersInvalidatedEventsfilter = {
           address: null,
           fromBlock: 0,
@@ -887,10 +887,7 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
           ],
         };
         const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentOffersInvalidatedEventLogs: " + JSON.stringify(tokenAgentOffersInvalidatedEventLogs, null, 2));
         const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentOffersInvalidated: " + JSON.stringify(tokenAgentOffersInvalidated, null, 2));
-
         for (const record of tokenAgentOffersInvalidated) {
           if (record.contract in tokenAgentsMap) {
             tokenAgentsMap[record.contract].nonce = record.newNonce;

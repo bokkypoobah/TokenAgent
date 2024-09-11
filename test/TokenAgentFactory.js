@@ -62,8 +62,9 @@ describe("TokenAgentFactory", function () {
         const log = d.tokenAgents[1].interface.parseLog(event);
         if (log.name == "Offered") {
           console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
-            ', maker: ' + log.args[1].substring(0, 10) + ', token: ' + log.args[2].substring(0, 10) +
-            ', tokenType: ' + (log.args[3] == 1 ? '20' : (log.args[3] == 2 ? '721' : '1155')) +
+            ', token: ' + log.args[1].substring(0, 10) +
+            ', tokenType: ' + (log.args[2] == 1 ? '20' : (log.args[2] == 2 ? '721' : '1155')) +
+            ', maker: ' + log.args[3].substring(0, 10) +
             ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
             ', expiry: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
             ', count: ' + log.args[6] + ', nonce: ' + log.args[7] +
@@ -74,9 +75,10 @@ describe("TokenAgentFactory", function () {
             ')');
         } else if (log.name == "Traded") {
           console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
-            ', taker: ' + log.args[1].substring(0, 10) + ', maker: ' + log.args[2].substring(0, 10) +
-            ', token: ' + log.args[3].substring(0, 10) +
-            ', tokenType: ' + (log.args[4] == 1 ? '20' : (log.args[4] == 2 ? '721' : '1155')) +
+            ', token: ' + log.args[1].substring(0, 10) +
+            ', tokenType: ' + (log.args[2] == 1 ? '20' : (log.args[2] == 2 ? '721' : '1155')) +
+            ', taker: ' + log.args[3].substring(0, 10) +
+            ', maker: ' + log.args[4].substring(0, 10) +
             ', makerBuySell: ' + (log.args[5] ? 'SELL' : 'BUY') +
             ', prices: ' + JSON.stringify(log.args[6].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[7].map(e => parseInt(e.toString()))) +

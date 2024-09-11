@@ -179,7 +179,9 @@ const Agent = {
             </template>
             <template #cell(token)="data">
               <font size="-1">
-                {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
+                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                </b-link>
               </font>
             </template>
             <template #cell(tokenType)="data">

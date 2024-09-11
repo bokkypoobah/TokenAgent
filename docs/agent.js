@@ -274,7 +274,7 @@ const Agent = {
                 <b-form-input size="sm" type="number" id="addoffers-price" v-model.trim="settings.addOffers.price" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 
-              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing == 1" label="Tokens:" label-for="addoffers-tokens" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.tokens || validNumber(settings.addOffers.tokens, settings.addOffers.decimals)" :invalid-feedback="'Invalid tokens'" :description="'Enter number to tokens to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
+              <b-form-group v-if="settings.addOffers.type == 20 && settings.addOffers.pricing == 1" label="Tokens:" label-for="addoffers-tokens" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!settings.addOffers.tokens || validNumber(settings.addOffers.tokens, settings.addOffers.decimals)" :invalid-feedback="'Invalid tokens'" :description="'Enter number of tokens to ' + settings.addOffers.decimals + ' decimal places'" class="mx-0 my-1 p-0">
                 <b-form-input size="sm" type="number" id="addoffers-tokens" v-model.trim="settings.addOffers.tokens" @change="saveSettings" class="w-25"></b-form-input>
               </b-form-group>
 

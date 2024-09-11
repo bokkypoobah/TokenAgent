@@ -67,7 +67,7 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
         // event Offered(Index index, Account indexed maker, Token indexed token, TokenType tokenType, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
         const [index, maker, token, tokenType, buySell, expiry, count, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
         eventRecord = {
-          type: "Offered", index, maker, token, tokenType, buySell, expiry, count, nonce,
+          eventType: "Offered", index, maker, token, tokenType, buySell, expiry, count, nonce,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
           tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
@@ -76,7 +76,7 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
       } else if (logData.eventFragment.name == "OffersInvalidated") {
         // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
         const [newNonce, timestamp] = logData.args;
-        eventRecord = { type: "OffersInvalidated", newNonce, timestamp };
+        eventRecord = { eventType: "OffersInvalidated", newNonce, timestamp };
       } else {
         console.log(now() + " INFO functions:parseTokenAgentEventLogs - UNHANDLED log: " + JSON.stringify(log));
       }

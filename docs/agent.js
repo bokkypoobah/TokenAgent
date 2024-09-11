@@ -243,13 +243,61 @@ const Agent = {
             </template>
             <template #cell(when)="data">
               <font size="-1">
-                {{ formatTimestamp(data.item.timestamp) }}
+                <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="data.item.blockNumber + ':' + data.item.txIndex + '.' + data.item.logIndex" target="_blank">
+                  {{ formatTimestamp(data.item.timestamp) }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(eventType)="data">
+              <font size="-1">
+                <!-- <b-badge variant="light" class="m-0 p-0"> -->
+                  {{ data.item.eventType }}
+                <!-- </b-badge> -->
+              </font>
+            </template>
+            <template #cell(taker)="data">
+              <font v-if="data.item.taker" size="-1">
+                <b-link size="sm" :href="explorer + 'address/' + data.item.taker" variant="link" v-b-popover.hover.ds500="data.item.taker" target="_blank">
+                  {{ data.item.taker.substring(0, 10) + '...' + data.item.taker.slice(-8) }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(maker)="data">
+              <font v-if="data.item.maker" size="-1">
+                <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
+                  {{ data.item.maker.substring(0, 10) + '...' + data.item.maker.slice(-8) }}
+                </b-link>
+              </font>
+            </template>
+            <template #cell(token)="data">
+              <font v-if="data.item.token" size="-1">
+                <b-link size="sm" :href="explorer + 'token/' + data.item.token" variant="link" v-b-popover.hover.ds500="data.item.token" target="_blank">
+                  {{ data.item.token.substring(0, 10) + '...' + data.item.token.slice(-8) }}
+                </b-link>
               </font>
             </template>
             <template #cell(info)="data">
-              <font size="-2"><pre>
+              <div v-if="data.item.eventType == 'Offered'">
+                <font size="-1">
+                  index: {{ data.item.index }},
+                  type: {{ data.item.tokenType == 1 ? 'ERC-20' : (data.item.tokenType == 2 ? 'ERC-721' : 'ERC-1155') }},
+                  buySell: {{ data.item.buySell == 0 ? 'Buy' : 'Sell' }},
+                  expiry: {{ data.item.expiry == 0 ? '(no expiry)' : formatTimestamp(data.item.expiry) }},
+                  count: {{ data.item.count }},
+                  nonce: {{ data.item.nonce }},
+                  prices: [{{ data.item.prices.map(e => formatDecimals(e, 18)).join(', ') }}]
+                  tokenIds: [{{ data.item.tokenIds.map(e => parseInt(e)).join(', ') }}]
+                  tokenss: [{{ data.item.tokenss.map(e => formatDecimals(e, 18)).join(', ') }}]
+                </font>
+              </div>
+              <div v-else-if="data.item.eventType == 'OffersInvalidated'">
+                <font size="-1">
+                  newNonce: {{ data.item.newNonce }}
+                </font>
+                <!-- <font size="-2"><pre>
 {{ JSON.stringify(data.item, null, 2) }}
-              </pre></font>
+                </pre></font> -->
+              </div>
             </template>
           </b-table>
         </b-card>
@@ -502,9 +550,12 @@ const Agent = {
       ],
       eventsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
-        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'type', label: 'Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 65%;', tdClass: 'text-left' },
+        { key: 'when', label: 'When', sortable: false, thStyle: 'width: 12%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
+        { key: 'taker', label: 'Taker', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
+        { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 12%;', tdClass: 'text-left' },
+        { key: 'eventType', label: 'Event Type', sortable: false, thStyle: 'width: 10%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 37%;', tdClass: 'text-left' },
       ],
       approvalsFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
@@ -666,7 +717,7 @@ const Agent = {
     },
 
     nonce() {
-      const events = this.events.filter(e => e.type == "OffersInvalidated");
+      const events = this.events.filter(e => e.eventType == "OffersInvalidated");
       if (events.length > 0) {
         return events[events.length - 1].newNonce;
       }
@@ -675,40 +726,23 @@ const Agent = {
 
     filteredSortedEvents() {
       const results = this.events;
-      // console.log(JSON.stringify(results, null, 2));
-      // if (this.settings.sortOption == 'ownertokenagentasc') {
-      //   results.sort((a, b) => {
-      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
-      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
-      //     } else {
-      //       return ('' + a.owner).localeCompare(b.owner);
-      //     }
-      //   });
-      // } else if (this.settings.sortOption == 'ownertokenagentdsc') {
-      //   results.sort((a, b) => {
-      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
-      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
-      //     } else {
-      //       return ('' + b.owner).localeCompare(a.owner);
-      //     }
-      //   });
-      // } else if (this.settings.sortOption == 'tokenagentasc') {
-      //   results.sort((a, b) => {
-      //     return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
-      //   });
-      // } else if (this.settings.sortOption == 'tokenagentdsc') {
-      //   results.sort((a, b) => {
-      //     return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
-      //   });
-      // } else if (this.settings.sortOption == 'indexasc') {
-      //   results.sort((a, b) => {
-      //     return a.index - b.index;
-      //   });
-      // } else if (this.settings.sortOption == 'indexdsc') {
-      //   results.sort((a, b) => {
-      //     return b.index - a.index;
-      //   });
-      // }
+      if (this.settings.events.sortOption == 'txorderasc') {
+        results.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return a.logIndex - b.logIndex;
+          } else {
+            return a.blockNumber - b.blockNumber;
+          }
+        });
+      } else if (this.settings.events.sortOption == 'txorderdsc') {
+        results.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return b.logIndex - a.logIndex;
+          } else {
+            return b.blockNumber - a.blockNumber;
+          }
+        });
+      }
       return results;
     },
     pagedFilteredSortedEvents() {
@@ -717,45 +751,27 @@ const Agent = {
     },
 
     offers() {
-      const results = this.events.filter(e => e.type == "Offered");
-      return results;
+      return this.events.filter(e => e.eventType == "Offered");
     },
     filteredSortedOffers() {
       const results = this.offers;
-      // console.log(JSON.stringify(results, null, 2));
-      // if (this.settings.sortOption == 'ownertokenagentasc') {
-      //   results.sort((a, b) => {
-      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
-      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
-      //     } else {
-      //       return ('' + a.owner).localeCompare(b.owner);
-      //     }
-      //   });
-      // } else if (this.settings.sortOption == 'ownertokenagentdsc') {
-      //   results.sort((a, b) => {
-      //     if (('' + a.owner).localeCompare(b.owner) == 0) {
-      //       return ('' + a.transferAgent).localeCompare(b.transferAgent);
-      //     } else {
-      //       return ('' + b.owner).localeCompare(a.owner);
-      //     }
-      //   });
-      // } else if (this.settings.sortOption == 'tokenagentasc') {
-      //   results.sort((a, b) => {
-      //     return ('' + a.tokenAgent).localeCompare(b.tokenAgent);
-      //   });
-      // } else if (this.settings.sortOption == 'tokenagentdsc') {
-      //   results.sort((a, b) => {
-      //     return ('' + b.tokenAgent).localeCompare(a.tokenAgent);
-      //   });
-      // } else if (this.settings.sortOption == 'indexasc') {
-      //   results.sort((a, b) => {
-      //     return a.index - b.index;
-      //   });
-      // } else if (this.settings.sortOption == 'indexdsc') {
-      //   results.sort((a, b) => {
-      //     return b.index - a.index;
-      //   });
-      // }
+      if (this.settings.offers.sortOption == 'txorderasc') {
+        results.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return a.logIndex - b.logIndex;
+          } else {
+            return a.blockNumber - b.blockNumber;
+          }
+        });
+      } else if (this.settings.offers.sortOption == 'txorderdsc') {
+        results.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return b.logIndex - a.logIndex;
+          } else {
+            return b.blockNumber - a.blockNumber;
+          }
+        });
+      }
       return results;
     },
     pagedFilteredSortedOffers() {

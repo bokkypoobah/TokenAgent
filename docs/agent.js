@@ -40,7 +40,9 @@ const Agent = {
                       {{ settings.tokenAgentOwner.substring(0, 10) + '...' + settings.tokenAgentOwner.slice(-8) }}
                     </b-badge>
                   </b-link>
-
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Nonce'" class="m-0 mt-1">
+                    {{ nonce }}
+                  </b-badge>
                   <!-- <b-badge variant="light" v-b-popover.hover.ds500="contract.decimals != null && contract.totalSupply && ('symbol: ' + contract.symbol + ', name: ' + contract.name + ', decimals: ' + contract.decimals + ', totalSupply: ' + formatDecimals(contract.totalSupply, contract.decimals) + ' (' + formatNumber(contract.totalSupply) + ')') || ''" class="m-0 mt-1 ml-2 mr-1">
                     {{ (contract.contractType && ('ERC-' + contract.contractType) || 'Enter token contract address and click [Retrieve]') }}
                   </b-badge>
@@ -203,7 +205,12 @@ const Agent = {
             </template>
             <template #cell(nonce)="data">
               <font size="-1">
-                {{ data.item.nonce }}
+                <div v-if="data.item.nonce < nonce" v-b-popover.hover.ds500="'Invalidated. Latest nonce is ' + nonce">
+                  <strike>{{ data.item.nonce }}</strike>
+                </div>
+                <div v-else>
+                  {{ data.item.nonce }}
+                </div>
               </font>
             </template>
           </b-table>
@@ -556,6 +563,14 @@ const Agent = {
     pagedFilteredSortedItems() {
       // console.log(now() + " INFO Agent:computed.pagedFilteredSortedItems - results[0..1]: " + JSON.stringify(this.filteredSortedItems.slice(0, 2), null, 2));
       return this.filteredSortedItems.slice((this.settings.currentPage - 1) * this.settings.pageSize, this.settings.currentPage * this.settings.pageSize);
+    },
+
+    nonce() {
+      const events = this.events.filter(e => e.type == "OffersInvalidated");
+      if (events.length > 0) {
+        return events[events.length - 1].newNonce;
+      }
+      return 0;
     },
 
     filteredSortedEvents() {

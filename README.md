@@ -79,6 +79,12 @@ List of offers added by the Token Agent owner
 
 <kbd><img src="images/Screenshot_Agent_Offers_20240911.png" width="600"/></kbd>
 
+<br />
+
+All offers invalidated after the Token Agent owner call's `invalidateOffers()` to increase the `nonce`
+
+<kbd><img src="images/Screenshot_Agent_OffersInvalidated_20240911.png" width="600"/></kbd>
+
 
 ##### Contract
 

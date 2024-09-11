@@ -412,7 +412,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         super.initOwned(owner);
         weth = _weth;
     }
-    function invalidateOrders() external onlyOwner {
+    function invalidateOffers() external onlyOwner {
         nonce = Nonce.wrap(Nonce.unwrap(nonce) + 1);
         emit OffersInvalidated(nonce, Unixtime.wrap(uint40(block.timestamp)));
     }

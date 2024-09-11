@@ -24,8 +24,12 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
           tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
-          timestamp
+          timestamp,
         };
+      } else if (logData.eventFragment.name == "OffersInvalidated") {
+        // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
+        const [newNonce, timestamp] = logData.args;
+        eventRecord = { type: "OffersInvalidated", newNonce, timestamp };
       } else {
         console.log(now() + " INFO functions:parseTokenAgentEventLogs - UNHANDLED log: " + JSON.stringify(log));
       }

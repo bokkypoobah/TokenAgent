@@ -25,10 +25,10 @@ const TradeFungibles = {
                 </b-dropdown>
               </div>
               <div class="mt-0 pr-1">
-                <b-button size="sm" :disabled="!validAddress(settings.tokenAgentAddress)" :href="explorer + 'address/' + settings.tokenAgentAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                <b-button size="sm" :disabled="!validAddress(settings.tokenContractAddress)" :href="explorer + 'address/' + settings.tokenContractAddress + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
               </div>
               <div class="mt-0 pr-1">
-                <b-button size="sm" :disabled="!networkSupported || sync.completed != null || !validAddress(settings.tokenAgentAddress)" @click="loadData(settings.tokenAgentAddress);" variant="primary">Retrieve</b-button>
+                <b-button size="sm" :disabled="!networkSupported || sync.completed != null || !validAddress(settings.tokenContractAddress)" @click="loadData(settings.tokenContractAddress);" variant="primary">Retrieve</b-button>
               </div>
               <!-- <div class="mt-0 pr-1">
                 <b-button :disabled="!settings.contract || !validAddress(settings.contract)" @click="copyToClipboard(settings.contract);" variant="link" v-b-popover.hover.ds500="'Copy ERC-20 contract address to clipboard'" class="m-0 ml-2 p-0"><b-icon-clipboard shift-v="+1" font-scale="1.1"></b-icon-clipboard></b-button>
@@ -834,8 +834,10 @@ const TradeFungibles = {
       const block = await provider.getBlock();
       const blockNumber = block && block.number || "latest";
       const network = NETWORKS['' + this.chainId] || {};
-      const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
+      
+      // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
+      return;
       const tokenApprovalsfilter = {
         address: null,
         fromBlock: 0,

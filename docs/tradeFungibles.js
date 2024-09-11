@@ -7,8 +7,8 @@ const TradeFungibles = {
           <template #tabs-start>
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pr-0" style="width: 24.0rem;">
-                <b-form-group :state="!settings.tokenAgentAddress || validAddress(settings.tokenAgentAddress)" :invalid-feedback="'Invalid address'" class="m-0 p-0">
-                  <b-form-input type="text" size="sm" id="explorer-tokenAgentAddress" v-model="settings.tokenAgentAddress" @change="saveSettings(); loadData(settings.contract);" placeholder="Token agent address, or select from dropdown"></b-form-input>
+                <b-form-group label-for="explorer-tokencontractaddress" :state="!settings.tokenContractAddress || validAddress(settings.tokenContractAddress)" :invalid-feedback="'Invalid address'" class="m-0 p-0">
+                  <b-form-input type="text" size="sm" id="explorer-tokencontractaddress" v-model="settings.tokenContractAddress" @change="saveSettings(); loadData(settings.tokenContractAddress);" placeholder="Token contract address, or select from dropdown"></b-form-input>
                 </b-form-group>
               </div>
               <!-- TODO WIP -->
@@ -17,10 +17,10 @@ const TradeFungibles = {
               </div> -->
               <div class="mt-0 pr-0">
                 <b-dropdown size="sm" id="dropdown-left" text="" variant="link" v-b-popover.hover.ds500="'Existing Token Agents'" class="m-0 ml-1 p-0">
-                  <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
-                  <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
+                  <b-dropdown-item v-if="tokenContractsDropdownOptions.length == 0" disabled>No Token contracts with transfers permitted</b-dropdown-item>
+                  <div v-for="(item, index) of tokenContractsDropdownOptions" v-bind:key="index">
                     <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
-                    <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; settings.tokenAgentOwner = item.owner; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                    <b-dropdown-item @click="settings.tokenContractAddress = item.tokenContract; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenContract.substring(0, 8) + '...' + item.tokenContract.slice(-6) + ' ' + item.symbol + ' ' + item.name + ' ' + (item.decimals != null ? parseInt(item.decimals) : '') }}</b-dropdown-item>
                   </div>
                 </b-dropdown>
               </div>

@@ -857,7 +857,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
       this.approvals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
       // console.log(now() + " INFO TradeFungibles:methods.loadData - this.approvals: " + JSON.stringify(this.approvals, null, 2));
-      localStorage.tokenAgentAgentApprovals = JSON.stringify(this.approvals);
+      localStorage.tradeFungiblesAgentApprovals = JSON.stringify(this.approvals);
 
       const tokenAgentEventsfilter = {
         address: this.settings.tokenAgentAddress,
@@ -869,7 +869,7 @@ const TradeFungibles = {
       // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
       this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
-      localStorage.tokenAgentAgentEvents = JSON.stringify(this.events);
+      localStorage.tradeFungiblesAgentEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');
     },
     async addOffer() {
@@ -975,7 +975,7 @@ const TradeFungibles = {
     },
     saveSettings() {
       console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
-      localStorage.tokenAgentAgentSettings = JSON.stringify(this.settings);
+      localStorage.tradeFungiblesAgentSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {
       store.dispatch('syncOptions/viewSyncOptions');
@@ -1004,17 +1004,17 @@ const TradeFungibles = {
   mounted() {
     // console.log(now() + " DEBUG TradeFungibles:mounted - $route: " + JSON.stringify(this.$route.params));
     store.dispatch('data/restoreState');
-    if ('tokenAgentAgentSettings' in localStorage) {
-      const tempSettings = JSON.parse(localStorage.tokenAgentAgentSettings);
+    if ('tradeFungiblesAgentSettings' in localStorage) {
+      const tempSettings = JSON.parse(localStorage.tradeFungiblesAgentSettings);
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         this.settings.currentPage = 1;
-        if ('tokenAgentAgentEvents' in localStorage) {
-          this.events = JSON.parse(localStorage.tokenAgentAgentEvents);
-        }
-        if ('tokenAgentAgentApprovals' in localStorage) {
-          this.approvals = JSON.parse(localStorage.tokenAgentAgentApprovals);
-        }
+        // if ('tradeFungiblesAgentEvents' in localStorage) {
+        //   this.events = JSON.parse(localStorage.tradeFungiblesAgentEvents);
+        // }
+        // if ('tradeFungiblesAgentApprovals' in localStorage) {
+        //   this.approvals = JSON.parse(localStorage.tradeFungiblesAgentApprovals);
+        // }
       }
       // this.loadData(this.settings.tokenAgentAddress);
     }

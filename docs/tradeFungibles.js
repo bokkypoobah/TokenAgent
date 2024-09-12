@@ -900,28 +900,25 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
 
 
-        // const tokenAgentEventsfilter = {
-        //   address: null,
-        //   fromBlock: 0,
-        //   toBlock: blockNumber,
-        //   topics: [
-        //     [
-        //       // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
-        //       ethers.utils.id("Approval(address,address,uint256)"),
-        //       // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
-        //       // ethers.utils.id("Approval(address,address,uint256)"),
-        //       // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-        //       ethers.utils.id("ApprovalForAll(address,address,bool)"),
-        //       // ERC-1155 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-        //       // ethers.utils.id("ApprovalForAll(address,address,bool)"),
-        //     ],
-        //     null,
-        //     [ '0x000000000000000000000000' + this.settings.tokenAgentAddress.substring(2, 42).toLowerCase() ],
-        //   ],
-        // };
-        // const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
+        const tokenAgentEventsfilter = {
+          address: null,
+          fromBlock: 0,
+          toBlock: blockNumber,
+          topics: [
+            [
+              // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint16,uint24,uint128[],uint256[],uint128[],uint40)"),
+              // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+            ],
+            [ '0x000000000000000000000000' + this.settings.tokenContractAddress.substring(2, 42).toLowerCase() ],
+            null,
+          ],
+        };
+        const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
-        // // this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEvents: " + JSON.stringify(tokenAgentEvents, null, 2));
         // //
         // // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
 

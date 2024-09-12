@@ -95,7 +95,7 @@ const TradeFungibles = {
 
         <font size="-2">
           <pre>
-tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
+data: {{ data }}
           </pre>
         </font>
 
@@ -538,6 +538,20 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
 
       tokenAgentFactoryEvents: [],
 
+      data: {
+        blockNumber: null,
+        timestamp: null,
+        tokenAgents: {},
+        buyEvents: [],
+        sellEvents: [],
+        approvalAddresses: [],
+        balanceAddresses: [],
+        tokenApprovals: [],
+        wethApprovals: [],
+        tokenTransfers: [],
+        wethTransfers: [],
+      },
+
       events: [],
       approvals: [],
 
@@ -856,11 +870,8 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
       const network = NETWORKS['' + this.chainId] || {};
 
       if (network.tokenAgentFactory) {
-        // Get list of valid TokenAgents
         const tokenAgentFactoryEventsfilter = {
-          address: network.tokenAgentFactory.address,
-          fromBlock: 0,
-          toBlock: blockNumber,
+          address: network.tokenAgentFactory.address, fromBlock: 0, toBlock: blockNumber,
           topics: [ [], null, null ],
         };
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
@@ -870,22 +881,17 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         for (const record of this.tokenAgentFactoryEvents) {
           tokenAgents[record.tokenAgent] = { owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp };
         }
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
 
         // Get latest nonces
         const tokenAgentOffersInvalidatedEventsfilter = {
-          address: null,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: null, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
               ethers.utils.id("OffersInvalidated(uint24,uint40)"),
             ],
             null,
             null,
-          ],
-        };
+          ]};
         const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
         const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
         for (const record of tokenAgentOffersInvalidated) {
@@ -896,14 +902,13 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
           }
         }
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
-        localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+        this.data.blockNumber = blockNumber;
+        this.data.timestamp = block.timestamp;
+        Vue.set(this.data, 'tokenAgents', tokenAgents);
 
         const tokenAgentEventsfilter = {
-          address: null,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: null, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
               ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint16,uint24,uint128[],uint256[],uint128[],uint40)"),
               // TODO event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
@@ -911,16 +916,12 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             ],
             [ '0x000000000000000000000000' + this.settings.tokenContractAddress.substring(2, 42).toLowerCase() ],
             null,
-          ],
-        };
+          ]};
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        const tokenAgentBuyEvents = tokenAgentEvents.filter(e => e.buySell == 0);
-        const tokenAgentSellEvents = tokenAgentEvents.filter(e => e.buySell == 1);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentBuyEvents: " + JSON.stringify(tokenAgentBuyEvents));
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentSellEvents: " + JSON.stringify(tokenAgentSellEvents));
-        // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+        Vue.set(this.data, 'buyEvents', tokenAgentEvents.filter(e => e.buySell == 0));
+        Vue.set(this.data, 'sellEvents', tokenAgentEvents.filter(e => e.buySell == 1));
+
         const approvalAddressMap = {};
         const balanceAddressMap = {};
         for (const e of tokenAgentEvents) {
@@ -932,143 +933,110 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
           }
         }
         const approvalAddresses = Object.keys(approvalAddressMap);
+        Vue.set(this.data, 'approvalAddresses', approvalAddresses);
         const balanceAddresses = Object.keys(balanceAddressMap);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - approvalAddresses: " + JSON.stringify(approvalAddresses));
-        console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
+        Vue.set(this.data, 'balanceAddresses', balanceAddresses);
 
         const tokenApprovalsfilter = {
-          address: this.settings.tokenContractAddress,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
               ethers.utils.id("Approval(address,address,uint256)"),
             ],
             null,
             approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
-          ],
-        };
+          ]};
         const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
         const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovals: " + JSON.stringify(tokenApprovals));
+        Vue.set(this.data, 'tokenApprovals', tokenApprovals);
 
         const wethApprovalsfilter = {
-          address: network.weth.address,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
               ethers.utils.id("Approval(address,address,uint256)"),
             ],
             null,
             approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
-          ],
-        };
+          ]};
         const wethApprovalsEventLogs = await provider.getLogs(wethApprovalsfilter);
         const wethApprovals = parseTokenEventLogs(wethApprovalsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - wethApprovals: " + JSON.stringify(wethApprovals));
+        Vue.set(this.data, 'wethApprovals', wethApprovals);
 
         const tokenTransferToEventsfilter = {
-          address: this.settings.tokenContractAddress,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
               ethers.utils.id("Transfer(address,address,uint256)"),
             ],
             null,
             balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
-          ],
-        };
+          ]};
         const tokenTransferToEventsEventLogs = await provider.getLogs(tokenTransferToEventsfilter);
         const tokenTransferToEvents = parseTokenEventLogs(tokenTransferToEventsEventLogs, this.chainId, blockNumber);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferToEvents: " + JSON.stringify(tokenTransferToEvents));
 
         const tokenTransferFromEventsfilter = {
-          address: this.settings.tokenContractAddress,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
               ethers.utils.id("Transfer(address,address,uint256)"),
             ],
             balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
             null,
-          ],
-        };
+          ]};
         const tokenTransferFromEventsEventLogs = await provider.getLogs(tokenTransferFromEventsfilter);
         const tokenTransferFromEvents = parseTokenEventLogs(tokenTransferFromEventsEventLogs, this.chainId, blockNumber);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferFromEvents: " + JSON.stringify(tokenTransferFromEvents));
 
         const wethTransferToEventsfilter = {
-          address: network.weth.address,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
               ethers.utils.id("Transfer(address,address,uint256)"),
             ],
             null,
             balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
-          ],
-        };
+          ]};
         const wethTransferToEventsEventLogs = await provider.getLogs(wethTransferToEventsfilter);
         const wethTransferToEvents = parseTokenEventLogs(wethTransferToEventsEventLogs, this.chainId, blockNumber);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
 
         const wethTransferFromEventsfilter = {
-          address: network.weth.address,
-          fromBlock: 0,
-          toBlock: blockNumber,
-          topics: [
-            [
+          address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
               // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
               ethers.utils.id("Transfer(address,address,uint256)"),
             ],
             balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
             null,
-          ],
-        };
+          ]};
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
         const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
-        const tokenEvents = [...tokenTransferToEvents, ...tokenTransferFromEvents, ...wethTransferToEvents, ...wethTransferFromEvents];
-
-        tokenEvents.sort((a, b) => {
+        const tokenTransfers = [...tokenTransferToEvents, ...tokenTransferFromEvents];
+        tokenTransfers.sort((a, b) => {
           if (a.blockNumber == b.blockNumber) {
             return a.logIndex - b.logIndex;
           } else {
             return a.blockNumber - b.blockNumber;
           }
         });
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenEvents: " + JSON.stringify(tokenEvents));
+        Vue.set(this.data, 'tokenTransfers', tokenTransfers);
 
+        const wethTransfers = [...wethTransferToEvents, ...wethTransferFromEvents];
+        wethTransfers.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return a.logIndex - b.logIndex;
+          } else {
+            return a.blockNumber - b.blockNumber;
+          }
+        });
+        Vue.set(this.data, 'wethTransfers', wethTransfers);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - this.data: " + JSON.stringify(this.data));
       }
-
-      return;
-
-      const tokenAgentEventsfilter = {
-        address: this.settings.tokenAgentAddress,
-        fromBlock: 0,
-        toBlock: blockNumber,
-        topics: [ [], null, null ],
-      };
-      const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
-      // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
-      this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-
-      localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
-      // store.dispatch('syncOptions/loadData');
+      localStorage.tokenAgentTradeFungiblesData = JSON.stringify(this.data);
     },
     async addOffer() {
       console.log(now() + " INFO TradeFungibles:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
@@ -1207,15 +1175,9 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
       if ('version' in tempSettings && tempSettings.version == this.settings.version) {
         this.settings = tempSettings;
         // this.settings.currentPage = 1;
-        if ('tokenAgentTradeFungiblesTokenAgentFactoryEvents' in localStorage) {
-          this.tokenAgentFactoryEvents = JSON.parse(localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents);
+        if ('tokenAgentTradeFungiblesData' in localStorage) {
+          this.data = JSON.parse(localStorage.tokenAgentTradeFungiblesData);
         }
-        // if ('tradeFungiblesEvents' in localStorage) {
-        //   this.events = JSON.parse(localStorage.tokenAgentTradeFungiblesEvents);
-        // }
-        // if ('tradeFungiblesApprovals' in localStorage) {
-        //   this.approvals = JSON.parse(localStorage.tokenAgentTradeFungiblesApprovals);
-        // }
       }
       // this.loadData(this.settings.tokenAgentAddress);
     }

@@ -14,6 +14,18 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
         const [from, to, tokens] = logData.args;
         eventRecord = { eventType: "Transfer", from, to, tokens: tokens.toString() /*, contractType: 20*/ };
 
+      } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
+        // WETH Deposit (index_topic_1 address dst, uint256 wad)
+        const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+        tokens = ethers.BigNumber.from(log.data).toString();
+        eventRecord = { eventType: "Deposit", from: ADDRESS0, to, tokens /*, contractType: 20*/ };
+
+      } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
+        // WETH Withdrawal (index_topic_1 address src, uint256 wad)
+        const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+        tokens = ethers.BigNumber.from(log.data).toString();
+        eventRecord = { eventType: "Withdrawal", from, to: ADDRESS0, tokens /*, contractType: 20*/ };
+
       } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
         // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
         // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
@@ -33,6 +45,8 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
         const [owner, operator, approved] = logData.args;
         // NOTE: Both 721 and 1155 fall into this category, but assigning all to 721
         eventRecord = { eventType: "ApprovalForAll", owner, operator, approved /*, contractType: 721*/ };
+      } else {
+        console.log(now() + " INFO functions:parseTokenEventLogs - UNHANDLED log: " + JSON.stringify(log));
       }
       if (eventRecord) {
         records.push( {

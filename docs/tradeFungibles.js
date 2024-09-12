@@ -93,7 +93,48 @@ const TradeFungibles = {
           </b-tab>
         </b-tabs>
 
-        <font size="-2">
+        <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
+          <b-row>
+            <b-col>
+              <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-0 flex-grow-1">
+                </div>
+                <div class="mt-0 pr-1">
+                  <b-form-select size="sm" v-model="settings.approvals.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+                </div>
+                <div class="mt-0 pr-1">
+                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedApprovals.length + '/' + approvals.length }}</font>
+                </div>
+                <div class="mt-0 pr-1">
+                  <b-pagination size="sm" v-model="settings.approvals.currentPage" @input="saveSettings" :total-rows="filteredSortedApprovals.length" :per-page="settings.approvals.pageSize" style="height: 0;"></b-pagination>
+                </div>
+                <div class="mt-0 pl-1">
+                  <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+                </div>
+              </div>
+            </b-col>
+            <b-col>
+              <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-0 flex-grow-1">
+                </div>
+                <div class="mt-0 pr-1">
+                  <b-form-select size="sm" v-model="settings.approvals.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+                </div>
+                <div class="mt-0 pr-1">
+                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedApprovals.length + '/' + approvals.length }}</font>
+                </div>
+                <div class="mt-0 pr-1">
+                  <b-pagination size="sm" v-model="settings.approvals.currentPage" @input="saveSettings" :total-rows="filteredSortedApprovals.length" :per-page="settings.approvals.pageSize" style="height: 0;"></b-pagination>
+                </div>
+                <div class="mt-0 pl-1">
+                  <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+                </div>
+              </div>
+            </b-col>
+          </b-row>
+        </b-card>
+
+        <font v-if="settings.tabIndex == 1 || settings.tabIndex == 2 || settings.tabIndex == 3" size="-2">
           <pre>
 data: {{ data }}
           </pre>
@@ -489,6 +530,19 @@ data: {{ data }}
         symbol: null,
         name: null,
         decimals: null,
+
+        sellOffers: {
+          filter: null,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
+        },
+        buyOffers: {
+          filter: null,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
+        },
 
         tokenAgentAddress: null,
         tokenAgentOwner: null,
@@ -928,6 +982,7 @@ data: {{ data }}
         Vue.set(this.data, 'buyEvents', tokenAgentEvents.filter(e => e.buySell == 0));
         Vue.set(this.data, 'sellEvents', tokenAgentEvents.filter(e => e.buySell == 1));
 
+        // TODO: const balance = await provider.getBalance(e.maker);
         const approvalAddressMap = {};
         const balanceAddressMap = {};
         for (const e of tokenAgentEvents) {
@@ -1013,6 +1068,10 @@ data: {{ data }}
           topics: [[
               // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
               ethers.utils.id("Transfer(address,address,uint256)"),
+              // WETH event  Deposit(address indexed dst, uint wad);
+              ethers.utils.id("Deposit(address,uint256)"),
+              // WETH event  Withdrawal(address indexed src, uint wad);
+              ethers.utils.id("Withdrawal(address,uint256)"),
             ],
             balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
@@ -1020,6 +1079,7 @@ data: {{ data }}
           ]};
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
         const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
         const tokenTransfers = [...tokenTransferToEvents, ...tokenTransferFromEvents];
         tokenTransfers.sort((a, b) => {
@@ -1043,6 +1103,8 @@ data: {{ data }}
         console.log(now() + " INFO TradeFungibles:methods.loadData - this.data: " + JSON.stringify(this.data));
       }
       localStorage.tokenAgentTradeFungiblesData = JSON.stringify(this.data);
+
+      this.computeState();
     },
 
     async computeState() {
@@ -1052,7 +1114,6 @@ data: {{ data }}
       for (const a of this.data.balanceAddresses) {
         balanceAddressMap[a] = 1;
       }
-      // console.log("balanceAddressMap: " + JSON.stringify(balanceAddressMap));
 
       const tokenBalances = {};
       for (const transfer of this.data.tokenTransfers) {
@@ -1076,26 +1137,43 @@ data: {{ data }}
       console.log("tokenBalances: " + JSON.stringify(tokenBalances));
 
       const wethBalances = {};
-      for (const transfer of this.data.wethTransfers) {
-        if (transfer.to in balanceAddressMap) {
-          if (!(transfer.to in wethBalances)) {
-            wethBalances[transfer.to] = { tokens: transfer.tokens };
+      for (const e of this.data.wethTransfers) {
+        if (e.to in balanceAddressMap) {
+          if (!(e.to in wethBalances)) {
+            wethBalances[e.to] = { tokens: e.tokens };
           } else {
-            wethBalances[transfer.to].tokens = ethers.BigNumber.from(wethBalances[transfer.to].tokens).add(transfer.tokens).toString();
+            wethBalances[e.to].tokens = ethers.BigNumber.from(wethBalances[e.to].tokens).add(e.tokens).toString();
           }
         }
-        if (transfer.from in balanceAddressMap) {
-          if (!(transfer.from in wethBalances)) {
-            wethBalances[transfer.from] = {
-              tokens: transfer.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(transfer.tokens).toString(),
+        if (e.from in balanceAddressMap) {
+          if (!(e.from in wethBalances)) {
+            wethBalances[e.from] = {
+              tokens: e.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
             };
           } else {
-            wethBalances[transfer.from].tokens = ethers.BigNumber.from(wethBalances[transfer.from].tokens).sub(transfer.tokens).toString();
+            wethBalances[e.from].tokens = ethers.BigNumber.from(wethBalances[e.from].tokens).sub(e.tokens).toString();
           }
         }
       }
       console.log("wethBalances: " + JSON.stringify(wethBalances));
 
+      const tokenApprovals = {};
+      for (const e of this.data.tokenApprovals) {
+        if (!(e.owner in tokenApprovals)) {
+          tokenApprovals[e.owner] = {};
+        }
+        tokenApprovals[e.owner][e.spender] = e.tokens;
+      }
+      console.log("tokenApprovals: " + JSON.stringify(tokenApprovals));
+
+      const wethApprovals = {};
+      for (const e of this.data.wethApprovals) {
+        if (!(e.owner in wethApprovals)) {
+          wethApprovals[e.owner] = {};
+        }
+        wethApprovals[e.owner][e.spender] = e.tokens;
+      }
+      console.log("wethApprovals: " + JSON.stringify(wethApprovals));
 
     },
 

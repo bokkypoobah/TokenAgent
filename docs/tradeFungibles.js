@@ -94,9 +94,12 @@ const TradeFungibles = {
         </b-tabs>
 
         <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
-          <b-row>
-            <b-col>
+          <b-row class="m-0 p-0">
+            <b-col class="m-0 mr-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-1 pr-1">
+                  Taker Buy / Maker Sell
+                </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
@@ -112,9 +115,17 @@ const TradeFungibles = {
                   <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
                 </div>
               </div>
+              <font size="-1">
+                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="200px" :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
+                <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.sellEvents" show-empty head-variant="light" class="m-0 mt-1">
+                </b-table>
+              </font>
             </b-col>
-            <b-col>
+            <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-1 pr-1">
+                  Taker Sell / Maker Buy
+                </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
@@ -130,6 +141,11 @@ const TradeFungibles = {
                   <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
                 </div>
               </div>
+              <font size="-1">
+                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
+                <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.buyEvents" show-empty head-variant="light" class="m-0 mt-1">
+                </b-table>
+              </font>
             </b-col>
           </b-row>
         </b-card>

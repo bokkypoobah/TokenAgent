@@ -41,7 +41,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
       }
     }
   }
-  console.log(now() + " INFO functions:parseTokenEventLogs - records: " + JSON.stringify(records, null, 2));
+  // console.log(now() + " INFO functions:parseTokenEventLogs - records: " + JSON.stringify(records, null, 2));
   return records;
 }
 

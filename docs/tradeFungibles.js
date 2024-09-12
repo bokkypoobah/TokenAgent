@@ -1046,7 +1046,57 @@ data: {{ data }}
     },
 
     async computeState() {
-      console.log(now() + " INFO TradeFungibles:methods.computeState - this.data: " + JSON.stringify(this.data));
+      console.log(now() + " INFO TradeFungibles:methods.computeState");
+
+      const balanceAddressMap = {};
+      for (const a of this.data.balanceAddresses) {
+        balanceAddressMap[a] = 1;
+      }
+      // console.log("balanceAddressMap: " + JSON.stringify(balanceAddressMap));
+
+      const tokenBalances = {};
+      for (const transfer of this.data.tokenTransfers) {
+        if (transfer.to in balanceAddressMap) {
+          if (!(transfer.to in tokenBalances)) {
+            tokenBalances[transfer.to] = { tokens: transfer.tokens };
+          } else {
+            tokenBalances[transfer.to].tokens = ethers.BigNumber.from(tokenBalances[transfer.to].tokens).add(transfer.tokens).toString();
+          }
+        }
+        if (transfer.from in balanceAddressMap) {
+          if (!(transfer.from in tokenBalances)) {
+            tokenBalances[transfer.from] = {
+              tokens: transfer.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(transfer.tokens).toString(),
+            };
+          } else {
+            tokenBalances[transfer.from].tokens = ethers.BigNumber.from(tokenBalances[transfer.from].tokens).sub(transfer.tokens).toString();
+          }
+        }
+      }
+      console.log("tokenBalances: " + JSON.stringify(tokenBalances));
+
+      const wethBalances = {};
+      for (const transfer of this.data.wethTransfers) {
+        if (transfer.to in balanceAddressMap) {
+          if (!(transfer.to in wethBalances)) {
+            wethBalances[transfer.to] = { tokens: transfer.tokens };
+          } else {
+            wethBalances[transfer.to].tokens = ethers.BigNumber.from(wethBalances[transfer.to].tokens).add(transfer.tokens).toString();
+          }
+        }
+        if (transfer.from in balanceAddressMap) {
+          if (!(transfer.from in wethBalances)) {
+            wethBalances[transfer.from] = {
+              tokens: transfer.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(transfer.tokens).toString(),
+            };
+          } else {
+            wethBalances[transfer.from].tokens = ethers.BigNumber.from(wethBalances[transfer.from].tokens).sub(transfer.tokens).toString();
+          }
+        }
+      }
+      console.log("wethBalances: " + JSON.stringify(wethBalances));
+
+
     },
 
     async addOffer() {

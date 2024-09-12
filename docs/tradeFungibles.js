@@ -936,35 +936,39 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         console.log(now() + " INFO TradeFungibles:methods.loadData - approvalAddresses: " + JSON.stringify(approvalAddresses));
         console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
 
-        if (false) {
-          const tokenApprovalsfilter = {
-            address: null,
-            fromBlock: 0,
-            toBlock: blockNumber,
-            topics: [
-              [
-                // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
-                ethers.utils.id("Approval(address,address,uint256)"),
-                // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
-                // ethers.utils.id("Approval(address,address,uint256)"),
-                // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-                // TODO ethers.utils.id("ApprovalForAll(address,address,bool)"),
-                // ERC-1155 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-                // ethers.utils.id("ApprovalForAll(address,address,bool)"),
-              ],
-              null,
-              approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
-              // [ '0x000000000000000000000000' + this.settings.tokenAgentAddress.substring(2, 42).toLowerCase() ],
+        const tokenApprovalsfilter = {
+          address: this.settings.tokenContractAddress,
+          fromBlock: 0,
+          toBlock: blockNumber,
+          topics: [
+            [
+              // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+              ethers.utils.id("Approval(address,address,uint256)"),
             ],
-          };
-          // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovalsfilter: " + JSON.stringify(tokenApprovalsfilter, null, 2));
-          const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
-          // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
-          const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
-          // TODO: Filter by token and WETH
-          console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovals: " + JSON.stringify(tokenApprovals));
-          // localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
-        }
+            null,
+            approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+          ],
+        };
+        const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
+        const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenApprovals: " + JSON.stringify(tokenApprovals));
+
+        const wethApprovalsfilter = {
+          address: network.weth.address,
+          fromBlock: 0,
+          toBlock: blockNumber,
+          topics: [
+            [
+              // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+              ethers.utils.id("Approval(address,address,uint256)"),
+            ],
+            null,
+            approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+          ],
+        };
+        const wethApprovalsEventLogs = await provider.getLogs(wethApprovalsfilter);
+        const wethApprovals = parseTokenEventLogs(wethApprovalsEventLogs, this.chainId, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - wethApprovals: " + JSON.stringify(wethApprovals));
 
         const tokenTransferToEventsfilter = {
           address: this.settings.tokenContractAddress,
@@ -980,12 +984,9 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             null,
           ],
         };
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferToEventsfilter: " + JSON.stringify(tokenTransferToEventsfilter, null, 2));
         const tokenTransferToEventsEventLogs = await provider.getLogs(tokenTransferToEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferToEventsEventLogs: " + JSON.stringify(tokenTransferToEventsEventLogs, null, 2));
         const tokenTransferToEvents = parseTokenEventLogs(tokenTransferToEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferToEvents: " + JSON.stringify(tokenTransferToEvents));
-        // localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferToEvents: " + JSON.stringify(tokenTransferToEvents));
 
         const tokenTransferFromEventsfilter = {
           address: this.settings.tokenContractAddress,
@@ -1001,12 +1002,9 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             null,
           ],
         };
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferFromEventsfilter: " + JSON.stringify(tokenTransferFromEventsfilter, null, 2));
         const tokenTransferFromEventsEventLogs = await provider.getLogs(tokenTransferFromEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferFromEventsEventLogs: " + JSON.stringify(tokenTransferFromEventsEventLogs, null, 2));
         const tokenTransferFromEvents = parseTokenEventLogs(tokenTransferFromEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferFromEvents: " + JSON.stringify(tokenTransferFromEvents));
-        // localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenTransferFromEvents: " + JSON.stringify(tokenTransferFromEvents));
 
         const wethTransferToEventsfilter = {
           address: network.weth.address,
@@ -1022,12 +1020,9 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             null,
           ],
         };
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEventsfilter: " + JSON.stringify(wethTransferToEventsfilter, null, 2));
         const wethTransferToEventsEventLogs = await provider.getLogs(wethTransferToEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEventsEventLogs: " + JSON.stringify(wethTransferToEventsEventLogs, null, 2));
         const wethTransferToEvents = parseTokenEventLogs(wethTransferToEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
-        // localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
 
         const wethTransferFromEventsfilter = {
           address: network.weth.address,
@@ -1043,13 +1038,20 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             null,
           ],
         };
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEventsfilter: " + JSON.stringify(wethTransferFromEventsfilter, null, 2));
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEventsEventLogs: " + JSON.stringify(wethTransferFromEventsEventLogs, null, 2));
         const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
-        // localStorage.tokenAgentTradeFungiblesApprovals = JSON.stringify(this.approvals);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
+        const tokenEvents = [...tokenTransferToEvents, ...tokenTransferFromEvents, ...wethTransferToEvents, ...wethTransferFromEvents];
+
+        tokenEvents.sort((a, b) => {
+          if (a.blockNumber == b.blockNumber) {
+            return a.logIndex - b.logIndex;
+          } else {
+            return a.blockNumber - b.blockNumber;
+          }
+        });
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenEvents: " + JSON.stringify(tokenEvents));
 
       }
 

@@ -539,8 +539,11 @@ data: {{ data }}
       tokenAgentFactoryEvents: [],
 
       data: {
+        chainId: null,
         blockNumber: null,
         timestamp: null,
+        token: null,
+        weth: null,
         tokenAgents: {},
         buyEvents: [],
         sellEvents: [],
@@ -902,8 +905,11 @@ data: {{ data }}
           }
         }
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
+        this.data.chainId = this.chainId;
         this.data.blockNumber = blockNumber;
         this.data.timestamp = block.timestamp;
+        this.data.token = this.settings.tokenContractAddress;
+        this.data.weth = network.weth.address;
         Vue.set(this.data, 'tokenAgents', tokenAgents);
 
         const tokenAgentEventsfilter = {
@@ -1038,6 +1044,11 @@ data: {{ data }}
       }
       localStorage.tokenAgentTradeFungiblesData = JSON.stringify(this.data);
     },
+
+    async computeState() {
+      console.log(now() + " INFO TradeFungibles:methods.computeState - this.data: " + JSON.stringify(this.data));
+    },
+
     async addOffer() {
       console.log(now() + " INFO TradeFungibles:methods.addOffer - settings.addOffers: " + JSON.stringify(this.settings.addOffers, null, 2));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1177,6 +1188,7 @@ data: {{ data }}
         // this.settings.currentPage = 1;
         if ('tokenAgentTradeFungiblesData' in localStorage) {
           this.data = JSON.parse(localStorage.tokenAgentTradeFungiblesData);
+          this.computeState();
         }
       }
       // this.loadData(this.settings.tokenAgentAddress);

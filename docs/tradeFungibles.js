@@ -866,11 +866,11 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
         this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
         localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
-        const tokenAgentsMap = {};
+        const tokenAgents = {};
         for (const record of this.tokenAgentFactoryEvents) {
-          tokenAgentsMap[record.tokenAgent] = { owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp };
+          tokenAgents[record.tokenAgent] = { owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp };
         }
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentsMap: " + JSON.stringify(tokenAgentsMap, null, 2));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
 
         // Get latest nonces
         const tokenAgentOffersInvalidatedEventsfilter = {
@@ -889,16 +889,14 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
         const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
         for (const record of tokenAgentOffersInvalidated) {
-          if (record.contract in tokenAgentsMap) {
-            tokenAgentsMap[record.contract].nonce = record.newNonce;
-            tokenAgentsMap[record.contract].blockNumber = record.blockNumber;
-            tokenAgentsMap[record.contract].timestamp = record.timestamp;
+          if (record.contract in tokenAgents) {
+            tokenAgents[record.contract].nonce = record.newNonce;
+            tokenAgents[record.contract].blockNumber = record.blockNumber;
+            tokenAgents[record.contract].timestamp = record.timestamp;
           }
         }
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentsMap after invalidations: " + JSON.stringify(tokenAgentsMap, null, 2));
-        //
-        // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
-
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
+        localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
 
         const tokenAgentEventsfilter = {
           address: null,
@@ -918,12 +916,13 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentEvents: " + JSON.stringify(tokenAgentEvents, null, 2));
-        // //
-        // // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+        const tokenAgentBuyEvents = tokenAgentEvents.filter(e => e.buySell == 0);
+        const tokenAgentSellEvents = tokenAgentEvents.filter(e => e.buySell == 1);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentBuyEvents: " + JSON.stringify(tokenAgentBuyEvents));
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentSellEvents: " + JSON.stringify(tokenAgentSellEvents));
+        // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
 
       }
-      // const contract = new ethers.Contract(this.settings.tokenAgentAddress, network.tokenAgent.abi, provider);
 
       return;
       const tokenApprovalsfilter = {

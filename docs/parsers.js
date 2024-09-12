@@ -7,7 +7,14 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
     if (!log.removed) {
       // const contract = log.address;
       let eventRecord = null;
-      if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
+      if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
+        // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+        // ERC-721 TODO
+        const logData = erc20Interface.parseLog(log);
+        const [from, to, tokens] = logData.args;
+        eventRecord = { eventType: "Transfer", from, to, tokens: tokens.toString() /*, contractType: 20*/ };
+
+      } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
         // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
         // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
         if (log.topics.length == 4) {

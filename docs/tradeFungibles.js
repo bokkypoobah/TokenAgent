@@ -906,8 +906,8 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
             [
               // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
               ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint16,uint24,uint128[],uint256[],uint128[],uint40)"),
-              // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-              // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+              // TODO event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              // TODO event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
             ],
             [ '0x000000000000000000000000' + this.settings.tokenContractAddress.substring(2, 42).toLowerCase() ],
             null,
@@ -921,6 +921,20 @@ tokenAgentFactoryEvents: {{ tokenAgentFactoryEvents }}
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentBuyEvents: " + JSON.stringify(tokenAgentBuyEvents));
         console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentSellEvents: " + JSON.stringify(tokenAgentSellEvents));
         // localStorage.tokenAgentTradeFungiblesEvents = JSON.stringify(this.events);
+        const approvalAddressMap = {};
+        const balanceAddressMap = {};
+        for (const e of tokenAgentEvents) {
+          if (!(e.contract in approvalAddressMap)) {
+            approvalAddressMap[e.contract] = 1;
+          }
+          if (!(e.maker in balanceAddressMap)) {
+            balanceAddressMap[e.maker] = 1;
+          }
+        }
+        const approvalAddresses = Object.keys(approvalAddressMap);
+        const balanceAddresses = Object.keys(balanceAddressMap);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - approvalAddresses: " + JSON.stringify(approvalAddresses));
+        console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
 
       }
 

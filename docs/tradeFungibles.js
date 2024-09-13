@@ -1150,7 +1150,7 @@ data: {{ data }}
           }
         }
       }
-      console.log("tokenBalances: " + JSON.stringify(tokenBalances));
+      console.log(now() + " INFO TradeFungibles:methods.computeState - tokenBalances: " + JSON.stringify(tokenBalances));
 
       const wethBalances = {};
       for (const e of this.data.wethTransfers) {
@@ -1171,7 +1171,7 @@ data: {{ data }}
           }
         }
       }
-      console.log("wethBalances: " + JSON.stringify(wethBalances));
+      console.log(now() + " INFO TradeFungibles:methods.computeState - wethBalances: " + JSON.stringify(wethBalances));
 
       const tokenApprovals = {};
       for (const e of this.data.tokenApprovals) {
@@ -1180,7 +1180,7 @@ data: {{ data }}
         }
         tokenApprovals[e.owner][e.spender] = e.tokens;
       }
-      console.log("tokenApprovals: " + JSON.stringify(tokenApprovals));
+      console.log(now() + " INFO TradeFungibles:methods.computeState - tokenApprovals: " + JSON.stringify(tokenApprovals));
 
       const wethApprovals = {};
       for (const e of this.data.wethApprovals) {
@@ -1189,8 +1189,23 @@ data: {{ data }}
         }
         wethApprovals[e.owner][e.spender] = e.tokens;
       }
-      console.log("wethApprovals: " + JSON.stringify(wethApprovals));
+      console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));
 
+      const sellOffers = {};
+      for (const e of this.data.sellEvents) {
+        const tokenAgent = this.data.tokenAgents[e.contract] || null;
+        if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
+          console.log("SELL - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+        }
+      }
+
+      const buyOffers = {};
+      for (const e of this.data.buyEvents) {
+        const tokenAgent = this.data.tokenAgents[e.contract] || null;
+        if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
+          console.log("BUY - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+        }
+      }
     },
 
     async addOffer() {

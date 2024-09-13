@@ -1248,9 +1248,9 @@ data: {{ data }}
           let tokenApproval = ethers.BigNumber.from(d2.tokenApproval);
           for (const [i, e] of d2.prices.entries()) {
             const tokens = ethers.BigNumber.from(e.tokens);
-            const available = tokens.lte(tokenApproval) ? tokens : tokenApproval;
-            console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval) + ", available: " + ethers.utils.formatEther(available));
-            tokenApproval = tokenApproval.sub(available);
+            const tokensAvailable = tokens.lte(tokenApproval) ? tokens : tokenApproval;
+            console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
+            tokenApproval = tokenApproval.sub(tokensAvailable);
           }
         }
       }
@@ -1258,6 +1258,7 @@ data: {{ data }}
 
       if (true) {
         const buyByMakers = {};
+        const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
         for (const e of this.data.buyEvents) {
           const tokenAgent = this.data.tokenAgents[e.contract] || null;
           if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
@@ -1315,9 +1316,10 @@ data: {{ data }}
             let wethApproval = ethers.BigNumber.from(d2.wethApproval);
             for (const [i, e] of d2.prices.entries()) {
               const tokens = ethers.BigNumber.from(e.tokens);
-              const available = tokens.lte(wethApproval) ? tokens : wethApproval;
-              console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", wethApproval: " + ethers.utils.formatEther(wethApproval) + ", available: " + ethers.utils.formatEther(available));
-              wethApproval = wethApproval.sub(available);
+              const wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              const wethAvailable = wethAmount.lte(wethApproval) ? wethAmount : wethApproval;
+              console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", wethAmount: " + ethers.utils.formatEther(wethAmount) + ", wethAvailable: " + ethers.utils.formatEther(wethAvailable) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
+              wethApproval = wethApproval.sub(wethAvailable);
             }
           }
         }

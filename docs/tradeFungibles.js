@@ -3,6 +3,24 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
+        <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
+          <template #modal-title>Sell Offer</template>
+          <div class="m-0 p-1">
+            <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
+            </b-form-group> -->
+          </div>
+        </b-modal>
+
+        <b-modal ref="modalbuyoffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
+          <template #modal-title>Buy Offer</template>
+          <div class="m-0 p-1">
+            <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
+            </b-form-group> -->
+          </div>
+        </b-modal>
+
         <b-tabs card v-model="settings.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
           <template #tabs-start>
             <div class="d-flex flex-wrap m-0 p-0">
@@ -1661,6 +1679,7 @@ data: {{ data }}
         // } else {
         //   store.dispatch('viewAddress/viewAddress', item[0].account);
         // }
+        this.$refs.modalselloffer.show();
         this.$refs.sellOffersTable.clearSelected();
       }
     },
@@ -1674,6 +1693,7 @@ data: {{ data }}
         // } else {
         //   store.dispatch('viewAddress/viewAddress', item[0].account);
         // }
+        this.$refs.modalbuyoffer.show();
         this.$refs.buyOffersTable.clearSelected();
       }
     },

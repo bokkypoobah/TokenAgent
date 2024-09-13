@@ -135,9 +135,24 @@ const TradeFungibles = {
               </div>
               <font size="-1">
                 <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
-                  <template #cell(price)="data">
+                  <template #cell(number)="data">
                     <font size="-1">
-                      {{ formatDecimals(data.item.price, 18) }}
+                      {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
+                    </font>
+                  </template>
+                  <template #cell(info)="data">
+                    <!-- <font size="-1">
+                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
+                    </font> -->
+                  </template>
+                  <template #cell(maker)="data">
+                    <font size="-1">
+                      <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
+                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      </b-link>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data.item.tokenAgent" class="m-0 p-0">
+                        {{ data.item.tokenAgentIndexByOwner }}
+                      </b-badge>
                     </font>
                   </template>
                   <template #cell(tokens)="data">
@@ -145,19 +160,9 @@ const TradeFungibles = {
                       {{ formatDecimals(data.item.tokens, 18) }}
                     </font>
                   </template>
-                  <template #cell(maker)="data">
+                  <template #cell(price)="data">
                     <font size="-1">
-                      {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
-                    </font>
-                  </template>
-                  <template #cell(info)="data">
-                    <font size="-1">
-                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
-                    </font>
-                  </template>
-                  <template #cell(number)="data">
-                    <font size="-1">
-                      {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
+                      {{ formatDecimals(data.item.price, 18) }}
                     </font>
                   </template>
                 </b-table>
@@ -198,13 +203,18 @@ const TradeFungibles = {
                   </template>
                   <template #cell(maker)="data">
                     <font size="-1">
-                      {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
+                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      </b-link>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data.item.tokenAgent" class="m-0 p-0">
+                        {{ data.item.tokenAgentIndexByOwner }}
+                      </b-badge>
                     </font>
                   </template>
                   <template #cell(info)="data">
-                    <font size="-1">
+                    <!-- <font size="-1">
                       {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
-                    </font>
+                    </font> -->
                   </template>
                   <template #cell(number)="data">
                     <font size="-1">
@@ -736,7 +746,7 @@ data: {{ data }}
       ],
       sellOffersFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -751,7 +761,7 @@ data: {{ data }}
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
         { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },

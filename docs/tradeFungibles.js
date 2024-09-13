@@ -650,8 +650,8 @@ data: {{ data }}
         token: null,
         weth: null,
         tokenAgents: {},
-        buyEvents: [],
-        sellEvents: [],
+        // buyEvents: [], // TODO: delete
+        // sellEvents: [], // TODO: delete
         approvalAddresses: [],
         balanceAddresses: [],
         tokenApprovals: [],
@@ -1214,8 +1214,8 @@ data: {{ data }}
           ]};
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        Vue.set(this.data, 'buyEvents', tokenAgentEvents.filter(e => e.buySell == 0));
-        Vue.set(this.data, 'sellEvents', tokenAgentEvents.filter(e => e.buySell == 1));
+        // Vue.set(this.data, 'buyEvents', tokenAgentEvents.filter(e => e.buySell == 0));
+        // Vue.set(this.data, 'sellEvents', tokenAgentEvents.filter(e => e.buySell == 1));
 
         for (const e of tokenAgentEvents) {
           if (e.contract in tokenAgents && e.eventType == "Offered") {

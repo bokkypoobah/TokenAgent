@@ -1210,8 +1210,15 @@ data: {{ data }}
               prices: [],
             }
           }
-          const eventIndex = sellByMakers[e.maker].tokenAgents[e.contract].events.length;
+          const offerIndex = sellByMakers[e.maker].tokenAgents[e.contract].events.length;
           sellByMakers[e.maker].tokenAgents[e.contract].events.push(e);
+          if (e.prices.length == 1 && e.tokenss.length == 0) {
+            sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[0], tokens: null });
+          } else {
+            for (let i = 0; i < e.prices.length; i++) {
+              sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[i], tokens: e.tokenss[i] });
+            }
+          }
         }
       }
       for (const [maker, d1] of Object.entries(sellByMakers)) {
@@ -1219,7 +1226,31 @@ data: {{ data }}
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
           console.log("  tokenAgent: " + tokenAgent + ", tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
           for (const [i, e] of d2.events.entries()) {
-            console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+            console.log("    offerIndex: " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+          }
+          d2.prices.sort((a, b) => {
+            const aP = ethers.BigNumber.from(a.price);
+            const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
+            const bP = ethers.BigNumber.from(b.price);
+            const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
+            if (aP.eq(bP)) {
+              if (aT == null) {
+                return 1;
+              } else if (bT == null) {
+                return -1;
+              } else {
+                return aT.lt(bT) ? 1 : -1;
+              }
+            } else {
+              return aP.lt(bP) ? -1 : 1;
+            }
+          });
+          let tokenApproval = ethers.BigNumber.from(d2.tokenApproval);
+          for (const [i, e] of d2.prices.entries()) {
+            const tokens = ethers.BigNumber.from(e.tokens);
+            const available = tokens.lte(tokenApproval) ? tokens : tokenApproval;
+            console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval) + ", available: " + ethers.utils.formatEther(available));
+            tokenApproval = tokenApproval.sub(available);
           }
         }
       }
@@ -1245,8 +1276,16 @@ data: {{ data }}
                 prices: [],
               }
             }
-            const eventIndex = buyByMakers[e.maker].tokenAgents[e.contract].events.length;
+            const offerIndex = buyByMakers[e.maker].tokenAgents[e.contract].events.length;
             buyByMakers[e.maker].tokenAgents[e.contract].events.push(e);
+            if (e.prices.length == 1 && e.tokenss.length == 0) {
+              buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[0], tokens: null });
+            } else {
+              for (let i = 0; i < e.prices.length; i++) {
+                buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[i], tokens: e.tokenss[i] });
+              }
+            }
+
           }
         }
         for (const [maker, d1] of Object.entries(buyByMakers)) {
@@ -1255,6 +1294,30 @@ data: {{ data }}
             console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(d2.wethApproval));
             for (const [i, e] of d2.events.entries()) {
               console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+            }
+            d2.prices.sort((a, b) => {
+              const aP = ethers.BigNumber.from(a.price);
+              const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
+              const bP = ethers.BigNumber.from(b.price);
+              const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
+              if (aP.eq(bP)) {
+                if (aT == null) {
+                  return 1;
+                } else if (bT == null) {
+                  return -1;
+                } else {
+                  return aT.lt(bT) ? 1 : -1;
+                }
+              } else {
+                return aP.lt(bP) ? 1 : -1;
+              }
+            });
+            let wethApproval = ethers.BigNumber.from(d2.wethApproval);
+            for (const [i, e] of d2.prices.entries()) {
+              const tokens = ethers.BigNumber.from(e.tokens);
+              const available = tokens.lte(wethApproval) ? tokens : wethApproval;
+              console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", wethApproval: " + ethers.utils.formatEther(wethApproval) + ", available: " + ethers.utils.formatEther(available));
+              wethApproval = wethApproval.sub(available);
             }
           }
         }

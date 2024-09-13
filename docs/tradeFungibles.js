@@ -1205,6 +1205,7 @@ data: {{ data }}
       }
       console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));
 
+      // TODO: Handle null tokens, and compute available balance, ideally across tokenAgents by makers
       const sellByMakers = {};
       for (const e of this.data.sellEvents) {
         const tokenAgent = this.data.tokenAgents[e.contract] || null;
@@ -1227,10 +1228,10 @@ data: {{ data }}
           const offerIndex = sellByMakers[e.maker].tokenAgents[e.contract].events.length;
           sellByMakers[e.maker].tokenAgents[e.contract].events.push(e);
           if (e.prices.length == 1 && e.tokenss.length == 0) {
-            sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[0], tokens: null });
+            sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, itemIndex: 0, price: e.prices[0], tokens: null });
           } else {
             for (let i = 0; i < e.prices.length; i++) {
-              sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[i], tokens: e.tokenss[i] });
+              sellByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, itemIndex: i, price: e.prices[i], tokens: e.tokenss[i] });
             }
           }
         }
@@ -1296,10 +1297,10 @@ data: {{ data }}
             const offerIndex = buyByMakers[e.maker].tokenAgents[e.contract].events.length;
             buyByMakers[e.maker].tokenAgents[e.contract].events.push(e);
             if (e.prices.length == 1 && e.tokenss.length == 0) {
-              buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[0], tokens: null });
+              buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, itemIndex: 0, price: e.prices[0], tokens: null });
             } else {
               for (let i = 0; i < e.prices.length; i++) {
-                buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, price: e.prices[i], tokens: e.tokenss[i] });
+                buyByMakers[e.maker].tokenAgents[e.contract].prices.push({ offerIndex, itemIndex: i, price: e.prices[i], tokens: e.tokenss[i] });
               }
             }
 

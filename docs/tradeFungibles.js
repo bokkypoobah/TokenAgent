@@ -120,6 +120,12 @@ const TradeFungibles = {
                 <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.sellEvents" show-empty head-variant="light" class="m-0 mt-1">
                 </b-table>
               </font>
+              <font size="-2">
+                <pre>
+sellByMakers: {{ sellByMakers }}
+                </pre>
+              </font>
+
             </b-col>
             <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
@@ -145,6 +151,11 @@ const TradeFungibles = {
                 <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
                 <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.buyEvents" show-empty head-variant="light" class="m-0 mt-1">
                 </b-table>
+              </font>
+              <font size="-2">
+                <pre>
+buyByMakers: {{ buyByMakers }}
+                </pre>
               </font>
             </b-col>
           </b-row>
@@ -624,6 +635,9 @@ data: {{ data }}
         tokenTransfers: [],
         wethTransfers: [],
       },
+
+      sellByMakers: {},
+      buyByMakers: {},
 
       events: [],
       approvals: [],
@@ -1206,8 +1220,8 @@ data: {{ data }}
             const tokenApproval = tokenApprovals[e.maker] && tokenApprovals[e.maker][e.contract] || 0;
             sellByMakers[e.maker].tokenAgents[e.contract] = {
               tokenApproval,
-              events: [],
               prices: [],
+              events: [],
             }
           }
           const offerIndex = sellByMakers[e.maker].tokenAgents[e.contract].events.length;
@@ -1224,9 +1238,11 @@ data: {{ data }}
       for (const [maker, d1] of Object.entries(sellByMakers)) {
         console.log("SELL - maker: " + maker + ", tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
-          console.log("  tokenAgent: " + tokenAgent + ", tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          let tokenApproval = ethers.BigNumber.from(d2.tokenApproval);
+          // let tokenApproval = ethers.BigNumber.from("1230000000000000000");
+          console.log("  tokenAgent: " + tokenAgent + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
           for (const [i, e] of d2.events.entries()) {
-            console.log("    offerIndex: " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+            console.log("    offerIndex: " + i + " blockNumber: " + e.blockNumber + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
           }
           d2.prices.sort((a, b) => {
             const aP = ethers.BigNumber.from(a.price);
@@ -1245,16 +1261,16 @@ data: {{ data }}
               return aP.lt(bP) ? -1 : 1;
             }
           });
-          let tokenApproval = ethers.BigNumber.from(d2.tokenApproval);
           for (const [i, e] of d2.prices.entries()) {
             const tokens = ethers.BigNumber.from(e.tokens);
             const tokensAvailable = tokens.lte(tokenApproval) ? tokens : tokenApproval;
-            console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
             tokenApproval = tokenApproval.sub(tokensAvailable);
+            console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
           }
         }
       }
       // console.log("SELL - sellByMakers: " + JSON.stringify(sellByMakers, null, 2));
+      Vue.set(this, 'sellByMakers', sellByMakers);
 
       if (true) {
         const buyByMakers = {};
@@ -1273,8 +1289,8 @@ data: {{ data }}
               const wethApproval = wethApprovals[e.maker] && wethApprovals[e.maker][e.contract] || 0;
               buyByMakers[e.maker].tokenAgents[e.contract] = {
                 wethApproval,
-                events: [],
                 prices: [],
+                events: [],
               }
             }
             const offerIndex = buyByMakers[e.maker].tokenAgents[e.contract].events.length;
@@ -1292,9 +1308,11 @@ data: {{ data }}
         for (const [maker, d1] of Object.entries(buyByMakers)) {
           console.log("BUY - maker: " + maker + ", wethBalance: " + ethers.utils.formatEther(d1.wethBalance));
           for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
-            console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(d2.wethApproval));
+            let wethApproval = ethers.BigNumber.from(d2.wethApproval);
+            // let wethApproval = ethers.BigNumber.from("100000000000001234");
+            console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
             for (const [i, e] of d2.events.entries()) {
-              console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+              console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
             }
             d2.prices.sort((a, b) => {
               const aP = ethers.BigNumber.from(a.price);
@@ -1313,17 +1331,19 @@ data: {{ data }}
                 return aP.lt(bP) ? 1 : -1;
               }
             });
-            let wethApproval = ethers.BigNumber.from(d2.wethApproval);
             for (const [i, e] of d2.prices.entries()) {
               const tokens = ethers.BigNumber.from(e.tokens);
-              const wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
-              const wethAvailable = wethAmount.lte(wethApproval) ? wethAmount : wethApproval;
-              console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", wethAmount: " + ethers.utils.formatEther(wethAmount) + ", wethAvailable: " + ethers.utils.formatEther(wethAvailable) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
-              wethApproval = wethApproval.sub(wethAvailable);
+              const tokensApproved = wethApproval.mul(TENPOW18).div(e.price);
+              const tokensAvailable = tokens.lte(tokensApproved) ? tokens : tokensApproved;
+              const wethAmount = tokensAvailable.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              // const wethAvailable = wethAmount.lte(wethApproval) ? wethAmount : wethApproval;
+              wethApproval = wethApproval.sub(wethAmount);
+              console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", wethAmount: " + ethers.utils.formatEther(wethAmount) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
             }
           }
         }
         // console.log("BUY - buyByMakers: " + JSON.stringify(sellByMakers, null, 2));
+        Vue.set(this, 'buyByMakers', buyByMakers);
       }
 
     },

@@ -127,6 +127,21 @@ const TradeFungibles = {
                         {{ formatDecimals(data.item.tokens, 18) }}
                     </font>
                   </template>
+                  <template #cell(maker)="data">
+                    <font size="-1">
+                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                    </font>
+                  </template>
+                  <template #cell(info)="data">
+                    <font size="-1">
+                        {{ data.item.tokenAgent.substring(0, 8) + '...' + data.item.tokenAgent.slice(-6) }}
+                    </font>
+                  </template>
+                  <template #cell(number)="data">
+                    <font size="-1">
+                      {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
+                    </font>
+                  </template>
                 </b-table>
               </font>
 
@@ -161,6 +176,21 @@ const TradeFungibles = {
                   <template #cell(tokens)="data">
                     <font size="-1">
                         {{ formatDecimals(data.item.tokens, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(maker)="data">
+                    <font size="-1">
+                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                    </font>
+                  </template>
+                  <template #cell(info)="data">
+                    <font size="-1">
+                        {{ data.item.tokenAgent.substring(0, 8) + '...' + data.item.tokenAgent.slice(-6) }}
+                    </font>
+                  </template>
+                  <template #cell(number)="data">
+                    <font size="-1">
+                      {{ parseInt(data.index) + ((settings.buyOffers.currentPage - 1) * settings.buyOffers.pageSize) + 1 }}
                     </font>
                   </template>
                 </b-table>
@@ -687,26 +717,28 @@ data: {{ data }}
         // { value: 'indexdsc', text: '▼ Index' },
       ],
       sellOffersFields: [
-        { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
       ],
       buyOffersFields: [
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
-        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
-        { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
       offersFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },

@@ -1197,55 +1197,68 @@ data: {{ data }}
         if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
           if (!(e.maker in sellByMakers)) {
             const tokenBalance = tokenBalances[e.maker] && tokenBalances[e.maker].tokens || 0;
-            const tokenApproval = tokenApprovals[e.maker] && tokenApprovals[e.maker][e.contract] || 0;
             sellByMakers[e.maker] = {
               tokenBalance,
+              tokenAgents: {},
+            }
+          }
+          if (!(e.contract in sellByMakers[e.maker].tokenAgents)) {
+            const tokenApproval = tokenApprovals[e.maker] && tokenApprovals[e.maker][e.contract] || 0;
+            sellByMakers[e.maker].tokenAgents[e.contract] = {
               tokenApproval,
               events: [],
               prices: [],
             }
           }
-          const eventIndex = sellByMakers[e.maker].events.length;
-          sellByMakers[e.maker].events.push(e);
+          const eventIndex = sellByMakers[e.maker].tokenAgents[e.contract].events.length;
+          sellByMakers[e.maker].tokenAgents[e.contract].events.push(e);
         }
       }
-      for (const [maker, d] of Object.entries(sellByMakers)) {
-        console.log("SELL - maker: " + maker +
-          ", tokenBalance: " + ethers.utils.formatEther(d.tokenBalance) +
-          ", tokenApproval: " + ethers.utils.formatEther(d.tokenApproval));
-        for (const [i, e] of d.events.entries()) {
-          console.log("  Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+      for (const [maker, d1] of Object.entries(sellByMakers)) {
+        console.log("SELL - maker: " + maker + ", tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
+        for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
+          console.log("  tokenAgent: " + tokenAgent + ", tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          for (const [i, e] of d2.events.entries()) {
+            console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+          }
         }
       }
       // console.log("SELL - sellByMakers: " + JSON.stringify(sellByMakers, null, 2));
 
-
-      const buyByMakers = {};
-      for (const e of this.data.buyEvents) {
-        const tokenAgent = this.data.tokenAgents[e.contract] || null;
-        if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
-          if (!(e.maker in buyByMakers)) {
-            const wethBalance = wethBalances[e.maker] && wethBalances[e.maker].tokens || 0;
-            const wethApproval = wethApprovals[e.maker] && wethApprovals[e.maker][e.contract] || 0;
-            buyByMakers[e.maker] = {
-              wethBalance,
-              wethApproval,
-              events: [],
-              prices: [],
+      if (true) {
+        const buyByMakers = {};
+        for (const e of this.data.buyEvents) {
+          const tokenAgent = this.data.tokenAgents[e.contract] || null;
+          if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
+            if (!(e.maker in buyByMakers)) {
+              const wethBalance = wethBalances[e.maker] && wethBalances[e.maker].tokens || 0;
+              buyByMakers[e.maker] = {
+                wethBalance,
+                tokenAgents: {},
+              }
+            }
+            if (!(e.contract in buyByMakers[e.maker].tokenAgents)) {
+              const wethApproval = wethApprovals[e.maker] && wethApprovals[e.maker][e.contract] || 0;
+              buyByMakers[e.maker].tokenAgents[e.contract] = {
+                wethApproval,
+                events: [],
+                prices: [],
+              }
+            }
+            const eventIndex = buyByMakers[e.maker].tokenAgents[e.contract].events.length;
+            buyByMakers[e.maker].tokenAgents[e.contract].events.push(e);
+          }
+        }
+        for (const [maker, d1] of Object.entries(buyByMakers)) {
+          console.log("BUY - maker: " + maker + ", wethBalance: " + ethers.utils.formatEther(d1.wethBalance));
+          for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
+            console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(d2.wethApproval));
+            for (const [i, e] of d2.events.entries()) {
+              console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
             }
           }
-          const eventIndex = buyByMakers[e.maker].events.length;
-          buyByMakers[e.maker].events.push(e);
-          // console.log("BUY - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", index: " + e.index + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "], wethBalance: " + ethers.utils.formatEther(wethBalance) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
         }
-      }
-      for (const [maker, d] of Object.entries(buyByMakers)) {
-        console.log("BUY - maker: " + maker +
-          ", wethBalance: " + ethers.utils.formatEther(d.wethBalance) +
-          ", wethApproval: " + ethers.utils.formatEther(d.wethApproval));
-        for (const [i, e] of d.events.entries()) {
-          console.log("  Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
-        }
+        // console.log("BUY - buyByMakers: " + JSON.stringify(sellByMakers, null, 2));
       }
 
     },

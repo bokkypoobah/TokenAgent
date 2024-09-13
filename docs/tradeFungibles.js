@@ -103,27 +103,31 @@ const TradeFungibles = {
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-form-select size="sm" v-model="settings.approvals.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+                  <b-form-select size="sm" v-model="settings.sellOffers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
                 </div>
                 <div class="mt-0 pr-1">
-                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedApprovals.length + '/' + approvals.length }}</font>
+                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedSellOffers.length + '/' + sellOffers.length }}</font>
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-pagination size="sm" v-model="settings.approvals.currentPage" @input="saveSettings" :total-rows="filteredSortedApprovals.length" :per-page="settings.approvals.pageSize" style="height: 0;"></b-pagination>
+                  <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedSellOffers.length" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination>
                 </div>
                 <div class="mt-0 pl-1">
-                  <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+                  <b-form-select size="sm" v-model="settings.sellOffers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
                 </div>
               </div>
               <font size="-1">
-                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="200px" :fields="sellOffersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
                 <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
+                  <template #cell(price)="data">
+                    <font size="-1">
+                        {{ formatDecimals(data.item.price, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(tokens)="data">
+                    <font size="-1">
+                        {{ formatDecimals(data.item.tokens, 18) }}
+                    </font>
+                  </template>
                 </b-table>
-              </font>
-              <font size="-2">
-                <pre>
-sellByMakers: {{ sellByMakers }}
-                </pre>
               </font>
 
             </b-col>
@@ -135,23 +139,43 @@ sellByMakers: {{ sellByMakers }}
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-form-select size="sm" v-model="settings.approvals.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+                  <b-form-select size="sm" v-model="settings.buyOffers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
                 </div>
                 <div class="mt-0 pr-1">
-                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedApprovals.length + '/' + approvals.length }}</font>
+                  <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedBuyOffers.length + '/' + buyOffers.length }}</font>
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-pagination size="sm" v-model="settings.approvals.currentPage" @input="saveSettings" :total-rows="filteredSortedApprovals.length" :per-page="settings.approvals.pageSize" style="height: 0;"></b-pagination>
+                  <b-pagination size="sm" v-model="settings.buyOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedBuyOffers.length" :per-page="settings.buyOffers.pageSize" style="height: 0;"></b-pagination>
                 </div>
                 <div class="mt-0 pl-1">
-                  <b-form-select size="sm" v-model="settings.approvals.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+                  <b-form-select size="sm" v-model="settings.buyOffers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
                 </div>
               </div>
               <font size="-1">
-                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="400px" :fields="buyOffersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
                 <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="buyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
+                  <template #cell(price)="data">
+                    <font size="-1">
+                        {{ formatDecimals(data.item.price, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(tokens)="data">
+                    <font size="-1">
+                        {{ formatDecimals(data.item.tokens, 18) }}
+                    </font>
+                  </template>
                 </b-table>
               </font>
+            </b-col>
+          </b-row>
+          <b-row class="m-0 p-0">
+            <b-col class="m-0 mr-1 p-0">
+              <font size="-2">
+                <pre>
+sellByMakers: {{ sellByMakers }}
+                </pre>
+              </font>
+            </b-col>
+            <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
 buyByMakers: {{ buyByMakers }}
@@ -614,7 +638,7 @@ data: {{ data }}
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
 
-        version: 0,
+        version: 1,
       },
 
       tokenAgentFactoryEvents: [],
@@ -904,13 +928,10 @@ data: {{ data }}
             const tokensAvailable = tokens.lte(tokenApproval) ? tokens : tokenApproval;
             tokenApproval = tokenApproval.sub(tokensAvailable);
             console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
+            results.push({ price: e.price, tokens: e.tokens });
           }
         }
       }
-
-
-      results.push({ price: "1", tokens: "2" });
-
       console.log(now() + " INFO TradeFungibles:computed.sellOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
@@ -937,7 +958,7 @@ data: {{ data }}
     },
     pagedFilteredSellOffers() {
       // console.log(now() + " INFO TradeFungibles:computed.pagedFilteredSellOffers - results[0..1]: " + JSON.stringify(this.filteredSortedSellOffers.slice(0, 2), null, 2));
-      return this.filteredSortedSellOffers.slice((this.settings.events.currentPage - 1) * this.settings.events.pageSize, this.settings.events.currentPage * this.settings.events.pageSize);
+      return this.filteredSortedSellOffers.slice((this.settings.sellOffers.currentPage - 1) * this.settings.sellOffers.pageSize, this.settings.sellOffers.currentPage * this.settings.sellOffers.pageSize);
     },
 
     buyOffers() {
@@ -978,11 +999,10 @@ data: {{ data }}
             // const wethAvailable = wethAmount.lte(wethApproval) ? wethAmount : wethApproval;
             wethApproval = wethApproval.sub(wethAmount);
             console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", wethAmount: " + ethers.utils.formatEther(wethAmount) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
+            results.push({ price: e.price, tokens: e.tokens });
           }
         }
       }
-
-      results.push({ price: "1", tokens: "2" });
       console.log(now() + " INFO TradeFungibles:computed.buyOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
@@ -1009,7 +1029,7 @@ data: {{ data }}
     },
     pagedFilteredBuyOffers() {
       // console.log(now() + " INFO TradeFungibles:computed.pagedFilteredBuyOffers - results[0..1]: " + JSON.stringify(this.filteredSortedBuyOffers.slice(0, 2), null, 2));
-      return this.filteredSortedBuyOffers.slice((this.settings.events.currentPage - 1) * this.settings.events.pageSize, this.settings.events.currentPage * this.settings.events.pageSize);
+      return this.filteredSortedBuyOffers.slice((this.settings.buyOffers.currentPage - 1) * this.settings.buyOffers.pageSize, this.settings.buyOffers.currentPage * this.settings.buyOffers.pageSize);
     },
 
 

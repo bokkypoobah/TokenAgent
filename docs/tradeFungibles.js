@@ -1130,7 +1130,7 @@ data: {{ data }}
           }
         });
         Vue.set(this.data, 'wethTransfers', wethTransfers);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - this.data: " + JSON.stringify(this.data));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - this.data: " + JSON.stringify(this.data));
       }
       localStorage.tokenAgentTradeFungiblesData = JSON.stringify(this.data);
 
@@ -1138,13 +1138,11 @@ data: {{ data }}
     },
 
     async computeState() {
-      console.log(now() + " INFO TradeFungibles:methods.computeState");
-
+      // console.log(now() + " INFO TradeFungibles:methods.computeState");
       const balanceAddressMap = {};
       for (const a of this.data.balanceAddresses) {
         balanceAddressMap[a] = 1;
       }
-
       const tokenBalances = {};
       for (const transfer of this.data.tokenTransfers) {
         if (transfer.to in balanceAddressMap) {
@@ -1195,7 +1193,6 @@ data: {{ data }}
         tokenApprovals[e.owner][e.spender] = e.tokens;
       }
       console.log(now() + " INFO TradeFungibles:methods.computeState - tokenApprovals: " + JSON.stringify(tokenApprovals));
-
       const wethApprovals = {};
       for (const e of this.data.wethApprovals) {
         if (!(e.owner in wethApprovals)) {

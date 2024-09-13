@@ -98,6 +98,12 @@ ERC-20/721/1155 token `Approval` and `ApprovalForAll` events with this Token Age
 <kbd><img src="images/Screenshot_Agent_Approvals_20240911.png" width="600"/></kbd>
 
 
+###### Trade Fungibles
+
+ERC-20, WIP
+
+<kbd><img src="images/Screenshot_TradeFungibles_WIP_20240913.png" width="600"/></kbd>
+
 ##### Contract
 
 [contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)

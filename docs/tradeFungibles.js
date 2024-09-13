@@ -936,7 +936,7 @@ data: {{ data }}
       return results;
     },
     pagedFilteredSellOffers() {
-      console.log(now() + " INFO TradeFungibles:computed.pagedFilteredSellOffers - results[0..1]: " + JSON.stringify(this.filteredSortedSellOffers.slice(0, 2), null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.pagedFilteredSellOffers - results[0..1]: " + JSON.stringify(this.filteredSortedSellOffers.slice(0, 2), null, 2));
       return this.filteredSortedSellOffers.slice((this.settings.events.currentPage - 1) * this.settings.events.pageSize, this.settings.events.currentPage * this.settings.events.pageSize);
     },
 
@@ -1008,7 +1008,7 @@ data: {{ data }}
       return results;
     },
     pagedFilteredBuyOffers() {
-      console.log(now() + " INFO TradeFungibles:computed.pagedFilteredBuyOffers - results[0..1]: " + JSON.stringify(this.filteredSortedBuyOffers.slice(0, 2), null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.pagedFilteredBuyOffers - results[0..1]: " + JSON.stringify(this.filteredSortedBuyOffers.slice(0, 2), null, 2));
       return this.filteredSortedBuyOffers.slice((this.settings.events.currentPage - 1) * this.settings.events.pageSize, this.settings.events.currentPage * this.settings.events.pageSize);
     },
 
@@ -1469,7 +1469,7 @@ data: {{ data }}
 
         }
       }
-      if (true) {
+      if (false) {
         for (const [maker, d1] of Object.entries(buyByMakers)) {
           console.log("BUY - maker: " + maker + ", wethBalance: " + ethers.utils.formatEther(d1.wethBalance));
           for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {

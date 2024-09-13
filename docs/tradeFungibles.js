@@ -116,25 +116,25 @@ const TradeFungibles = {
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
                   <template #cell(price)="data">
                     <font size="-1">
-                        {{ formatDecimals(data.item.price, 18) }}
+                      {{ formatDecimals(data.item.price, 18) }}
                     </font>
                   </template>
                   <template #cell(tokens)="data">
                     <font size="-1">
-                        {{ formatDecimals(data.item.tokens, 18) }}
+                      {{ formatDecimals(data.item.tokens, 18) }}
                     </font>
                   </template>
                   <template #cell(maker)="data">
                     <font size="-1">
-                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
                     </font>
                   </template>
                   <template #cell(info)="data">
                     <font size="-1">
-                        {{ data.item.tokenAgent.substring(0, 8) + '...' + data.item.tokenAgent.slice(-6) }}
+                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
                     </font>
                   </template>
                   <template #cell(number)="data">
@@ -167,25 +167,25 @@ const TradeFungibles = {
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="buyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="buyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
                   <template #cell(price)="data">
                     <font size="-1">
-                        {{ formatDecimals(data.item.price, 18) }}
+                      {{ formatDecimals(data.item.price, 18) }}
                     </font>
                   </template>
                   <template #cell(tokens)="data">
                     <font size="-1">
-                        {{ formatDecimals(data.item.tokens, 18) }}
+                      {{ formatDecimals(data.item.tokens, 18) }}
                     </font>
                   </template>
                   <template #cell(maker)="data">
                     <font size="-1">
-                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
                     </font>
                   </template>
                   <template #cell(info)="data">
                     <font size="-1">
-                        {{ data.item.tokenAgent.substring(0, 8) + '...' + data.item.tokenAgent.slice(-6) }}
+                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
                     </font>
                   </template>
                   <template #cell(number)="data">
@@ -972,7 +972,7 @@ data: {{ data }}
             if (tokensAvailable.gt(0)) {
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
-                maker, tokenAgent, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
               });
             }
           }
@@ -1050,7 +1050,7 @@ data: {{ data }}
             if (tokensAvailable.gt(0)) {
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
-                maker, tokenAgent, price: e.price, tokens: tokensAvailable.toString(),
+                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
               });
             }
           }
@@ -1204,7 +1204,7 @@ data: {{ data }}
         localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
         const tokenAgents = {};
         for (const record of this.tokenAgentFactoryEvents) {
-          tokenAgents[record.tokenAgent] = { owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp, offers: {} };
+          tokenAgents[record.tokenAgent] = { index: record.index, indexByOwner: record.indexByOwner, owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp, offers: {} };
         }
 
         // Get latest nonces
@@ -1650,6 +1650,32 @@ data: {{ data }}
       // console.log("BUY - buyByMakers: " + JSON.stringify(sellByMakers, null, 2));
       Vue.set(this, 'buyByMakers', buyByMakers);
 
+    },
+
+    sellOffersRowSelected(item) {
+      console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
+      if (item && item.length > 0) {
+        // const account = item[0].account;
+        // if (account.substring(0, 3) == "st:") {
+        //   store.dispatch('viewStealthMetaAddress/viewStealthMetaAddress', item[0].account);
+        // } else {
+        //   store.dispatch('viewAddress/viewAddress', item[0].account);
+        // }
+        this.$refs.sellOffersTable.clearSelected();
+      }
+    },
+
+    buyOffersRowSelected(item) {
+      console.log(now() + " INFO Addresses:methods.buyOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
+      if (item && item.length > 0) {
+        // const account = item[0].account;
+        // if (account.substring(0, 3) == "st:") {
+        //   store.dispatch('viewStealthMetaAddress/viewStealthMetaAddress', item[0].account);
+        // } else {
+        //   store.dispatch('viewAddress/viewAddress', item[0].account);
+        // }
+        this.$refs.buyOffersTable.clearSelected();
+      }
     },
 
     async addOffer() {

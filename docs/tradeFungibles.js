@@ -116,8 +116,8 @@ const TradeFungibles = {
                 </div>
               </div>
               <font size="-1">
-                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="200px" :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
-                <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.sellEvents" show-empty head-variant="light" class="m-0 mt-1">
+                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="200px" :fields="sellOffersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
+                <b-table ref="takerBuyMakerSellTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOffersFields" :items="data.sellEvents" show-empty head-variant="light" class="m-0 mt-1">
                 </b-table>
               </font>
               <font size="-2">
@@ -148,8 +148,8 @@ sellByMakers: {{ sellByMakers }}
                 </div>
               </div>
               <font size="-1">
-                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
-                <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="offersFields" :items="data.buyEvents" show-empty head-variant="light" class="m-0 mt-1">
+                <!-- <b-table ref="offersTable" small fixed striped responsive hover sticky-header="400px" :fields="buyOffersFields" :items="pagedFilteredSortedOffers" show-empty head-variant="light" class="m-0 mt-1"> -->
+                <b-table ref="takerSellMakerBuyTable" small fixed striped responsive hover sticky-header="400px" :fields="buyOffersFields" :items="data.buyEvents" show-empty head-variant="light" class="m-0 mt-1">
                 </b-table>
               </font>
               <font size="-2">
@@ -661,6 +661,28 @@ data: {{ data }}
         // TODO: Deploy new TokenContractFactory with index worked out
         // { value: 'indexasc', text: '▲ Index' },
         // { value: 'indexdsc', text: '▼ Index' },
+      ],
+      sellOffersFields: [
+        { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+      ],
+      buyOffersFields: [
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },
+        // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
       offersFields: [
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-truncate' },

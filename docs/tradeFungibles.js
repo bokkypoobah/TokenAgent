@@ -147,7 +147,7 @@ const TradeFungibles = {
                   </template>
                   <template #cell(maker)="data">
                     <font size="-1">
-                      <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
+                      <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                         {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
                       </b-link>
                       <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data.item.tokenAgent" class="m-0 p-0">
@@ -201,13 +201,13 @@ const TradeFungibles = {
                       {{ formatDecimals(data.item.tokens, 18) }}
                     </font>
                   </template>
-                  <template #cell(maker)="data">
+                  <template #cell(maker)="data1">
                     <font size="-1">
-                      <b-link size="sm" :href="explorer + 'address/' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
-                        {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
+                      <b-link size="sm" :href="explorer + 'token/' + data.weth + '?a=' + data1.item.maker" variant="link" v-b-popover.hover.ds500="data1.item.maker" target="_blank">
+                        {{ data1.item.maker.substring(0, 8) + '...' + data1.item.maker.slice(-6) }}
                       </b-link>
-                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data.item.tokenAgent" class="m-0 p-0">
-                        {{ data.item.tokenAgentIndexByOwner }}
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data1.item.tokenAgent" class="m-0 p-0">
+                        {{ data1.item.tokenAgentIndexByOwner }}
                       </b-badge>
                     </font>
                   </template>

@@ -904,16 +904,18 @@ data: {{ data }}
           let tokenApproval = ethers.BigNumber.from(d2.tokenApproval);
           // let tokenApproval = ethers.BigNumber.from("1230000000000000000");
           console.log("  tokenAgent: " + tokenAgent + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval), " events: " + JSON.stringify(d2.events));
-          const prices = [];
-          for (const offerIndex of d2.events) {
-            const o = this.data.tokenAgents[tokenAgent].offers[offerIndex];
-            console.log("SELL Offer " + offerIndex + " " + JSON.stringify(o));
-          }
+          // const prices = [];
+          // for (const offerIndex of d2.events) {
+          //   const o = this.data.tokenAgents[tokenAgent].offers[offerIndex];
+          //   // console.log("SELL Offer " + offerIndex + " " + JSON.stringify(o));
+          // }
+          // console.log("d2.prices: " + JSON.stringify(d2.prices));
           // for (const [i, e] of d2.events.entries()) {
           //   console.log("    offerIndex: " + i + " blockNumber: " + e.blockNumber + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
           // }
           d2.prices.sort((a, b) => {
             const aP = ethers.BigNumber.from(a.price);
+            // TODO: handle null tokens
             const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
             const bP = ethers.BigNumber.from(b.price);
             const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
@@ -930,36 +932,42 @@ data: {{ data }}
             }
           });
           for (const [i, e] of d2.prices.entries()) {
+            const o = this.data.tokenAgents[tokenAgent].offers[e.offerIndex];
             const tokens = ethers.BigNumber.from(e.tokens);
             const tokensAvailable = tokens.lte(tokenApproval) ? tokens : tokenApproval;
             tokenApproval = tokenApproval.sub(tokensAvailable);
             console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
-            results.push({ maker, tokenAgent, price: e.price, tokens: e.tokens });
+            if (tokensAvailable.gt(0)) {
+              results.push({
+                blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
+                maker, tokenAgent, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+              });
+            }
           }
         }
       }
-      console.log(now() + " INFO TradeFungibles:computed.sellOffers - results: " + JSON.stringify(results, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
     filteredSortedSellOffers() {
       const results = this.sellOffers;
-      if (this.settings.events.sortOption == 'txorderasc') {
-        results.sort((a, b) => {
-          if (a.blockNumber == b.blockNumber) {
-            return a.logIndex - b.logIndex;
-          } else {
-            return a.blockNumber - b.blockNumber;
-          }
-        });
-      } else if (this.settings.events.sortOption == 'txorderdsc') {
-        results.sort((a, b) => {
-          if (a.blockNumber == b.blockNumber) {
-            return b.logIndex - a.logIndex;
-          } else {
-            return b.blockNumber - a.blockNumber;
-          }
-        });
-      }
+      // if (this.settings.events.sortOption == 'txorderasc') {
+      //   results.sort((a, b) => {
+      //     if (a.blockNumber == b.blockNumber) {
+      //       return a.logIndex - b.logIndex;
+      //     } else {
+      //       return a.blockNumber - b.blockNumber;
+      //     }
+      //   });
+      // } else if (this.settings.events.sortOption == 'txorderdsc') {
+      //   results.sort((a, b) => {
+      //     if (a.blockNumber == b.blockNumber) {
+      //       return b.logIndex - a.logIndex;
+      //     } else {
+      //       return b.blockNumber - a.blockNumber;
+      //     }
+      //   });
+      // }
       return results;
     },
     pagedFilteredSellOffers() {
@@ -976,12 +984,13 @@ data: {{ data }}
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
           let wethApproval = ethers.BigNumber.from(d2.wethApproval);
           // let wethApproval = ethers.BigNumber.from("100000000000001234");
-          console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
+          console.log("  tokenAgent: " + tokenAgent + ", wethApproval: " + ethers.utils.formatEther(wethApproval), " events: " + JSON.stringify(d2.events));
           // for (const [i, e] of d2.events.entries()) {
           //   console.log("    Offer " + i + " blockNumber: " + e.blockNumber + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
           // }
           d2.prices.sort((a, b) => {
             const aP = ethers.BigNumber.from(a.price);
+            // TODO: handle null tokens
             const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
             const bP = ethers.BigNumber.from(b.price);
             const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
@@ -998,6 +1007,7 @@ data: {{ data }}
             }
           });
           for (const [i, e] of d2.prices.entries()) {
+            const o = this.data.tokenAgents[tokenAgent].offers[e.offerIndex];
             const tokens = ethers.BigNumber.from(e.tokens);
             const tokensApproved = wethApproval.mul(TENPOW18).div(e.price);
             const tokensAvailable = tokens.lte(tokensApproved) ? tokens : tokensApproved;
@@ -1005,32 +1015,37 @@ data: {{ data }}
             // const wethAvailable = wethAmount.lte(wethApproval) ? wethAmount : wethApproval;
             wethApproval = wethApproval.sub(wethAmount);
             console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", wethAmount: " + ethers.utils.formatEther(wethAmount) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
-            results.push({ maker, tokenAgent, price: e.price, tokens: e.tokens });
+            if (tokensAvailable.gt(0)) {
+              results.push({
+                blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
+                maker, tokenAgent, price: e.price, tokens: tokensAvailable.toString(),
+              });
+            }
           }
         }
       }
-      console.log(now() + " INFO TradeFungibles:computed.buyOffers - results: " + JSON.stringify(results, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.buyOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
     filteredSortedBuyOffers() {
       const results = this.buyOffers;
-      if (this.settings.events.sortOption == 'txorderasc') {
-        results.sort((a, b) => {
-          if (a.blockNumber == b.blockNumber) {
-            return a.logIndex - b.logIndex;
-          } else {
-            return a.blockNumber - b.blockNumber;
-          }
-        });
-      } else if (this.settings.events.sortOption == 'txorderdsc') {
-        results.sort((a, b) => {
-          if (a.blockNumber == b.blockNumber) {
-            return b.logIndex - a.logIndex;
-          } else {
-            return b.blockNumber - a.blockNumber;
-          }
-        });
-      }
+      // if (this.settings.events.sortOption == 'txorderasc') {
+      //   results.sort((a, b) => {
+      //     if (a.blockNumber == b.blockNumber) {
+      //       return a.logIndex - b.logIndex;
+      //     } else {
+      //       return a.blockNumber - b.blockNumber;
+      //     }
+      //   });
+      // } else if (this.settings.events.sortOption == 'txorderdsc') {
+      //   results.sort((a, b) => {
+      //     if (a.blockNumber == b.blockNumber) {
+      //       return b.logIndex - a.logIndex;
+      //     } else {
+      //       return b.blockNumber - a.blockNumber;
+      //     }
+      //   });
+      // }
       return results;
     },
     pagedFilteredBuyOffers() {
@@ -1458,8 +1473,8 @@ data: {{ data }}
         }
       }
 
-      console.log("SELL - sellByMakers: " + JSON.stringify(sellByMakers, null, 2));
-      console.log("BUY - buyByMakers: " + JSON.stringify(buyByMakers, null, 2));
+      // console.log("SELL - sellByMakers: " + JSON.stringify(sellByMakers, null, 2));
+      // console.log("BUY - buyByMakers: " + JSON.stringify(buyByMakers, null, 2));
 
       // for (const e of this.data.sellEvents) {
       //   const tokenAgent = this.data.tokenAgents[e.contract] || null;

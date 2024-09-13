@@ -1191,21 +1191,63 @@ data: {{ data }}
       }
       console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));
 
-      const sellOffers = {};
+      const sellByMakers = {};
       for (const e of this.data.sellEvents) {
         const tokenAgent = this.data.tokenAgents[e.contract] || null;
         if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
-          console.log("SELL - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+          if (!(e.maker in sellByMakers)) {
+            const tokenBalance = tokenBalances[e.maker] && tokenBalances[e.maker].tokens || 0;
+            const tokenApproval = tokenApprovals[e.maker] && tokenApprovals[e.maker][e.contract] || 0;
+            sellByMakers[e.maker] = {
+              tokenBalance,
+              tokenApproval,
+              events: [],
+              prices: [],
+            }
+          }
+          const eventIndex = sellByMakers[e.maker].events.length;
+          sellByMakers[e.maker].events.push(e);
         }
       }
+      for (const [maker, d] of Object.entries(sellByMakers)) {
+        console.log("SELL - maker: " + maker +
+          ", tokenBalance: " + ethers.utils.formatEther(d.tokenBalance) +
+          ", tokenApproval: " + ethers.utils.formatEther(d.tokenApproval));
+        for (const [i, e] of d.events.entries()) {
+          console.log("  Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+        }
+      }
+      // console.log("SELL - sellByMakers: " + JSON.stringify(sellByMakers, null, 2));
 
-      const buyOffers = {};
+
+      const buyByMakers = {};
       for (const e of this.data.buyEvents) {
         const tokenAgent = this.data.tokenAgents[e.contract] || null;
         if (tokenAgent && tokenAgent.nonce == e.nonce && e.expiry > this.data.timestamp) {
-          console.log("BUY - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+          if (!(e.maker in buyByMakers)) {
+            const wethBalance = wethBalances[e.maker] && wethBalances[e.maker].tokens || 0;
+            const wethApproval = wethApprovals[e.maker] && wethApprovals[e.maker][e.contract] || 0;
+            buyByMakers[e.maker] = {
+              wethBalance,
+              wethApproval,
+              events: [],
+              prices: [],
+            }
+          }
+          const eventIndex = buyByMakers[e.maker].events.length;
+          buyByMakers[e.maker].events.push(e);
+          // console.log("BUY - tokenAgent: " + e.contract.substring(0, 10) + '...' + e.contract.slice(-8) + ", index: " + e.index + ", maker: " + e.maker.substring(0, 10) + '...' + e.maker.slice(-8) + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "], wethBalance: " + ethers.utils.formatEther(wethBalance) + ", wethApproval: " + ethers.utils.formatEther(wethApproval));
         }
       }
+      for (const [maker, d] of Object.entries(buyByMakers)) {
+        console.log("BUY - maker: " + maker +
+          ", wethBalance: " + ethers.utils.formatEther(d.wethBalance) +
+          ", wethApproval: " + ethers.utils.formatEther(d.wethApproval));
+        for (const [i, e] of d.events.entries()) {
+          console.log("  Offer " + i + " blockNumber: " + e.blockNumber + ", count: " + e.count + ", " + ", prices: [" + e.prices.map(e => ethers.utils.formatEther(e)).join(',') + "], tokenss: [" + e.tokenss.map(e => ethers.utils.formatEther(e)).join(',') + "]");
+        }
+      }
+
     },
 
     async addOffer() {

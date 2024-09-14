@@ -638,7 +638,7 @@ data: {{ data }}
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
                 maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner,
-                offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                offerIndex: e.offerIndex, priceIndex: e.priceIndex, price: e.price, tokens: tokensAvailable.toString(),
                 expiry: o.expiry,
               });
             }
@@ -718,7 +718,7 @@ data: {{ data }}
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
                 maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner,
-                offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                offerIndex: e.offerIndex, priceIndex: e.priceIndex, price: e.price, tokens: tokensAvailable.toString(),
                 expiry: o.expiry,
               });
             }

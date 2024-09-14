@@ -6,6 +6,12 @@ const TradeFungibles = {
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
           <template #modal-title>Sell Offer</template>
           <div class="m-0 p-1">
+            <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
+            </b-form-group>
+            <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+            </b-form-group>
             <font size="-2">
               <pre>
 modalSellOffer: {{ modalSellOffer }}
@@ -20,6 +26,12 @@ modalSellOffer: {{ modalSellOffer }}
         <b-modal ref="modalbuyoffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
           <template #modal-title>Buy Offer</template>
           <div class="m-0 p-1">
+            <b-form-group label="Maker:" label-for="modalbuyoffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modalbuyoffer-maker" :value="modalBuyOffer.maker" class="pl-2 w-75"></b-form-input>
+            </b-form-group>
+            <b-form-group label="Token Agent:" label-for="modalbuyoffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-form-input size="sm" plaintext id="modalbuyoffer-tokenagent" :value="modalBuyOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+            </b-form-group>
             <font size="-2">
               <pre>
 modalBuyOffer: {{ modalBuyOffer }}

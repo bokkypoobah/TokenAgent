@@ -6,6 +6,11 @@ const TradeFungibles = {
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
           <template #modal-title>Sell Offer</template>
           <div class="m-0 p-1">
+            <font size="-2">
+              <pre>
+modalSellOffer: {{ modalSellOffer }}
+              </pre>
+            </font>
             <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
             </b-form-group> -->
@@ -15,6 +20,11 @@ const TradeFungibles = {
         <b-modal ref="modalbuyoffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
           <template #modal-title>Buy Offer</template>
           <div class="m-0 p-1">
+            <font size="-2">
+              <pre>
+modalBuyOffer: {{ modalBuyOffer }}
+              </pre>
+            </font>
             <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
             </b-form-group> -->
@@ -735,6 +745,35 @@ data: {{ data }}
 
       sellByMakers: {},
       buyByMakers: {},
+
+      modalSellOffer: {
+        blockNumber: null,
+        txIndex: null,
+        txHash: null,
+        logIndex: null,
+        maker: null,
+        tokenAgent: null,
+        tokenAgentIndexByOwner: null,
+        offerIndex: null,
+        priceIndex: null,
+        price: null,
+        tokens: null,
+        expiry: null,
+      },
+      modalBuyOffer: {
+        blockNumber: null,
+        txIndex: null,
+        txHash: null,
+        logIndex: null,
+        maker: null,
+        tokenAgent: null,
+        tokenAgentIndexByOwner: null,
+        offerIndex: null,
+        priceIndex: null,
+        price: null,
+        tokens: null,
+        expiry: null,
+      },
 
       events: [],
       approvals: [],
@@ -1702,12 +1741,20 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        // const account = item[0].account;
-        // if (account.substring(0, 3) == "st:") {
-        //   store.dispatch('viewStealthMetaAddress/viewStealthMetaAddress', item[0].account);
-        // } else {
-        //   store.dispatch('viewAddress/viewAddress', item[0].account);
-        // }
+        this.modalSellOffer = {
+          blockNumber: item[0].blockNumber,
+          txIndex: item[0].txIndex,
+          txHash: item[0].txHash,
+          logIndex: item[0].logIndex,
+          maker: item[0].maker,
+          tokenAgent: item[0].tokenAgent,
+          tokenAgentIndexByOwner: item[0].tokenAgentIndexByOwner,
+          offerIndex: item[0].offerIndex,
+          priceIndex: item[0].priceIndex,
+          price: item[0].price,
+          tokens: item[0].token,
+          expiry: item[0].expiry,
+        };
         this.$refs.modalselloffer.show();
         this.$refs.sellOffersTable.clearSelected();
       }
@@ -1716,12 +1763,20 @@ data: {{ data }}
     buyOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.buyOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        // const account = item[0].account;
-        // if (account.substring(0, 3) == "st:") {
-        //   store.dispatch('viewStealthMetaAddress/viewStealthMetaAddress', item[0].account);
-        // } else {
-        //   store.dispatch('viewAddress/viewAddress', item[0].account);
-        // }
+        this.modalBuyOffer = {
+          blockNumber: item[0].blockNumber,
+          txIndex: item[0].txIndex,
+          txHash: item[0].txHash,
+          logIndex: item[0].logIndex,
+          maker: item[0].maker,
+          tokenAgent: item[0].tokenAgent,
+          tokenAgentIndexByOwner: item[0].tokenAgentIndexByOwner,
+          offerIndex: item[0].offerIndex,
+          priceIndex: item[0].priceIndex,
+          price: item[0].price,
+          tokens: item[0].token,
+          expiry: item[0].expiry,
+        };
         this.$refs.modalbuyoffer.show();
         this.$refs.buyOffersTable.clearSelected();
       }

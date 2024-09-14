@@ -140,7 +140,10 @@ const TradeFungibles = {
                       {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                     </font>
                   </template>
-                  <template #cell(info)="data">
+                  <template #cell(expiry)="data">
+                    <font size="-1">
+                      {{ formatTimestamp(data.item.expiry) }}
+                    </font>
                     <!-- <font size="-1">
                       {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
                     </font> -->
@@ -150,8 +153,14 @@ const TradeFungibles = {
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                         {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
                       </b-link>
-                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data.item.tokenAgent" class="m-0 p-0">
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Owners token agent #' + data.item.tokenAgentIndexByOwner + ' ' + data.item.tokenAgent" class="m-0 p-0">
                         {{ data.item.tokenAgentIndexByOwner }}
+                      </b-badge>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Offer index ' + data.item.offerIndex" class="m-0 p-0">
+                        {{ data.item.offerIndex }}
+                      </b-badge>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Price index ' + data.item.priceIndex" class="m-0 p-0">
+                        {{ data.item.priceIndex }}
                       </b-badge>
                     </font>
                   </template>
@@ -206,15 +215,21 @@ const TradeFungibles = {
                       <b-link size="sm" :href="explorer + 'token/' + data.weth + '?a=' + data1.item.maker" variant="link" v-b-popover.hover.ds500="data1.item.maker" target="_blank">
                         {{ data1.item.maker.substring(0, 8) + '...' + data1.item.maker.slice(-6) }}
                       </b-link>
-                      <b-badge variant="light" v-b-popover.hover.ds500="'Token agent ' + data1.item.tokenAgent" class="m-0 p-0">
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Owners token agent #' + data1.item.tokenAgentIndexByOwner + ' ' + data1.item.tokenAgent" class="m-0 p-0">
                         {{ data1.item.tokenAgentIndexByOwner }}
+                      </b-badge>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Offer index ' + data1.item.offerIndex" class="m-0 p-0">
+                        {{ data1.item.offerIndex }}
+                      </b-badge>
+                      <b-badge variant="light" v-b-popover.hover.ds500="'Price index ' + data1.item.priceIndex" class="m-0 p-0">
+                        {{ data1.item.priceIndex }}
                       </b-badge>
                     </font>
                   </template>
-                  <template #cell(info)="data">
-                    <!-- <font size="-1">
-                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
-                    </font> -->
+                  <template #cell(expiry)="data">
+                    <font size="-1">
+                      {{ formatTimestamp(data.item.expiry) }}
+                    </font>
                   </template>
                   <template #cell(number)="data">
                     <font size="-1">
@@ -225,7 +240,7 @@ const TradeFungibles = {
               </font>
             </b-col>
           </b-row>
-          <b-row class="m-0 p-0">
+          <b-row class="m-0 mt-2 p-0">
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
@@ -747,20 +762,20 @@ data: {{ data }}
       sellOffersFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
       ],
       buyOffersFields: [
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 20%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
@@ -1000,7 +1015,9 @@ data: {{ data }}
             if (tokensAvailable.gt(0)) {
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
-                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner,
+                offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                expiry: o.expiry,
               });
             }
           }
@@ -1078,7 +1095,9 @@ data: {{ data }}
             if (tokensAvailable.gt(0)) {
               results.push({
                 blockNumber: o.blockNumber, txIndex: o.txIndex, txHash: o.txHash, logIndex: o.logIndex,
-                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner, offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                maker, tokenAgent, tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner,
+                offerIndex: e.offerIndex, priceIndex: i, price: e.price, tokens: tokensAvailable.toString(),
+                expiry: o.expiry,
               });
             }
           }

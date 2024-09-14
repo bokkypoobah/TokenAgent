@@ -4,10 +4,10 @@ const TradeFungibles = {
       <b-card no-body no-header class="border-0">
 
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
-          <template #modal-title>Sell Offer</template>
+          <template #modal-title>Trade Fungibles - Sell Offer</template>
           <div class="m-0 p-1">
             <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group  style="width: 25.0rem;">
+              <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -15,7 +15,7 @@ const TradeFungibles = {
               </b-input-group>
             </b-form-group>
             <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group  style="width: 25.0rem;">
+              <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -34,10 +34,10 @@ modalSellOffer: {{ modalSellOffer }}
         </b-modal>
 
         <b-modal ref="modalbuyoffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
-          <template #modal-title>Buy Offer</template>
+          <template #modal-title>Trade Fungibles - Buy Offer</template>
           <div class="m-0 p-1">
             <b-form-group label="Maker:" label-for="modalbuyoffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group  style="width: 25.0rem;">
+              <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalbuyoffer-maker" :value="modalBuyOffer.maker" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalBuyOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -45,7 +45,7 @@ modalSellOffer: {{ modalSellOffer }}
               </b-input-group>
             </b-form-group>
             <b-form-group label="Token Agent:" label-for="modalbuyoffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group  style="width: 25.0rem;">
+              <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalbuyoffer-tokenagent" :value="modalBuyOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalBuyOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
@@ -791,6 +791,7 @@ data: {{ data }}
         price: null,
         tokens: null,
         expiry: null,
+        offer: null,
       },
       modalBuyOffer: {
         blockNumber: null,
@@ -805,6 +806,7 @@ data: {{ data }}
         price: null,
         tokens: null,
         expiry: null,
+        offer: null,
       },
 
       events: [],
@@ -1786,6 +1788,7 @@ data: {{ data }}
           price: item[0].price,
           tokens: item[0].token,
           expiry: item[0].expiry,
+          offer: this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex],
         };
         this.$refs.modalselloffer.show();
         this.$refs.sellOffersTable.clearSelected();
@@ -1795,6 +1798,10 @@ data: {{ data }}
     buyOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.buyOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
+        // const tokenAgent = this.data.tokenAgents[item[0].tokenAgent];
+        // console.log(now() + " INFO Addresses:methods.buyOffersRowSelected tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
+        // const offer = tokenAgent.offers[item[0].offerIndex];
+        // console.log(now() + " INFO Addresses:methods.buyOffersRowSelected offer: " + JSON.stringify(offer, null, 2));
         this.modalBuyOffer = {
           blockNumber: item[0].blockNumber,
           txIndex: item[0].txIndex,
@@ -1808,6 +1815,7 @@ data: {{ data }}
           price: item[0].price,
           tokens: item[0].token,
           expiry: item[0].expiry,
+          offer: this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex],
         };
         this.$refs.modalbuyoffer.show();
         this.$refs.buyOffersTable.clearSelected();

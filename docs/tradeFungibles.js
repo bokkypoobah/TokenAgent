@@ -22,6 +22,25 @@ const TradeFungibles = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
+            <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalselloffer-timestamp" :value="modalSellOffer.offer && formatTimestamp(modalSellOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :disabled="!modalSellOffer.offer" :href="explorer + 'tx/' + (modalSellOffer.offer && modalSellOffer.offer.txHash || '')" variant="link" v-b-popover.hover.ds500="'View transaction in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+            <b-form-group label="Expiry:" label-for="modalselloffer-expiry" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalselloffer-expiry" :value="modalSellOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalSellOffer.expiry)" class="pl-2 w-75"></b-form-input>
+              </b-input-group>
+            </b-form-group>
+            <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalselloffer-nonce" :value="modalSellOffer.offer && modalSellOffer.offer.nonce" class="pl-2 w-75"></b-form-input>
+              </b-input-group>
+            </b-form-group>
+
             <font size="-2">
               <pre>
 modalSellOffer: {{ modalSellOffer }}
@@ -52,6 +71,26 @@ modalSellOffer: {{ modalSellOffer }}
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
+
+            <b-form-group label="Timestamp:" label-for="modalbuyoffer-timestamp" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalbuyoffer-timestamp" :value="modalBuyOffer.offer && formatTimestamp(modalBuyOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :disabled="!modalBuyOffer.offer" :href="explorer + 'tx/' + (modalBuyOffer.offer && modalBuyOffer.offer.txHash || '')" variant="link" v-b-popover.hover.ds500="'View transaction in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+            <b-form-group label="Expiry:" label-for="modalbuyoffer-expiry" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalbuyoffer-expiry" :value="modalBuyOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalBuyOffer.expiry)" class="pl-2 w-75"></b-form-input>
+              </b-input-group>
+            </b-form-group>
+            <b-form-group label="Nonce:" label-for="modalbuyoffer-nonce" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+              <b-input-group style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalbuyoffer-nonce" :value="modalBuyOffer.offer && modalBuyOffer.offer.nonce" class="pl-2 w-75"></b-form-input>
+              </b-input-group>
+            </b-form-group>
+
             <font size="-2">
               <pre>
 modalBuyOffer: {{ modalBuyOffer }}

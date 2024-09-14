@@ -612,28 +612,50 @@ data: {{ data }}
           tokenApproval: this.tokenApprovals[d.owner] && this.tokenApprovals[d.owner][tokenAgent] || 0,
           offers: {},
           prices: [],
-          events: [],
+          // events: [],
         };
+        const prices = [];
         for (const [offerIndex, o] of Object.entries(d.offers)) {
           // console.log(offerIndex + " => " + JSON.stringify(o));
           if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
             collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
-            console.log("SELL: " + d.owner + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(o));
+            // console.log("SELL: " + d.owner + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(o));
+            if (o.prices.length == 1 && o.tokenss.length == 0) {
+              prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
+            } else {
+              for (let i = 0; i < o.prices.length; i++) {
+                prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i] });
+              }
+            }
           }
         }
+        prices.sort((a, b) => {
+          const aP = ethers.BigNumber.from(a.price);
+          // TODO: handle null tokens
+          const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
+          const bP = ethers.BigNumber.from(b.price);
+          const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
+          if (aP.eq(bP)) {
+            if (aT == null) {
+              return 1;
+            } else if (bT == null) {
+              return -1;
+            } else {
+              return aT.lt(bT) ? 1 : -1;
+            }
+          } else {
+            return aP.lt(bP) ? -1 : 1;
+          }
+        });
+        collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
       // console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
 
-      // for (const [maker, d1] of Object.entries(collator)) {
-      //   const prices = [];
-      //   for (const [tokenAgent, d2] of Object.entries(collator[maker])) {
-      //     for (const [offerIndex, o] of Object.entries(this.data.tokenAgents[tokenAgent].offers)) {
-      //       if (this.data.tokenAgents[tokenAgent].nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
-      //         console.log("SELL: " + maker + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(o));
-      //       }
-      //     }
-      //   }
-      // }
+      for (const [maker, d1] of Object.entries(collator)) {
+        console.log(maker + " => " + JSON.stringify(d1));
+
+
+      }
       return results;
     },
 

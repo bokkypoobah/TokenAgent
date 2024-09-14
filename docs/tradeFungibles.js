@@ -416,6 +416,11 @@ data: {{ data }}
       sellByMakers: {},
       buyByMakers: {},
 
+      tokenBalances: {},
+      wethBalances: {},
+      tokenApprovals: {},
+      wethApprovals: {},
+
       modalSellOffer: {
         blockNumber: null,
         txIndex: null,
@@ -593,6 +598,47 @@ data: {{ data }}
 
     sellOffers() {
       const results = [];
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
+      const collator = {};
+      for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
+        // console.log(tokenAgent + " => " + JSON.stringify(d));
+        if (!(d.owner in collator)) {
+          collator[d.owner] = {
+            tokenBalance: this.tokenBalances[d.owner] && this.tokenBalances[d.owner].tokens || 0,
+            tokenAgents: {},
+          };
+        }
+        collator[d.owner].tokenAgents[tokenAgent] = {
+          tokenApproval: this.tokenApprovals[d.owner] && this.tokenApprovals[d.owner][tokenAgent] || 0,
+          offers: {},
+          prices: [],
+          events: [],
+        };
+        for (const [offerIndex, o] of Object.entries(d.offers)) {
+          // console.log(offerIndex + " => " + JSON.stringify(o));
+          if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+            collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
+            console.log("SELL: " + d.owner + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(o));
+          }
+        }
+      }
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
+
+      // for (const [maker, d1] of Object.entries(collator)) {
+      //   const prices = [];
+      //   for (const [tokenAgent, d2] of Object.entries(collator[maker])) {
+      //     for (const [offerIndex, o] of Object.entries(this.data.tokenAgents[tokenAgent].offers)) {
+      //       if (this.data.tokenAgents[tokenAgent].nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+      //         console.log("SELL: " + maker + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(o));
+      //       }
+      //     }
+      //   }
+      // }
+      return results;
+    },
+
+    sellOffersOld() {
+      const results = [];
 
       // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
       for (const [maker, d1] of Object.entries(this.sellByMakers)) {
@@ -675,6 +721,12 @@ data: {{ data }}
     },
 
     buyOffers() {
+      const results = [];
+      // console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
+      return results;
+    },
+
+    buyOffersOld() {
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const results = [];
       // console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
@@ -952,7 +1004,7 @@ data: {{ data }}
       this.computeState();
     },
 
-    async computeState() {
+    computeState() {
       // console.log(now() + " INFO TradeFungibles:methods.computeState");
       const balanceAddressMap = {};
       for (const a of this.data.balanceAddresses) {
@@ -977,6 +1029,7 @@ data: {{ data }}
           }
         }
       }
+      Vue.set(this, 'tokenBalances', tokenBalances);
       console.log(now() + " INFO TradeFungibles:methods.computeState - tokenBalances: " + JSON.stringify(tokenBalances));
 
       const wethBalances = {};
@@ -998,6 +1051,7 @@ data: {{ data }}
           }
         }
       }
+      Vue.set(this, 'wethBalances', wethBalances);
       console.log(now() + " INFO TradeFungibles:methods.computeState - wethBalances: " + JSON.stringify(wethBalances));
 
       const tokenApprovals = {};
@@ -1007,6 +1061,7 @@ data: {{ data }}
         }
         tokenApprovals[e.owner][e.spender] = e.tokens;
       }
+      Vue.set(this, 'tokenApprovals', tokenApprovals);
       console.log(now() + " INFO TradeFungibles:methods.computeState - tokenApprovals: " + JSON.stringify(tokenApprovals));
       const wethApprovals = {};
       for (const e of this.data.wethApprovals) {
@@ -1015,6 +1070,7 @@ data: {{ data }}
         }
         wethApprovals[e.owner][e.spender] = e.tokens;
       }
+      Vue.set(this, 'wethApprovals', wethApprovals);
       console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));
 
       // TODO: Handle null tokens, and compute available balance, ideally across tokenAgents by makers

@@ -624,7 +624,7 @@ data: {{ data }}
               prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
             } else {
               for (let i = 0; i < o.prices.length; i++) {
-                prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i] });
+                prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], tokensAvailable: null });
               }
             }
           }
@@ -647,12 +647,44 @@ data: {{ data }}
             return aP.lt(bP) ? -1 : 1;
           }
         });
+        console.log(d.owner + "/" + tokenAgent + " => " + JSON.stringify(prices));
+        const tokenBalance = ethers.BigNumber.from(collator[d.owner].tokenBalance);
+        const tokenApproval = ethers.BigNumber.from(collator[d.owner].tokenAgents[tokenAgent].tokenApproval);
+        let tokensRemaining = tokenBalance.lte(tokenApproval) ? tokenBalance: tokenApproval;
+        console.log("tokensRemaining: " + ethers.utils.formatEther(tokensRemaining) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalance) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
+        for (const [i, e] of prices.entries()) {
+          // const o = this.data.tokenAgents[tokenAgent].offers[e.offerIndex];
+          const tokens = ethers.BigNumber.from(e.tokens);
+          const tokensAvailable = tokens.lte(tokensRemaining) ? tokens : tokensRemaining;
+          tokensRemaining = tokensRemaining.sub(tokensAvailable);
+          // console.log("    priceIndex: " + i + ", offerIndex: " + e.offerIndex + ", price: " + ethers.utils.formatEther(e.price) + ", tokens: " + ethers.utils.formatEther(e.tokens) + ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval));
+          console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex + ", price: " + ethers.utils.formatEther(e.price) +
+            ", tokens: " + ethers.utils.formatEther(tokens) +
+            ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) +
+            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
+          );
+          prices[i].tokensAvailable = tokensAvailable.toString();
+          if (tokensAvailable.gt(0)) {
+            const o = d.offers[e.offerIndex];
+            console.log(JSON.stringify(o));
+            results.push({
+              // blockNumber: o.blockNumber, txIndex: o.txIndex,
+              txHash: o.txHash, logIndex: o.logIndex,
+              maker: d.owner,
+              tokenAgent,
+              tokenAgentIndexByOwner: this.data.tokenAgents[tokenAgent].indexByOwner,
+              offerIndex: e.offerIndex, priceIndex: e.priceIndex, price: e.price, tokens: tokens.toString(), tokensAvailable: tokensAvailable.toString(),
+              expiry: o.expiry,
+            });
+          }
+        }
+
         collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
-      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
+      console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
 
       for (const [maker, d1] of Object.entries(collator)) {
-        console.log(maker + " => " + JSON.stringify(d1));
+        // console.log(maker + " => " + JSON.stringify(d1));
 
 
       }

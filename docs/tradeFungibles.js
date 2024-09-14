@@ -7,10 +7,20 @@ const TradeFungibles = {
           <template #modal-title>Sell Offer</template>
           <div class="m-0 p-1">
             <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
+              <b-input-group  style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
             </b-form-group>
             <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+              <b-input-group  style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
             </b-form-group>
             <font size="-2">
               <pre>
@@ -27,10 +37,20 @@ modalSellOffer: {{ modalSellOffer }}
           <template #modal-title>Buy Offer</template>
           <div class="m-0 p-1">
             <b-form-group label="Maker:" label-for="modalbuyoffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-form-input size="sm" plaintext id="modalbuyoffer-maker" :value="modalBuyOffer.maker" class="pl-2 w-75"></b-form-input>
+              <b-input-group  style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalbuyoffer-maker" :value="modalBuyOffer.maker" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :href="explorer + 'address/' + modalBuyOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
             </b-form-group>
             <b-form-group label="Token Agent:" label-for="modalbuyoffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-form-input size="sm" plaintext id="modalbuyoffer-tokenagent" :value="modalBuyOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+              <b-input-group  style="width: 25.0rem;">
+                <b-form-input size="sm" plaintext id="modalbuyoffer-tokenagent" :value="modalBuyOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
+                <b-input-group-append>
+                  <b-button size="sm" :href="explorer + 'address/' + modalBuyOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
+                </b-input-group-append>
+              </b-input-group>
             </b-form-group>
             <font size="-2">
               <pre>

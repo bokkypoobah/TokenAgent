@@ -104,6 +104,10 @@ ERC-20, WIP
 
 <kbd><img src="images/Screenshot_TradeFungibles_WIP_20240913.png" width="600"/></kbd>
 
+ERC-20 Sell Offers, WIP
+
+<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WIP_20240915.png" width="600"/></kbd>
+
 ##### Contract
 
 [contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)

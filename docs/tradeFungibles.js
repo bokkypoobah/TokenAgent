@@ -22,14 +22,14 @@ const TradeFungibles = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-            <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
+            <!-- <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-timestamp" :value="modalSellOffer.offer && formatTimestamp(modalSellOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :disabled="!modalSellOffer.offer" :href="explorer + 'tx/' + (modalSellOffer.offer && modalSellOffer.offer.txHash || '') + '#eventlog#' + modalSellOffer.logIndex" variant="link" v-b-popover.hover.ds500="'View transaction in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
                 </b-input-group-append>
               </b-input-group>
-            </b-form-group>
+            </b-form-group> -->
             <!-- <b-form-group label="Expiry:" label-for="modalselloffer-expiry" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-expiry" :value="modalSellOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalSellOffer.expiry)" class="pl-2 w-75"></b-form-input>
@@ -75,7 +75,9 @@ const TradeFungibles = {
                   </template>
                   <template #cell(expiry)="data">
                     <font size="-1">
-                      {{ formatTimestamp(data.item.expiry) }}
+                      <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
+                        {{ formatTimestamp(data.item.expiry) }}
+                      </b-link>
                     </font>
                   </template>
                 </b-table>
@@ -900,6 +902,8 @@ data: {{ data }}
               prices.push({
                 offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
                 expiry: o.expiry,
+                txHash: o.txHash,
+                logIndex: o.logIndex,
                 selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex == 0,
               });
             } else if (o.prices.length == o.tokenss.length) {
@@ -907,6 +911,8 @@ data: {{ data }}
                 prices.push({
                   offerIndex: o.index, priceIndex: i, price: o.prices[i], offer: o.tokenss[i], tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
                   expiry: o.expiry,
+                  txHash: o.txHash,
+                  logIndex: o.logIndex,
                   selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex >= i,
                 });
               }

@@ -422,8 +422,6 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        blockNumber: null,
-        txIndex: null,
         txHash: null,
         logIndex: null,
         maker: null,
@@ -437,8 +435,6 @@ data: {{ data }}
         offer: null,
       },
       modalBuyOffer: {
-        blockNumber: null,
-        txIndex: null,
         txHash: null,
         logIndex: null,
         maker: null,
@@ -504,6 +500,9 @@ data: {{ data }}
   computed: {
     chainId() {
       return store.getters['connection/chainId'];
+    },
+    coinbase() {
+      return store.getters['connection/coinbase'];
     },
     networkSupported() {
       return store.getters['connection/networkSupported'];
@@ -877,6 +876,7 @@ data: {{ data }}
         // TODO: const balance = await provider.getBalance(e.maker);
         const approvalAddressMap = {};
         const balanceAddressMap = {};
+        balanceAddressMap[this.coinbase] = 1;
         for (const e of tokenAgentEvents) {
           if (!(e.contract in approvalAddressMap)) {
             approvalAddressMap[e.contract] = 1;
@@ -889,6 +889,7 @@ data: {{ data }}
         Vue.set(this.data, 'approvalAddresses', approvalAddresses);
         const balanceAddresses = Object.keys(balanceAddressMap);
         Vue.set(this.data, 'balanceAddresses', balanceAddresses);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
 
         const tokenApprovalsfilter = {
           address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
@@ -1071,9 +1072,41 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
+        const maker = item[0].maker;
+        const makerTokenBalance = this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
+        const tokenAgent = item[0].tokenAgent;
+        const tokenAgentTokenApproval = this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent]) || 0;
+        const nonce = this.data.tokenAgents[tokenAgent].nonce;
+        const offer = this.data.tokenAgents[tokenAgent].offers[item[0].offerIndex];
+        console.log(now() + " INFO Addresses:methods.sellOffersRowSelected maker: " + maker + ", makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance) + ", tokenAgent: " + tokenAgent + ", tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval) + ", nonce: " + nonce + ", offer: " + JSON.stringify(offer));
+        const prices = [];
+        if (nonce == offer.nonce && (offer.expiry == 0 || offer.expiry > this.data.timestamp) && offer.buySell == 1) {
+          if (offer.prices.length == 1 && offer.tokenss.length == 0) {
+            prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, selected: item[0].priceIndex == 0 });
+          } else {
+            for (let i = 0; i < offer.prices.length; i++) {
+              prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, selected: item[0].priceIndex >= i });
+            }
+          }
+        }
+        console.log(now() + " INFO Addresses:methods.sellOffersRowSelected prices: " + JSON.stringify(prices));
+        let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
+        console.log(now() + " INFO Addresses:methods.sellOffersRowSelected tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
+        for (const [i, e] of prices.entries()) {
+          const tokens = ethers.BigNumber.from(e.tokens);
+          const tokensAvailable = tokens.lte(tokensRemaining) ? tokens : tokensRemaining;
+          tokensRemaining = tokensRemaining.sub(tokensAvailable);
+          console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex +
+            ", price: " + ethers.utils.formatEther(e.price) +
+            ", tokens: " + ethers.utils.formatEther(tokens) +
+            ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) +
+            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
+          );
+          prices[i].tokensAvailable = tokensAvailable.toString();
+        }
+        console.log(now() + " INFO Addresses:methods.sellOffersRowSelected prices: " + JSON.stringify(prices));
+
         this.modalSellOffer = {
-          blockNumber: item[0].blockNumber,
-          txIndex: item[0].txIndex,
           txHash: item[0].txHash,
           logIndex: item[0].logIndex,
           maker: item[0].maker,
@@ -1099,8 +1132,6 @@ data: {{ data }}
         // const offer = tokenAgent.offers[item[0].offerIndex];
         // console.log(now() + " INFO Addresses:methods.buyOffersRowSelected offer: " + JSON.stringify(offer, null, 2));
         this.modalBuyOffer = {
-          blockNumber: item[0].blockNumber,
-          txIndex: item[0].txIndex,
           txHash: item[0].txHash,
           logIndex: item[0].logIndex,
           maker: item[0].maker,

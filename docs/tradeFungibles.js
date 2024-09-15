@@ -3,10 +3,10 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="lg">
+        <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
           <template #modal-title>Trade Fungibles - Sell Offer</template>
           <div class="m-0 p-1">
-            <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
@@ -14,7 +14,7 @@ const TradeFungibles = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-            <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Tokens approved: ' + formatDecimals(sellOffer.tokenAgentTokenApproval, 18)"class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
@@ -22,7 +22,7 @@ const TradeFungibles = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-            <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-timestamp" :value="modalSellOffer.offer && formatTimestamp(modalSellOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
@@ -30,17 +30,57 @@ const TradeFungibles = {
                 </b-input-group-append>
               </b-input-group>
             </b-form-group>
-            <b-form-group label="Expiry:" label-for="modalselloffer-expiry" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+            <!-- <b-form-group label="Expiry:" label-for="modalselloffer-expiry" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-expiry" :value="modalSellOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalSellOffer.expiry)" class="pl-2 w-75"></b-form-input>
               </b-input-group>
-            </b-form-group>
-            <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+            </b-form-group> -->
+            <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-nonce" :value="modalSellOffer.offer && modalSellOffer.offer.nonce" class="pl-2 w-75"></b-form-input>
               </b-input-group>
             </b-form-group>
-
+            <!-- <b-form-group label="" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="1" label-align-sm="right" class="mx-0 my-1 p-0"> -->
+              <font size="-1">
+                <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
+                  <template #cell(price)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.price, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(offer)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.offer, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(tokens)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.tokens, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(wethAmount)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.wethAmount, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(tokensTotal)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.tokensTotal, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(wethTotal)="data">
+                    <font size="-1">
+                      {{ formatDecimals(data.item.wethTotal, 18) }}
+                    </font>
+                  </template>
+                  <template #cell(expiry)="data">
+                    <font size="-1">
+                      {{ formatTimestamp(data.item.expiry) }}
+                    </font>
+                  </template>
+                </b-table>
+              </font>
+            <!-- </b-form-group> -->
             <font size="-2">
               <pre>
 sellOffer: {{ sellOffer }}
@@ -477,6 +517,23 @@ data: {{ data }}
         // { value: 'indexasc', text: '▲ Index' },
         // { value: 'indexdsc', text: '▼ Index' },
       ],
+      sellOfferFields: [
+        // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokensTotal', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethTotal', label: '∑ ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+      ],
       sellOffersFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
@@ -623,7 +680,7 @@ data: {{ data }}
             collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
             if (o.prices.length == 1 && o.tokenss.length == 0) {
               prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
-            } else {
+            } else if (o.prices.length == o.tokenss.length) {
               for (let i = 0; i < o.prices.length; i++) {
                 prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], tokensAvailable: null });
               }
@@ -813,63 +870,105 @@ data: {{ data }}
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       console.log(now() + " INFO TradeFungibles:computed.sellOffer");
       const maker = this.modalSellOffer.maker;
+      // const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
+      const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
+      const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
+      const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent]) || 0;
+      const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
+      const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
+      console.log(now() + " INFO Addresses:methods.sellOffer offers: " + JSON.stringify(offers));
+      const offer = maker && this.modalSellOffer.offer || {};
+      const prices = [];
       if (maker) {
-        // const makerTokenBalance = this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
-        const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
-        const tokenAgent = this.modalSellOffer.tokenAgent;
-        const tokenAgentTokenApproval = this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent]) || 0;
-        const nonce = this.data.tokenAgents[tokenAgent].nonce;
-        const offer = this.modalSellOffer.offer;
         console.log(now() + " INFO Addresses:methods.sellOffer maker: " + maker + ", makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance) + ", tokenAgent: " + tokenAgent + ", tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval) + ", nonce: " + nonce + ", offer: " + JSON.stringify(offer));
-        const prices = [];
         let tokensTotal = ethers.BigNumber.from(0);
         let wethTotal = ethers.BigNumber.from(0);
-        if (nonce == offer.nonce && (offer.expiry == 0 || offer.expiry > this.data.timestamp) && offer.buySell == 1) {
-          if (offer.prices.length == 1 && offer.tokenss.length == 0) {
-            prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex == 0 });
-          } else {
-            for (let i = 0; i < offer.prices.length; i++) {
-              prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex >= i });
+        // if (nonce == offer.nonce && (offer.expiry == 0 || offer.expiry > this.data.timestamp) && offer.buySell == 1) {
+        //   if (offer.prices.length == 1 && offer.tokenss.length == 0) {
+        //     prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex == 0 });
+        //   } else {
+        //     for (let i = 0; i < offer.prices.length; i++) {
+        //       prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex >= i });
+        //     }
+        //   }
+        // }
+
+        for (const [offerIndex, o] of Object.entries(offers)) {
+          // console.log("offerIndex: " + offerIndex + ", o: " + JSON.stringify(o));
+          if (nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+            if (o.prices.length == 1 && o.tokenss.length == 0) {
+              prices.push({
+                offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
+                expiry: o.expiry,
+                selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex == 0,
+              });
+            } else if (o.prices.length == o.tokenss.length) {
+              for (let i = 0; i < o.prices.length; i++) {
+                prices.push({
+                  offerIndex: o.index, priceIndex: i, price: o.prices[i], offer: o.tokenss[i], tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
+                  expiry: o.expiry,
+                  selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex >= i,
+                });
+              }
             }
           }
         }
-        // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
+
+        prices.sort((a, b) => {
+          const aP = ethers.BigNumber.from(a.price);
+          // TODO: handle null tokens
+          const aT = a.offer != null && ethers.BigNumber.from(a.offer) || null;
+          const bP = ethers.BigNumber.from(b.price);
+          const bT = b.offer != null && ethers.BigNumber.from(b.offer) || null;
+          if (aP.eq(bP)) {
+            if (aT == null) {
+              return 1;
+            } else if (bT == null) {
+              return -1;
+            } else {
+              return aT.lt(bT) ? 1 : -1;
+            }
+          } else {
+            return aP.lt(bP) ? -1 : 1;
+          }
+        });
+
+        console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
         let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
         console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
         for (const [i, e] of prices.entries()) {
-          const tokens = ethers.BigNumber.from(e.tokens);
-          const tokensAvailable = tokens.lte(tokensRemaining) ? tokens : tokensRemaining;
-          const wethAmount = tokensAvailable.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
-          tokensTotal = tokensTotal.add(tokensAvailable);
+          const offer = ethers.BigNumber.from(e.offer);
+          const tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
+          const wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+          tokensTotal = tokensTotal.add(tokens);
           wethTotal = wethTotal.add(wethAmount);
-          tokensRemaining = tokensRemaining.sub(tokensAvailable);
+          tokensRemaining = tokensRemaining.sub(tokens);
           console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex +
             ", price: " + ethers.utils.formatEther(e.price) +
+            ", offer: " + ethers.utils.formatEther(offer) +
             ", tokens: " + ethers.utils.formatEther(tokens) +
-            ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) +
-            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining) +
             ", wethAmount: " + ethers.utils.formatEther(wethAmount) +
             ", tokensTotal: " + ethers.utils.formatEther(tokensTotal) +
-            ", wethTotal: " + ethers.utils.formatEther(wethTotal)
+            ", wethTotal: " + ethers.utils.formatEther(wethTotal) +
+            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
           );
-          prices[i].tokensAvailable = tokensAvailable.toString();
-          prices[i].tokensRemaining = tokensRemaining.toString();
+          prices[i].tokens = tokens.toString();
           prices[i].wethAmount = wethAmount.toString();
           prices[i].tokensTotal = tokensTotal.toString();
           prices[i].wethTotal = wethTotal.toString();
+          prices[i].tokensRemaining = tokensRemaining.toString();
         }
         console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
-        return {
-          maker,
-          makerTokenBalance: makerTokenBalance.toString(),
-          tokenAgent,
-          tokenAgentTokenApproval: tokenAgentTokenApproval.toString(),
-          nonce,
-          offer,
-          prices
-        };
       }
-      return {};
+      return {
+        maker,
+        makerTokenBalance: makerTokenBalance.toString(),
+        tokenAgent,
+        tokenAgentTokenApproval: tokenAgentTokenApproval.toString(),
+        nonce,
+        prices,
+        offer,
+      };
     },
 
     buyOffer() {

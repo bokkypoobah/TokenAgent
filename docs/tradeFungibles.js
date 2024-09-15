@@ -6,22 +6,78 @@ const TradeFungibles = {
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
           <template #modal-title>Trade Fungibles - Sell Offer</template>
           <div class="m-0 p-1">
-            <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
+            <div class="d-flex flex-wrap m-0 p-0">
+              <div class="mt-0 ml-2 pr-1">
+                <font size="-1">
+                  Token Agent:
+                </font>
+              </div>
+              <div class="mt-0 pr-0">
+                <b-link v-if="modalSellOffer.tokenAgent" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ modalSellOffer.tokenAgent.substring(0, 10) + '...' + modalSellOffer.tokenAgent.slice(-8) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 ml-2 pr-1">
+                <font size="-1">
+                  Maker:
+                </font>
+              </div>
+              <div class="mt-0 pr-0">
+                <b-link v-if="modalSellOffer.maker" :href="explorer + 'address/' + modalSellOffer.maker" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ modalSellOffer.maker.substring(0, 10) + '...' + modalSellOffer.maker.slice(-8) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 ml-2 pr-1">
+                <font size="-1">
+                  {{ settings.symbol }}:
+                </font>
+              </div>
+              <div class="mt-0 pr-0">
+                <b-link v-if="modalSellOffer.maker" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + modalSellOffer.maker" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ formatDecimals(sellOffer.makerTokenBalance, settings.decimals) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 ml-2 pr-1">
+                <font size="-1">
+                  Approved:
+                </font>
+              </div>
+              <div class="mt-0 pr-0">
+                <b-badge variant="link" class="m-0 mt-1">
+                  {{ formatDecimals(sellOffer.tokenAgentTokenApproval, settings.decimals) }}
+                </b-badge>
+              </div>
+              <div class="mt-0 ml-2 pr-1">
+                <font size="-1">
+                  Nonce:
+                </font>
+                <b-badge variant="link" class="m-0 mt-1">
+                  {{ sellOffer.nonce }}
+                </b-badge>
+              </div>
+            </div>
+            <!-- <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
                 </b-input-group-append>
               </b-input-group>
-            </b-form-group>
-            <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Tokens approved: ' + formatDecimals(sellOffer.tokenAgentTokenApproval, 18)"class="mx-0 my-1 p-0">
+            </b-form-group> -->
+            <!-- <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Tokens approved: ' + formatDecimals(sellOffer.tokenAgentTokenApproval, 18)"class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
                 <b-input-group-append>
                   <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
                 </b-input-group-append>
               </b-input-group>
-            </b-form-group>
+            </b-form-group> -->
             <!-- <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-timestamp" :value="modalSellOffer.offer && formatTimestamp(modalSellOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
@@ -35,11 +91,11 @@ const TradeFungibles = {
                 <b-form-input size="sm" plaintext id="modalselloffer-expiry" :value="modalSellOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalSellOffer.expiry)" class="pl-2 w-75"></b-form-input>
               </b-input-group>
             </b-form-group> -->
-            <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
+            <!-- <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-input-group style="width: 25.0rem;">
                 <b-form-input size="sm" plaintext id="modalselloffer-nonce" :value="modalSellOffer.offer && modalSellOffer.offer.nonce" class="pl-2 w-75"></b-form-input>
               </b-input-group>
-            </b-form-group>
+            </b-form-group> -->
             <!-- <b-form-group label="" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="1" label-align-sm="right" class="mx-0 my-1 p-0"> -->
               <font size="-1">
                 <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
@@ -872,8 +928,8 @@ data: {{ data }}
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       console.log(now() + " INFO TradeFungibles:computed.sellOffer");
       const maker = this.modalSellOffer.maker;
-      // const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
-      const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
+      const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
+      // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
       const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
       const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent]) || 0;
       const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;

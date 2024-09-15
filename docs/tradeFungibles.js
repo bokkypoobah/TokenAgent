@@ -7,48 +7,40 @@ const TradeFungibles = {
           <template #modal-title>Trade Fungibles - Sell Offer</template>
           <div class="m-0 p-1">
             <div class="d-flex flex-wrap m-0 p-0">
-              <div class="mt-0 ml-2 pr-1">
+              <div class="mt-0 ml-2 pr-0">
                 <font size="-1">
                   Token Agent:
                 </font>
-              </div>
-              <div class="mt-0 pr-0">
                 <b-link v-if="modalSellOffer.tokenAgent" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
                   <b-badge variant="link" class="m-0 mt-1">
                     {{ modalSellOffer.tokenAgent.substring(0, 10) + '...' + modalSellOffer.tokenAgent.slice(-8) }}
                   </b-badge>
                 </b-link>
               </div>
-              <div class="mt-0 ml-2 pr-1">
+              <div class="mt-0 pr-0">
                 <font size="-1">
                   Maker:
                 </font>
-              </div>
-              <div class="mt-0 pr-0">
                 <b-link v-if="modalSellOffer.maker" :href="explorer + 'address/' + modalSellOffer.maker" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
                   <b-badge variant="link" class="m-0 mt-1">
                     {{ modalSellOffer.maker.substring(0, 10) + '...' + modalSellOffer.maker.slice(-8) }}
                   </b-badge>
                 </b-link>
               </div>
-              <div class="mt-0 ml-2 pr-1">
+              <div class="mt-0 pr-0">
                 <font size="-1">
                   {{ settings.symbol }}:
                 </font>
-              </div>
-              <div class="mt-0 pr-0">
                 <b-link v-if="modalSellOffer.maker" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + modalSellOffer.maker" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
                   <b-badge variant="link" class="m-0 mt-1">
                     {{ formatDecimals(sellOffer.makerTokenBalance, settings.decimals) }}
                   </b-badge>
                 </b-link>
               </div>
-              <div class="mt-0 ml-2 pr-1">
+              <div class="mt-0 pr-0">
                 <font size="-1">
                   Approved:
                 </font>
-              </div>
-              <div class="mt-0 pr-0">
                 <b-badge variant="link" class="m-0 mt-1">
                   {{ formatDecimals(sellOffer.tokenAgentTokenApproval, settings.decimals) }}
                 </b-badge>
@@ -526,6 +518,11 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
+        inputTokens: null,
+        inputWethAmount: null,
+        calculatedTokens: null,
+        calculatedWethAmount: null,
+
         txHash: null,
         logIndex: null,
         maker: null,

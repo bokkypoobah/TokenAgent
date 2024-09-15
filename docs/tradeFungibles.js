@@ -4,7 +4,7 @@ const TradeFungibles = {
       <b-card no-body no-header class="border-0">
 
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
-          <template #modal-title>Trade Fungibles - Sell Offer</template>
+          <template #modal-title>Trade Fungibles - Maker Sell Offer</template>
           <div class="m-0 p-1">
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 ml-2 pr-0">
@@ -41,9 +41,11 @@ const TradeFungibles = {
                 <font size="-1">
                   Approved:
                 </font>
-                <b-badge variant="link" class="m-0 mt-1">
-                  {{ formatDecimals(sellOffer.tokenAgentTokenApproval, settings.decimals) }}
-                </b-badge>
+                <b-link v-if="modalSellOffer.maker" :href="explorer + 'tx/' + tokenApprovals[modalSellOffer.maker][modalSellOffer.tokenAgent].txHash + '#eventlog#' + tokenApprovals[modalSellOffer.maker][modalSellOffer.tokenAgent].logIndex" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ formatDecimals(sellOffer.tokenAgentTokenApproval, settings.decimals) }}
+                  </b-badge>
+                </b-link>
               </div>
               <div class="mt-0 ml-2 pr-1">
                 <font size="-1">
@@ -131,6 +133,18 @@ const TradeFungibles = {
                 </b-table>
               </font>
             <!-- </b-form-group> -->
+            <b-row class="m-0 p-0">
+              <b-col class="m-0 p-0">
+                <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
+                  <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
+                </b-form-group>
+              </b-col>
+              <b-col class="m-0 p-0">
+                Two
+              </b-col>
+            </b-row>
+
+
             <font size="-2">
               <pre>
 sellOffer: {{ sellOffer }}
@@ -725,7 +739,7 @@ data: {{ data }}
           };
         }
         collator[d.owner].tokenAgents[tokenAgent] = {
-          tokenApproval: this.tokenApprovals[d.owner] && this.tokenApprovals[d.owner][tokenAgent] || 0,
+          tokenApproval: this.tokenApprovals[d.owner] && this.tokenApprovals[d.owner][tokenAgent] && this.tokenApprovals[d.owner][tokenAgent].tokens || 0,
           offers: {},
           prices: [],
         };
@@ -828,7 +842,7 @@ data: {{ data }}
           };
         }
         collator[d.owner].tokenAgents[tokenAgent] = {
-          wethApproval: this.wethApprovals[d.owner] && this.wethApprovals[d.owner][tokenAgent] || 0,
+          wethApproval: this.wethApprovals[d.owner] && this.wethApprovals[d.owner][tokenAgent] && this.wethApprovals[d.owner][tokenAgent].tokens || 0,
           offers: {},
           prices: [],
         };
@@ -928,7 +942,7 @@ data: {{ data }}
       const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
       const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
-      const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent]) || 0;
+      const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
       const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
       console.log(now() + " INFO Addresses:methods.sellOffer offers: " + JSON.stringify(offers));
@@ -1287,7 +1301,7 @@ data: {{ data }}
         if (!(e.owner in tokenApprovals)) {
           tokenApprovals[e.owner] = {};
         }
-        tokenApprovals[e.owner][e.spender] = e.tokens;
+        tokenApprovals[e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex };
       }
       Vue.set(this, 'tokenApprovals', tokenApprovals);
       console.log(now() + " INFO TradeFungibles:methods.computeState - tokenApprovals: " + JSON.stringify(tokenApprovals));
@@ -1296,7 +1310,7 @@ data: {{ data }}
         if (!(e.owner in wethApprovals)) {
           wethApprovals[e.owner] = {};
         }
-        wethApprovals[e.owner][e.spender] = e.tokens;
+        wethApprovals[e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex };
       }
       Vue.set(this, 'wethApprovals', wethApprovals);
       console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));

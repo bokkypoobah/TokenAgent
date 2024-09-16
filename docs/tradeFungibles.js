@@ -69,10 +69,16 @@ const TradeFungibles = {
                     {{ formatDecimals(data.item.offer, 18) }}
                   </font>
                 </template>
+                <template #head(tokens)="data">
+                  {{ settings.symbol }}
+                </template>
                 <template #cell(tokens)="data">
                   <font size="-1">
                     {{ formatDecimals(data.item.tokens, 18) }}
                   </font>
+                </template>
+                <template #head(totalTokens)="data">
+                  {{ '∑ ' + settings.symbol }}
                 </template>
                 <template #cell(totalTokens)="data">
                   <font size="-1">
@@ -145,6 +151,9 @@ const TradeFungibles = {
                     </b-form-group>
                     <b-form-group label="ETH Balance:" label-for="modalselloffer-ethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-input size="sm" plaintext id="modalselloffer-ethbalance" :value="formatDecimals(balance, 18)" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-button size="sm" :disabled="!sellOffer.filledTokens" @click="trade" variant="warning">Trade</b-button>
                     </b-form-group>
                   </b-card-text>
                 </b-card>

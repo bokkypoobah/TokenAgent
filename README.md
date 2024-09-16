@@ -104,9 +104,13 @@ ERC-20, WIP
 
 <kbd><img src="images/Screenshot_TradeFungibles_WIP_20240913.png" width="600"/></kbd>
 
-ERC-20 Sell Offers, WIP
+ERC-20 Sell Offers - tokens requested, WIP
 
-<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WIP_20240917.png" width="600"/></kbd>
+<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_Token_WIP_20240917.png" width="600"/></kbd>
+
+ERC-20 Sell Offers - WETH requested, WIP
+
+<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WETH_WIP_20240917.png" width="600"/></kbd>
 
 ##### Contract
 

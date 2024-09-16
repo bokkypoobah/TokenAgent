@@ -136,16 +136,20 @@ const TradeFungibles = {
             <b-row class="m-0 mt-3 p-0">
               <b-col class="m-0 p-0">
 
-                <b-form-group label="" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                  <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
-                    <b-form-radio value="receiveTokens">Receive {{ settings.symbol }}</b-form-radio>
-                    <b-form-radio value="payWeth">Pay [W]ETH</b-form-radio>
-                  </b-form-radio-group>
-                </b-form-group>
+                <b-card sub-title="Requested" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                  <b-card-text class="m-0 p-0">
+                    <b-form-group label="Token:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
+                        <b-form-radio value="receiveTokens">{{ settings.symbol }}</b-form-radio>
+                        <b-form-radio value="payWeth">[W]ETH</b-form-radio>
+                      </b-form-radio-group>
+                    </b-form-group>
+                    <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay [W]ETH')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-50"></b-form-input>
+                    </b-form-group>
+                  </b-card-text>
+                </b-card>
 
-                <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay [W]ETH')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                  <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-50"></b-form-input>
-                </b-form-group>
 
                 <!-- <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
                   <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
@@ -155,19 +159,29 @@ const TradeFungibles = {
                 </b-form-group> -->
               </b-col>
               <b-col class="m-0 p-0">
-                Two
+                <b-card sub-title="Fill" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                  <b-card-text class="m-0 p-0">
+                    <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-filledtokens" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledtokens" :value="sellOffer.filledTokens && formatDecimals(sellOffer.filledTokens, 18)" class="pl-2 w-50"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Pay [W]ETH:" label-for="modalselloffer-filledweth" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledweth" :value="sellOffer.filledWeth && formatDecimals(sellOffer.filledWeth, 18)" class="pl-2 w-50"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Average Price:" label-for="modalselloffer-filledaverageprice" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledaverageprice" :value="sellOffer.filledAveragePrice && formatDecimals(sellOffer.filledAveragePrice, 18)" class="pl-2 w-50"></b-form-input>
+                    </b-form-group>
+                  </b-card-text>
+                </b-card>
               </b-col>
             </b-row>
-
-
-            <font size="-2">
+            <!-- <font size="-2">
               <pre>
 sellOffer: {{ sellOffer }}
               </pre>
               <pre>
 modalSellOffer: {{ modalSellOffer }}
               </pre>
-            </font>
+            </font> -->
             <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
               <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
             </b-form-group> -->
@@ -1064,6 +1078,7 @@ data: {{ data }}
         if (maxTokens != null || maxWeth != null) {
           filledTokens = totalTokens;
           filledWeth = totalWeth;
+          filledAveragePrice = totalTokens > 0 ? totalWeth.mul(TENPOW18).div(totalTokens) : 0;
         }
       }
       return {

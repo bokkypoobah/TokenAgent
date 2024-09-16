@@ -106,7 +106,7 @@ ERC-20, WIP
 
 ERC-20 Sell Offers, WIP
 
-<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WIP_20240916.png" width="600"/></kbd>
+<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WIP_20240917.png" width="600"/></kbd>
 
 ##### Contract
 

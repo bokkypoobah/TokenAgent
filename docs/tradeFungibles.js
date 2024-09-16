@@ -547,7 +547,7 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        amount: "0.1234", // null,
+        amount: "0.12345123", // null,
         amountType: 'payWeth', // 'receiveTokens' or 'payWeth'
 
         txHash: null,
@@ -952,8 +952,8 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.sellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       // TODO: handle decimals
-      let maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
-      let maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
+      let maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amount.trim().length != 0 && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
+      let maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amount.trim().length != 0 && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
       const maker = this.modalSellOffer.maker;
       const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
@@ -961,25 +961,15 @@ data: {{ data }}
       const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
       const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
-      // console.log(now() + " INFO Addresses:methods.sellOffer offers: " + JSON.stringify(offers));
-      const offer = maker && this.modalSellOffer.offer || {};
       const prices = [];
+      let filledTokens = null;
+      let filledWeth = null;
+      let filledAveragePrice = null;
       if (maker) {
-        console.log(now() + " INFO Addresses:methods.sellOffer maker: " + maker + ", makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance) + ", tokenAgent: " + tokenAgent + ", tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval) + ", nonce: " + nonce + ", offer: " + JSON.stringify(offer));
+        console.log(now() + " INFO Addresses:methods.sellOffer maker: " + maker + ", makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance) + ", tokenAgent: " + tokenAgent + ", tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval) + ", nonce: " + nonce);
         let totalTokens = ethers.BigNumber.from(0);
         let totalWeth = ethers.BigNumber.from(0);
-        // if (nonce == offer.nonce && (offer.expiry == 0 || offer.expiry > this.data.timestamp) && offer.buySell == 1) {
-        //   if (offer.prices.length == 1 && offer.tokenss.length == 0) {
-        //     prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, tokensRemaining: null, wethAmount: null, totalTokens: null, totalWeth: null, selected: this.modalSellOffer.priceIndex == 0 });
-        //   } else {
-        //     for (let i = 0; i < offer.prices.length; i++) {
-        //       prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, tokensRemaining: null, wethAmount: null, totalTokens: null, totalWeth: null, selected: this.modalSellOffer.priceIndex >= i });
-        //     }
-        //   }
-        // }
-
         for (const [offerIndex, o] of Object.entries(offers)) {
-          // console.log("offerIndex: " + offerIndex + ", o: " + JSON.stringify(o));
           if (nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
             if (o.prices.length == 1 && o.tokenss.length == 0) {
               prices.push({
@@ -1026,8 +1016,8 @@ data: {{ data }}
         console.log(now() + " INFO Addresses:methods.sellOffer maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) + ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null));
         let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
         console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
-        console.log("offIx pIx           price           offer                  tokens             total tokens                  weth               total weth" + padLeft(maxWeth != null ? "requested weth" : "requested tokens", 24));
-        console.log("----- --- --------------- --------------- ----------------------- ----------------------- ----------------------- ----------------------- -----------------------");
+        console.log("offIx pIx           price           offer                  tokens             total tokens                  weth               total weth" + padLeft(maxWeth != null ? "requestd weth remaining" : "requestd tokens remaining", 26));
+        console.log("----- --- --------------- --------------- ----------------------- ----------------------- ----------------------- ----------------------- -------------------------");
         for (const [i, e] of prices.entries()) {
           const offer = ethers.BigNumber.from(e.offer);
           let tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
@@ -1041,8 +1031,12 @@ data: {{ data }}
           if (maxWeth != null) {
             const tokensRemaining = maxWeth.mul(TENPOW18).div(e.price);
             if (tokens.gt(tokensRemaining)) {
-              tokens = tokensRemaining;
-              wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              wethAmount = tokensRemaining.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              if (wethAmount.gt(0)) {
+                tokens = tokensRemaining;
+              } else {
+                tokens = 0;
+              }
             }
             maxWeth = maxWeth.sub(wethAmount);
           }
@@ -1058,7 +1052,7 @@ data: {{ data }}
             padLeft(ethers.utils.formatEther(totalTokens), 24) +
             padLeft(ethers.utils.formatEther(wethAmount), 24) +
             padLeft(ethers.utils.formatEther(totalWeth), 24) +
-            padLeft(maxWeth != null ? ethers.utils.formatEther(maxWeth) : (maxTokens != null ? ethers.utils.formatEther(maxTokens) : ''), 24)
+            padLeft(maxWeth != null ? ethers.utils.formatEther(maxWeth) : (maxTokens != null ? ethers.utils.formatEther(maxTokens) : ''), 26)
           );
           prices[i].tokens = tokens.toString();
           prices[i].wethAmount = wethAmount.toString();
@@ -1067,17 +1061,23 @@ data: {{ data }}
           prices[i].tokensRemaining = tokensRemaining.toString();
         }
         // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
+        if (maxTokens != null || maxWeth != null) {
+          filledTokens = totalTokens;
+          filledWeth = totalWeth;
+        }
       }
       return {
         maxTokens: maxTokens != null && maxTokens.toString() || null,
         maxWeth: maxWeth != null && maxWeth.toString() || null,
+        filledTokens: filledTokens != null && filledTokens.toString() || null,
+        filledWeth: filledWeth != null && filledWeth.toString() || null,
+        filledAveragePrice: filledAveragePrice != null && filledAveragePrice.toString() || null,
         maker,
         makerTokenBalance: makerTokenBalance.toString(),
         tokenAgent,
         tokenAgentTokenApproval: tokenAgentTokenApproval.toString(),
         nonce,
         prices,
-        offer,
       };
     },
 

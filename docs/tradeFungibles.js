@@ -133,11 +133,27 @@ const TradeFungibles = {
                 </b-table>
               </font>
             <!-- </b-form-group> -->
-            <b-row class="m-0 p-0">
+            <b-row class="m-0 mt-3 p-0">
               <b-col class="m-0 p-0">
-                <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
+
+                <b-form-group label="" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                  <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
+                    <b-form-radio value="receiveTokens">Receive {{ settings.symbol }}</b-form-radio>
+                    <b-form-radio value="payWeth">Pay W[ETH]</b-form-radio>
+                  </b-form-radio-group>
+                </b-form-group>
+
+                <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay W[ETH]')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                  <b-form-input size="sm" type="number" id="modalselloffer-amount" :value="modalSellOffer.amount" class="pl-2 w-75"></b-form-input>
+                </b-form-group>
+
+
+                <!-- <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
                   <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
                 </b-form-group>
+                <b-form-group :label="'Pay [W]ETH:'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
+                  <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
+                </b-form-group> -->
               </b-col>
               <b-col class="m-0 p-0">
                 Two
@@ -532,10 +548,14 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        inputTokens: null,
-        inputWethAmount: null,
-        calculatedTokens: null,
-        calculatedWethAmount: null,
+        amount: null,
+        amountType: 'receiveTokens',
+        // receiveTokensOrPayWeth: 'receiveTokens',
+
+        // inputTokens: null,
+        // inputWethAmount: null,
+        // calculatedTokens: null,
+        // calculatedWethAmount: null,
 
         txHash: null,
         logIndex: null,
@@ -1319,19 +1339,30 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        this.modalSellOffer = {
-          txHash: item[0].txHash,
-          logIndex: item[0].logIndex,
-          maker: item[0].maker,
-          tokenAgent: item[0].tokenAgent,
-          tokenAgentIndexByOwner: item[0].tokenAgentIndexByOwner,
-          offerIndex: item[0].offerIndex,
-          priceIndex: item[0].priceIndex,
-          price: item[0].price,
-          tokens: item[0].token,
-          expiry: item[0].expiry,
-          offer: this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex],
-        };
+        this.modalSellOffer.txHash = item[0].txHash;
+        this.modalSellOffer.logIndex = item[0].logIndex;
+        this.modalSellOffer.maker = item[0].maker;
+        this.modalSellOffer.tokenAgent = item[0].tokenAgent;
+        this.modalSellOffer.tokenAgentIndexByOwner = item[0].tokenAgentIndexByOwner;
+        this.modalSellOffer.offerIndex = item[0].offerIndex;
+        this.modalSellOffer.priceIndex = item[0].priceIndex;
+        this.modalSellOffer.price = item[0].price;
+        this.modalSellOffer.tokens = item[0].token;
+        this.modalSellOffer.expiry = item[0].expiry;
+        this.modalSellOffer.offer = this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex];
+        // this.modalSellOffer = {
+        //   txHash: item[0].txHash,
+        //   logIndex: item[0].logIndex,
+        //   maker: item[0].maker,
+        //   tokenAgent: item[0].tokenAgent,
+        //   tokenAgentIndexByOwner: item[0].tokenAgentIndexByOwner,
+        //   offerIndex: item[0].offerIndex,
+        //   priceIndex: item[0].priceIndex,
+        //   price: item[0].price,
+        //   tokens: item[0].token,
+        //   expiry: item[0].expiry,
+        //   offer: this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex],
+        // };
         this.$refs.modalselloffer.show();
         this.$refs.sellOffersTable.clearSelected();
       }

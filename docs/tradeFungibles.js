@@ -144,9 +144,8 @@ const TradeFungibles = {
                 </b-form-group>
 
                 <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay W[ETH]')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                  <b-form-input size="sm" type="number" id="modalselloffer-amount" :value="modalSellOffer.amount" class="pl-2 w-75"></b-form-input>
+                  <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-50"></b-form-input>
                 </b-form-group>
-
 
                 <!-- <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
                   <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
@@ -548,14 +547,8 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        amount: null,
-        amountType: 'receiveTokens',
-        // receiveTokensOrPayWeth: 'receiveTokens',
-
-        // inputTokens: null,
-        // inputWethAmount: null,
-        // calculatedTokens: null,
-        // calculatedWethAmount: null,
+        amount: "1.23", // null,
+        amountType: 'receiveTokens', // 'receiveTokens' or 'payWeth'
 
         txHash: null,
         logIndex: null,
@@ -956,8 +949,11 @@ data: {{ data }}
     },
 
     sellOffer() {
+      console.log(now() + " INFO TradeFungibles:computed.sellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
-      console.log(now() + " INFO TradeFungibles:computed.sellOffer");
+      // TODO: handle decimals
+      const maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
+      const maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
       const maker = this.modalSellOffer.maker;
       const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
@@ -965,7 +961,7 @@ data: {{ data }}
       const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
       const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
-      console.log(now() + " INFO Addresses:methods.sellOffer offers: " + JSON.stringify(offers));
+      // console.log(now() + " INFO Addresses:methods.sellOffer offers: " + JSON.stringify(offers));
       const offer = maker && this.modalSellOffer.offer || {};
       const prices = [];
       if (maker) {
@@ -1026,7 +1022,8 @@ data: {{ data }}
           }
         });
 
-        console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
+        // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
+        console.log(now() + " INFO Addresses:methods.sellOffer maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) + ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null));
         let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
         console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
         for (const [i, e] of prices.entries()) {
@@ -1043,7 +1040,9 @@ data: {{ data }}
             ", wethAmount: " + ethers.utils.formatEther(wethAmount) +
             ", tokensTotal: " + ethers.utils.formatEther(tokensTotal) +
             ", wethTotal: " + ethers.utils.formatEther(wethTotal) +
-            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
+            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining) +
+            ", maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) +
+            ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null)
           );
           prices[i].tokens = tokens.toString();
           prices[i].wethAmount = wethAmount.toString();
@@ -1051,9 +1050,11 @@ data: {{ data }}
           prices[i].wethTotal = wethTotal.toString();
           prices[i].tokensRemaining = tokensRemaining.toString();
         }
-        console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
+        // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
       }
       return {
+        maxTokens: maxTokens != null && maxTokens.toString() || null,
+        maxWeth: maxWeth != null && maxWeth.toString() || null,
         maker,
         makerTokenBalance: makerTokenBalance.toString(),
         tokenAgent,

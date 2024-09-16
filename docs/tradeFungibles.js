@@ -113,14 +113,14 @@ const TradeFungibles = {
                       {{ formatDecimals(data.item.wethAmount, 18) }}
                     </font>
                   </template>
-                  <template #cell(tokensTotal)="data">
+                  <template #cell(totalTokens)="data">
                     <font size="-1">
-                      {{ formatDecimals(data.item.tokensTotal, 18) }}
+                      {{ formatDecimals(data.item.totalTokens, 18) }}
                     </font>
                   </template>
-                  <template #cell(wethTotal)="data">
+                  <template #cell(totalWeth)="data">
                     <font size="-1">
-                      {{ formatDecimals(data.item.wethTotal, 18) }}
+                      {{ formatDecimals(data.item.totalWeth, 18) }}
                     </font>
                   </template>
                   <template #cell(expiry)="data">
@@ -547,7 +547,7 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        amount: "0.123", // null,
+        amount: "0.1234", // null,
         amountType: 'payWeth', // 'receiveTokens' or 'payWeth'
 
         txHash: null,
@@ -601,13 +601,13 @@ data: {{ data }}
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'tokensTotal', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'wethTotal', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalWeth', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -966,14 +966,14 @@ data: {{ data }}
       const prices = [];
       if (maker) {
         console.log(now() + " INFO Addresses:methods.sellOffer maker: " + maker + ", makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance) + ", tokenAgent: " + tokenAgent + ", tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval) + ", nonce: " + nonce + ", offer: " + JSON.stringify(offer));
-        let tokensTotal = ethers.BigNumber.from(0);
-        let wethTotal = ethers.BigNumber.from(0);
+        let totalTokens = ethers.BigNumber.from(0);
+        let totalWeth = ethers.BigNumber.from(0);
         // if (nonce == offer.nonce && (offer.expiry == 0 || offer.expiry > this.data.timestamp) && offer.buySell == 1) {
         //   if (offer.prices.length == 1 && offer.tokenss.length == 0) {
-        //     prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex == 0 });
+        //     prices.push({ offerIndex: offer.index, priceIndex: 0, price: offer.prices[0], tokens: null, tokensAvailable: null, tokensRemaining: null, wethAmount: null, totalTokens: null, totalWeth: null, selected: this.modalSellOffer.priceIndex == 0 });
         //   } else {
         //     for (let i = 0; i < offer.prices.length; i++) {
-        //       prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, tokensRemaining: null, wethAmount: null, tokensTotal: null, wethTotal: null, selected: this.modalSellOffer.priceIndex >= i });
+        //       prices.push({ offerIndex: offer.index, priceIndex: i, price: offer.prices[i], tokens: offer.tokenss[i], tokensAvailable: null, tokensRemaining: null, wethAmount: null, totalTokens: null, totalWeth: null, selected: this.modalSellOffer.priceIndex >= i });
         //     }
         //   }
         // }
@@ -983,7 +983,7 @@ data: {{ data }}
           if (nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
             if (o.prices.length == 1 && o.tokenss.length == 0) {
               prices.push({
-                offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
+                offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, totalTokens: null, totalWeth: null, tokensRemaining: null,
                 expiry: o.expiry,
                 txHash: o.txHash,
                 logIndex: o.logIndex,
@@ -992,7 +992,7 @@ data: {{ data }}
             } else if (o.prices.length == o.tokenss.length) {
               for (let i = 0; i < o.prices.length; i++) {
                 prices.push({
-                  offerIndex: o.index, priceIndex: i, price: o.prices[i], offer: o.tokenss[i], tokens: null, wethAmount: null, tokensTotal: null, wethTotal: null, tokensRemaining: null,
+                  offerIndex: o.index, priceIndex: i, price: o.prices[i], offer: o.tokenss[i], tokens: null, wethAmount: null, totalTokens: null, totalWeth: null, tokensRemaining: null,
                   expiry: o.expiry,
                   txHash: o.txHash,
                   logIndex: o.logIndex,
@@ -1026,6 +1026,8 @@ data: {{ data }}
         console.log(now() + " INFO Addresses:methods.sellOffer maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) + ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null));
         let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
         console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
+        console.log("offIx pIx           price           offer                  tokens             total tokens                  weth               total weth" + padLeft(maxWeth != null ? "requested weth" : "requested tokens", 24));
+        console.log("----- --- --------------- --------------- ----------------------- ----------------------- ----------------------- ----------------------- -----------------------");
         for (const [i, e] of prices.entries()) {
           const offer = ethers.BigNumber.from(e.offer);
           let tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
@@ -1044,27 +1046,24 @@ data: {{ data }}
             }
             maxWeth = maxWeth.sub(wethAmount);
           }
-          tokensTotal = tokensTotal.add(tokens);
-          wethTotal = wethTotal.add(wethAmount);
+          totalTokens = totalTokens.add(tokens);
+          totalWeth = totalWeth.add(wethAmount);
           tokensRemaining = tokensRemaining.sub(tokens);
-          // if (maxTokens != null) {
-          //   maxtokens = maxTokens.sub(tokens);
-          // }
-          console.log("    oIx: " + e.offerIndex + ", pIx: " + e.priceIndex +
-            ", p: " + ethers.utils.formatEther(e.price) +
-            ", o: " + ethers.utils.formatEther(offer) +
-            ", tkns: " + ethers.utils.formatEther(tokens) +
-            ", weth: " + ethers.utils.formatEther(wethAmount) +
-            ", tknsTot: " + ethers.utils.formatEther(tokensTotal) +
-            ", wethTot: " + ethers.utils.formatEther(wethTotal) +
-            ", tknsRemain: " + ethers.utils.formatEther(tokensRemaining) +
-            ", maxTkns: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) +
-            ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null)
+          console.log(
+            padLeft(e.offerIndex, 5) +
+            padLeft(e.priceIndex, 4) +
+            padLeft(ethers.utils.formatEther(e.price), 16) +
+            padLeft(ethers.utils.formatEther(offer), 16) +
+            padLeft(ethers.utils.formatEther(tokens), 24) +
+            padLeft(ethers.utils.formatEther(totalTokens), 24) +
+            padLeft(ethers.utils.formatEther(wethAmount), 24) +
+            padLeft(ethers.utils.formatEther(totalWeth), 24) +
+            padLeft(maxWeth != null ? ethers.utils.formatEther(maxWeth) : (maxTokens != null ? ethers.utils.formatEther(maxTokens) : ''), 24)
           );
           prices[i].tokens = tokens.toString();
           prices[i].wethAmount = wethAmount.toString();
-          prices[i].tokensTotal = tokensTotal.toString();
-          prices[i].wethTotal = wethTotal.toString();
+          prices[i].totalTokens = totalTokens.toString();
+          prices[i].totalWeth = totalWeth.toString();
           prices[i].tokensRemaining = tokensRemaining.toString();
         }
         // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));

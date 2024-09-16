@@ -12,6 +12,20 @@ var DEFAULTDECIMAL = 0xff;
 function formatNumber(n) {
     return n == null ? "" : n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+function padLeft(s, n) {
+  var o = s.toString();
+  while (o.length < n) {
+    o = " " + o;
+  }
+  return o;
+}
+function padRight(s, n) {
+  var o = s;
+  while (o.length < n) {
+    o = o + " ";
+  }
+  return o;
+}
 
 var logLevel = 1;
 // 0 = NONE, 1 = INFO (default), 2 = DEBUG

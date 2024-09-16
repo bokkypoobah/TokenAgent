@@ -139,11 +139,11 @@ const TradeFungibles = {
                 <b-form-group label="" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                   <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
                     <b-form-radio value="receiveTokens">Receive {{ settings.symbol }}</b-form-radio>
-                    <b-form-radio value="payWeth">Pay W[ETH]</b-form-radio>
+                    <b-form-radio value="payWeth">Pay [W]ETH</b-form-radio>
                   </b-form-radio-group>
                 </b-form-group>
 
-                <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay W[ETH]')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay [W]ETH')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                   <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-50"></b-form-input>
                 </b-form-group>
 
@@ -547,8 +547,8 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        amount: "1.23", // null,
-        amountType: 'receiveTokens', // 'receiveTokens' or 'payWeth'
+        amount: "0.123", // null,
+        amountType: 'payWeth', // 'receiveTokens' or 'payWeth'
 
         txHash: null,
         logIndex: null,
@@ -604,9 +604,9 @@ data: {{ data }}
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'wethAmount', label: 'ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokensTotal', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'wethTotal', label: '∑ ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethTotal', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -952,8 +952,8 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.sellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       // TODO: handle decimals
-      const maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
-      const maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
+      let maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
+      let maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
       const maker = this.modalSellOffer.maker;
       const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
@@ -1028,20 +1028,37 @@ data: {{ data }}
         console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
         for (const [i, e] of prices.entries()) {
           const offer = ethers.BigNumber.from(e.offer);
-          const tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
-          const wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+          let tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
+          if (maxTokens != null) {
+            if (tokens.gt(maxTokens)) {
+              tokens = maxTokens;
+            }
+            maxTokens = maxTokens.sub(tokens);
+          }
+          let wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+          if (maxWeth != null) {
+            const tokensRemaining = maxWeth.mul(TENPOW18).div(e.price);
+            if (tokens.gt(tokensRemaining)) {
+              tokens = tokensRemaining;
+              wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+            }
+            maxWeth = maxWeth.sub(wethAmount);
+          }
           tokensTotal = tokensTotal.add(tokens);
           wethTotal = wethTotal.add(wethAmount);
           tokensRemaining = tokensRemaining.sub(tokens);
-          console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex +
-            ", price: " + ethers.utils.formatEther(e.price) +
-            ", offer: " + ethers.utils.formatEther(offer) +
-            ", tokens: " + ethers.utils.formatEther(tokens) +
-            ", wethAmount: " + ethers.utils.formatEther(wethAmount) +
-            ", tokensTotal: " + ethers.utils.formatEther(tokensTotal) +
-            ", wethTotal: " + ethers.utils.formatEther(wethTotal) +
-            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining) +
-            ", maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) +
+          // if (maxTokens != null) {
+          //   maxtokens = maxTokens.sub(tokens);
+          // }
+          console.log("    oIx: " + e.offerIndex + ", pIx: " + e.priceIndex +
+            ", p: " + ethers.utils.formatEther(e.price) +
+            ", o: " + ethers.utils.formatEther(offer) +
+            ", tkns: " + ethers.utils.formatEther(tokens) +
+            ", weth: " + ethers.utils.formatEther(wethAmount) +
+            ", tknsTot: " + ethers.utils.formatEther(tokensTotal) +
+            ", wethTot: " + ethers.utils.formatEther(wethTotal) +
+            ", tknsRemain: " + ethers.utils.formatEther(tokensRemaining) +
+            ", maxTkns: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) +
             ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null)
           );
           prices[i].tokens = tokens.toString();

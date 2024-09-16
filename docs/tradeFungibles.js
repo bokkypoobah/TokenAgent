@@ -56,119 +56,95 @@ const TradeFungibles = {
                 </b-badge>
               </div>
             </div>
-            <!-- <b-form-group label="Maker:" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
-              <b-input-group style="width: 25.0rem;">
-                <b-form-input size="sm" plaintext id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
-                <b-input-group-append>
-                  <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.maker" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
-                </b-input-group-append>
-              </b-input-group>
-            </b-form-group> -->
-            <!-- <b-form-group label="Token Agent:" label-for="modalselloffer-tokenagent" label-size="sm" label-cols-sm="2" label-align-sm="right" :description="'Tokens approved: ' + formatDecimals(sellOffer.tokenAgentTokenApproval, 18)"class="mx-0 my-1 p-0">
-              <b-input-group style="width: 25.0rem;">
-                <b-form-input size="sm" plaintext id="modalselloffer-tokenagent" :value="modalSellOffer.tokenAgent" class="pl-2 w-75"></b-form-input>
-                <b-input-group-append>
-                  <b-button size="sm" :href="explorer + 'address/' + modalSellOffer.tokenAgent + '#code'" variant="link" v-b-popover.hover.ds500="'View in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
-                </b-input-group-append>
-              </b-input-group>
-            </b-form-group> -->
-            <!-- <b-form-group label="Timestamp:" label-for="modalselloffer-timestamp" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group style="width: 25.0rem;">
-                <b-form-input size="sm" plaintext id="modalselloffer-timestamp" :value="modalSellOffer.offer && formatTimestamp(modalSellOffer.offer.timestamp)" class="pl-2 w-75"></b-form-input>
-                <b-input-group-append>
-                  <b-button size="sm" :disabled="!modalSellOffer.offer" :href="explorer + 'tx/' + (modalSellOffer.offer && modalSellOffer.offer.txHash || '') + '#eventlog#' + modalSellOffer.logIndex" variant="link" v-b-popover.hover.ds500="'View transaction in explorer'" target="_blank" class="m-0 mt-1 ml-2 mr-2 p-0"><b-icon-link45deg shift-v="-1" font-scale="1.2"></b-icon-link45deg></b-button>
-                </b-input-group-append>
-              </b-input-group>
-            </b-form-group> -->
-            <!-- <b-form-group label="Expiry:" label-for="modalselloffer-expiry" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group style="width: 25.0rem;">
-                <b-form-input size="sm" plaintext id="modalselloffer-expiry" :value="modalSellOffer.expiry == 0 ? 'n/a' : formatTimestamp(modalSellOffer.expiry)" class="pl-2 w-75"></b-form-input>
-              </b-input-group>
-            </b-form-group> -->
-            <!-- <b-form-group label="Nonce:" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="2" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-input-group style="width: 25.0rem;">
-                <b-form-input size="sm" plaintext id="modalselloffer-nonce" :value="modalSellOffer.offer && modalSellOffer.offer.nonce" class="pl-2 w-75"></b-form-input>
-              </b-input-group>
-            </b-form-group> -->
-            <!-- <b-form-group label="" label-for="modalselloffer-nonce" label-size="sm" label-cols-sm="1" label-align-sm="right" class="mx-0 my-1 p-0"> -->
-              <font size="-1">
-                <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
-                  <template #cell(price)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.price, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(offer)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.offer, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(tokens)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.tokens, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(wethAmount)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.wethAmount, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(totalTokens)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.totalTokens, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(totalWeth)="data">
-                    <font size="-1">
-                      {{ formatDecimals(data.item.totalWeth, 18) }}
-                    </font>
-                  </template>
-                  <template #cell(expiry)="data">
-                    <font size="-1">
-                      <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
-                        {{ formatTimestamp(data.item.expiry) }}
-                      </b-link>
-                    </font>
-                  </template>
-                </b-table>
-              </font>
-            <!-- </b-form-group> -->
-            <b-row class="m-0 mt-3 p-0">
-              <b-col class="m-0 p-0">
 
+            <font size="-1">
+              <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
+                <template #cell(price)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.price, 18) }}
+                  </font>
+                </template>
+                <template #cell(offer)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.offer, 18) }}
+                  </font>
+                </template>
+                <template #cell(tokens)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.tokens, 18) }}
+                  </font>
+                </template>
+                <template #cell(totalTokens)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.totalTokens, 18) }}
+                  </font>
+                </template>
+                <template #head(wethAmount)="data">
+                  {{ modalSellOffer.paymentsInEth ? 'ETH' : 'WETH' }}
+                </template>
+                <template #cell(wethAmount)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.wethAmount, 18) }}
+                  </font>
+                </template>
+                <template #head(totalWeth)="data">
+                  {{ modalSellOffer.paymentsInEth ? '∑ ETH' : '∑ WETH' }}
+                </template>
+                <template #cell(totalWeth)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.totalWeth, 18) }}
+                  </font>
+                </template>
+                <template #cell(expiry)="data">
+                  <font size="-1">
+                    <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
+                      {{ formatTimestamp(data.item.expiry) }}
+                    </b-link>
+                  </font>
+                </template>
+              </b-table>
+            </font>
+            <b-row class="m-0 mt-1 p-0">
+              <b-col class="m-0 p-0">
                 <b-card sub-title="Requested" class="m-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <b-form-group label="Token:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <b-form-group label="Token:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
                         <b-form-radio value="receiveTokens">{{ settings.symbol }}</b-form-radio>
-                        <b-form-radio value="payWeth">[W]ETH</b-form-radio>
+                        <b-form-radio value="payWeth">{{ modalSellOffer.paymentsInEth ? 'ETH' : 'WETH' }}</b-form-radio>
                       </b-form-radio-group>
                     </b-form-group>
-                    <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay [W]ETH')) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay ' + (modalSellOffer.paymentsInEth ? 'ETH' : 'WETH'))) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-50"></b-form-input>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
-
-
-                <!-- <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
-                  <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
-                </b-form-group>
-                <b-form-group :label="'Pay [W]ETH:'" label-for="modalselloffer-maker" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Token balance: ' + formatDecimals(sellOffer.makerTokenBalance, 18)" class="mx-0 my-1 p-0">
-                  <b-form-input size="sm" id="modalselloffer-maker" :value="modalSellOffer.maker" class="pl-2 w-75"></b-form-input>
-                </b-form-group> -->
+                <b-card sub-title="Available" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                  <b-card-text class="m-0 p-0">
+                    <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-filledtokens" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledtokens" :value="sellOffer.filledTokens && formatDecimals(sellOffer.filledTokens, 18)" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                    <b-form-group :label="'Pay ' + (modalSellOffer.paymentsInEth ? 'ETH:' : 'WETH:')" label-for="modalselloffer-filledweth" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledweth" :value="sellOffer.filledWeth && formatDecimals(sellOffer.filledWeth, 18)" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="Average Price:" label-for="modalselloffer-filledaverageprice" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-filledaverageprice" :value="sellOffer.filledAveragePrice && formatDecimals(sellOffer.filledAveragePrice, 18)" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                  </b-card-text>
+                </b-card>
               </b-col>
               <b-col class="m-0 p-0">
-                <b-card sub-title="Fill" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="Trade" class="m-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-filledtokens" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-input size="sm" plaintext id="modalselloffer-filledtokens" :value="sellOffer.filledTokens && formatDecimals(sellOffer.filledTokens, 18)" class="pl-2 w-50"></b-form-input>
+                    <b-form-group label="Payments In:" label-for="modalselloffer-paymentsin" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-radio-group size="sm" id="modalselloffer-paymentsin" v-model="modalSellOffer.paymentsInEth" :options="paymentsInEthOptions">
+                      </b-form-radio-group>
                     </b-form-group>
-                    <b-form-group label="Pay [W]ETH:" label-for="modalselloffer-filledweth" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-input size="sm" plaintext id="modalselloffer-filledweth" :value="sellOffer.filledWeth && formatDecimals(sellOffer.filledWeth, 18)" class="pl-2 w-50"></b-form-input>
+                    <b-form-group v-if="!modalSellOffer.paymentsInEth" label="WETH Balance:" label-for="modalselloffer-wethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-wethbalance" :value="wethBalances[coinbase] && formatDecimals(wethBalances[coinbase].tokens, 18) || ''" class="pl-2 w-75"></b-form-input>
                     </b-form-group>
-                    <b-form-group label="Average Price:" label-for="modalselloffer-filledaverageprice" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-input size="sm" plaintext id="modalselloffer-filledaverageprice" :value="sellOffer.filledAveragePrice && formatDecimals(sellOffer.filledAveragePrice, 18)" class="pl-2 w-50"></b-form-input>
+                    <b-form-group label="ETH Balance:" label-for="modalselloffer-ethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-ethbalance" :value="formatDecimals(balance, 18)" class="pl-2 w-75"></b-form-input>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
@@ -182,9 +158,6 @@ sellOffer: {{ sellOffer }}
 modalSellOffer: {{ modalSellOffer }}
               </pre>
             </font> -->
-            <!-- <b-form-group label="New Token Agent" label-size="sm" label-cols-sm="6" label-align-sm="right" class="mx-0 my-1 p-0">
-              <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
-            </b-form-group> -->
           </div>
         </b-modal>
 
@@ -564,6 +537,8 @@ data: {{ data }}
         amount: "0.12345123", // null,
         amountType: 'payWeth', // 'receiveTokens' or 'payWeth'
 
+        paymentsInEth: false,
+
         txHash: null,
         logIndex: null,
         maker: null,
@@ -601,6 +576,10 @@ data: {{ data }}
         { value: 0, text: 'Single price without limit' },
         { value: 1, text: 'Single price with limit' },
         { value: 1, text: 'Multiple prices and limits', disabled: true },
+      ],
+      paymentsInEthOptions: [
+        { text: 'WETH', value: false },
+        { text: 'ETH', value: true },
       ],
       sortOptions: [
         { value: 'txorderasc', text: '▲ TxOrder' },
@@ -662,6 +641,9 @@ data: {{ data }}
     },
     coinbase() {
       return store.getters['connection/coinbase'];
+    },
+    balance() {
+      return store.getters['connection/balance'];
     },
     networkSupported() {
       return store.getters['connection/networkSupported'];

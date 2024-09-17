@@ -106,13 +106,27 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
 }
 
 // TokenAgent
+// type Account is address;  // 2^160
+// type Index is uint32;     // 2^32  = 4,294,967,296
+// type Nonce is uint24;     // 2^24  = 16,777,216
+// type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+// type Token is address;    // 2^160
+// type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+// type TokenId16 is uint16; // 2^16 = 65,536
+// type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+// type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+// enum BuySell { BUY, SELL }
+// enum Execution { FILL, FILLORKILL }
+// enum TokenIdType { TOKENID256, TOKENID16 }
+// enum PaymentType { WETH, ETH }
+// enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
 // event OwnershipTransferStarted(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 // event OwnershipTransferred(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-// event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-// event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+// event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+// event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
 // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-// event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+// event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
 function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAbi, latestBlockNumber) {
   // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentAbi);
@@ -124,9 +138,9 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
       let eventRecord = null;
       if (logData.eventFragment.name == "Offered") {
         // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-        const [index, token, tokenType, maker, buySell, expiry, count, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
+        const [index, token, tokenType, maker, buySell, expiry, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
         eventRecord = {
-          eventType: "Offered", index, maker, token, tokenType, buySell, expiry, count, nonce,
+          eventType: "Offered", index, maker, token, tokenType, buySell, expiry, nonce,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
           tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),

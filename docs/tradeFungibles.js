@@ -519,7 +519,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 3,
+        version: 4,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1229,10 +1229,28 @@ data: {{ data }}
         const tokenAgentEventsfilter = {
           address: null, fromBlock: 0, toBlock: blockNumber,
           topics: [[
-              // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-              ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint16,uint24,uint128[],uint256[],uint128[],uint40)"),
-              // TODO event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-              // TODO event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+              // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint24,uint128[],uint256[],uint128[],uint40)"),
+
+              // type Account is address;  // 2^160
+              // type Index is uint32;     // 2^32  = 4,294,967,296
+              // type Nonce is uint24;     // 2^24  = 16,777,216
+              // type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+              // type Token is address;    // 2^160
+              // type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+              // type TokenId16 is uint16; // 2^16 = 65,536
+              // type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+              // type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+              // enum BuySell { BUY, SELL }
+              // enum Execution { FILL, FILLORKILL }
+              // enum TokenIdType { TOKENID256, TOKENID16 }
+              // enum PaymentType { WETH, ETH }
+              // enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
+              // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+              // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+              // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
+              // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
             ],
             [ '0x000000000000000000000000' + this.settings.tokenContractAddress.substring(2, 42).toLowerCase() ],
             null,
@@ -1265,31 +1283,35 @@ data: {{ data }}
         Vue.set(this.data, 'balanceAddresses', balanceAddresses);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
 
-        const tokenApprovalsfilter = {
-          address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
-          topics: [[
-              // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
-              ethers.utils.id("Approval(address,address,uint256)"),
-            ],
-            null,
-            approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
-          ]};
-        const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
-        const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
-        Vue.set(this.data, 'tokenApprovals', tokenApprovals);
+        if (approvalAddresses.length > 0) {
+          const tokenApprovalsfilter = {
+            address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
+            topics: [[
+                // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+                ethers.utils.id("Approval(address,address,uint256)"),
+              ],
+              null,
+              approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            ]};
+          const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
+          const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
+          Vue.set(this.data, 'tokenApprovals', tokenApprovals);
+        }
 
-        const wethApprovalsfilter = {
-          address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
-          topics: [[
-              // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
-              ethers.utils.id("Approval(address,address,uint256)"),
-            ],
-            null,
-            approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
-          ]};
-        const wethApprovalsEventLogs = await provider.getLogs(wethApprovalsfilter);
-        const wethApprovals = parseTokenEventLogs(wethApprovalsEventLogs, this.chainId, blockNumber);
-        Vue.set(this.data, 'wethApprovals', wethApprovals);
+        if (approvalAddresses.length > 0) {
+          const wethApprovalsfilter = {
+            address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
+            topics: [[
+                // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+                ethers.utils.id("Approval(address,address,uint256)"),
+              ],
+              null,
+              approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            ]};
+          const wethApprovalsEventLogs = await provider.getLogs(wethApprovalsfilter);
+          const wethApprovals = parseTokenEventLogs(wethApprovalsEventLogs, this.chainId, blockNumber);
+          Vue.set(this.data, 'wethApprovals', wethApprovals);
+        }
 
         const tokenTransferToEventsfilter = {
           address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,

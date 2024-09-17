@@ -146,27 +146,34 @@ const TradeFungibles = {
                       <b-form-radio-group size="sm" id="modalselloffer-paymentsin" v-model="modalSellOffer.paymentsInEth" :options="paymentsInEthOptions">
                       </b-form-radio-group>
                     </b-form-group>
-                    <b-form-group v-if="!modalSellOffer.paymentsInEth" label="WETH Balance:" label-for="modalselloffer-wethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-input size="sm" plaintext id="modalselloffer-wethbalance" :value="wethBalances[coinbase] && formatDecimals(wethBalances[coinbase].tokens, 18) || ''" class="pl-2 w-75"></b-form-input>
-                    </b-form-group>
                     <b-form-group label="ETH Balance:" label-for="modalselloffer-ethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-input size="sm" plaintext id="modalselloffer-ethbalance" :value="formatDecimals(balance, 18)" class="pl-2 w-75"></b-form-input>
                     </b-form-group>
-                    <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-button size="sm" :disabled="!sellOffer.filledTokens" @click="trade" variant="warning">Trade</b-button>
+                    <b-form-group v-if="!modalSellOffer.paymentsInEth" label="WETH Balance:" label-for="modalselloffer-wethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-wethbalance" :value="wethBalances[coinbase] && formatDecimals(wethBalances[coinbase].tokens, 18) || '0'" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                    <b-form-group v-if="!modalSellOffer.paymentsInEth" label="WETH Approved:" label-for="modalselloffer-wethapproved" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-input size="sm" plaintext id="modalselloffer-wethapproved" :value="wethApprovals[coinbase] && wethApprovals[coinbase][sellOffer.tokenAgent] && formatDecimals(wethApprovals[coinbase][sellOffer.tokenAgent].tokens, 18) || '0'" class="pl-2 w-75"></b-form-input>
+                    </b-form-group>
+                    <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" :state="!tradeFeedback" :invalid-feedback="tradeFeedback" class="mx-0 my-1 p-0">
+                      <b-button size="sm" :disabled="!networkSupported || !sellOffer.filledTokens || !!tradeFeedback" @click="trade" variant="warning">Trade</b-button>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
               </b-col>
             </b-row>
-            <!-- <font size="-2">
+            <font size="-2">
+              <pre>
+wethApprovals: {{ wethApprovals }}
+wethBalances: {{ wethBalances }}
+              </pre>
               <pre>
 sellOffer: {{ sellOffer }}
               </pre>
               <pre>
 modalSellOffer: {{ modalSellOffer }}
               </pre>
-            </font> -->
+            </font>
           </div>
         </b-modal>
 
@@ -704,6 +711,23 @@ data: {{ data }}
       return results;
     },
 
+    tradeFeedback() {
+      console.log(now() + " INFO TradeFungibles:computed.tradeFeedback");
+      if (this.coinbase == this.sellOffer.maker) {
+        return "Cannot self trade";
+      }
+      if (this.modalSellOffer.paymentsInEth) {
+        const filledWeth = ethers.BigNumber.from(this.sellOffer.filledWeth);
+        const balance = ethers.BigNumber.from(this.balance);
+        // console.log("filledWeth: " + filledWeth.toString());
+        // console.log("balance: " + balance.toString());
+        if (balance.lt(filledWeth)) {
+          return "Insufficient ETH balance"
+        }
+      }
+      return null;
+    },
+
     addOffersFeedback() {
       if (!this.settings.tokenAgentAddress || !this.validAddress(this.settings.tokenAgentAddress)) {
         return "Enter token agent address";
@@ -966,6 +990,7 @@ data: {{ data }}
       const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
       const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
+      const trades = [];
       const prices = [];
       let filledTokens = null;
       let filledWeth = null;
@@ -1040,10 +1065,23 @@ data: {{ data }}
               if (wethAmount.gt(0)) {
                 tokens = tokensRemaining;
               } else {
-                tokens = 0;
+                tokens = ethers.BigNumber.from(0);
               }
             }
             maxWeth = maxWeth.sub(wethAmount);
+          }
+          if (tokens.gt(0)) {
+            // Trades[]
+            // function trade(TradeInput[] calldata inputs, bool paymentsInEth) external payable nonReentrant notOwner
+            // enum Execution { FILL, FILLORKILL }
+            // struct TradeInput {
+            //     Index index;             // 32 bits
+            //     Price price;             // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
+            //     Execution execution;     // 8 bits - Only for ERC-20 - FILL or FILLORKILL
+            //     TokenId[] tokenIds;
+            //     Tokens[] tokenss;
+            // }
+            trades.push({ index: e.offerIndex, price: e.price, execution: 1, tokenIds: [], tokenss: [tokens.toString()] });
           }
           totalTokens = totalTokens.add(tokens);
           totalWeth = totalWeth.add(wethAmount);
@@ -1083,6 +1121,7 @@ data: {{ data }}
         tokenAgent,
         tokenAgentTokenApproval: tokenAgentTokenApproval.toString(),
         nonce,
+        trades,
         prices,
       };
     },
@@ -1095,6 +1134,44 @@ data: {{ data }}
 
   },
   methods: {
+    async trade() {
+      console.log(now() + " INFO TradeFungibles:methods.trade - trades: " + JSON.stringify(this.sellOffer.trades));
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        const contract = new ethers.Contract(this.sellOffer.tokenAgent, network.tokenAgent.abi, provider);
+        const contractWithSigner = contract.connect(provider.getSigner());
+        try {
+          const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth, { value: this.sellOffer.filledWeth });
+          // const tx = { hash: "blah" };
+          console.log(now() + " INFO TradeFungibles:methods.trade - tx: " + JSON.stringify(tx));
+          const h = this.$createElement;
+          const vNodesMsg = h(
+            'p',
+            { class: ['text-left', 'mb-0'] },
+            [
+              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+              h('br'),
+              h('br'),
+              'Resync after this tx has been included',
+            ]
+          );
+          this.$bvToast.toast([vNodesMsg], {
+            title: 'Transaction submitted',
+            autoHideDelay: 5000,
+          });
+          this.$refs['modalnewtokenagent'].hide();
+          this.settings.newTokenAgent.show = false;
+          this.saveSettings();
+        } catch (e) {
+          console.log(now() + " ERROR TradeFungibles:methods.trade: " + JSON.stringify(e));
+          this.$bvToast.toast(`${e.message}`, {
+            title: 'Error!',
+            autoHideDelay: 5000,
+          });
+        }
+      }
+    },
     async loadData() {
       console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgentAgentSettings: " + JSON.stringify(this.settings));
       // TODO: Later move into data?

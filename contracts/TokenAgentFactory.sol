@@ -117,7 +117,6 @@ interface IERC1155Partial {
 }
 
 type Account is address;  // 2^160
-type Count is uint16;     // 2^16  = 65,536
 type Index is uint32;     // 2^32  = 4,294,967,296
 type Nonce is uint24;     // 2^24  = 16,777,216
 type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
@@ -324,30 +323,27 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         Token token;             // 160 bits
         BuySell buySell;         // 8 bits
         Unixtime expiry;         // 40 bits
-        Count count;             // 16 bits
         Price[] prices;          // token/WETH 18dp
         TokenId[] tokenIds;      // ERC-721/1155
-        Tokens[] tokenss;        // ERC-20/1155
+        Tokens[] tokenss;        // ERC-20/721/1155
     }
     struct UpdateOffer {
         Index index;             // 160 bits
         Unixtime expiry;         // 40 bits
-        Count count;             // 16 bits
         Price[] prices;          // token/WETH 18dp
         TokenId[] tokenIds;      // ERC-721/1155
-        Tokens[] tokenss;        // ERC-20/1155
+        Tokens[] tokenss;        // ERC-20/721/1155
     }
     struct Offer {
         Token token;             // 160 bits
         BuySell buySell;         // 8 bits
         Unixtime expiry;         // 40 bits
-        Count count;             // 16 bits
         Nonce nonce;             // 24 bits
         TokenIdType tokenIdType; // 8 bits
         Price[] prices;          // token/WETH 18dp
         TokenId16[] tokenId16s;  // ERC-721/1155, when max[tokenIds...] < 2 ** 16
         TokenId[] tokenIds;      // ERC-721/1155, when max[tokenIds...] >= 2 ** 16
-        Tokens[] tokenss;        // ERC-20/1155
+        Tokens[] tokenss;        // ERC-20/721/1155
     }
     struct OfferInfo {
         uint index;
@@ -355,7 +351,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         TokenType tokenType;
         BuySell buySell;
         Unixtime expiry;
-        Count count;
         Nonce nonce;
         Price[] prices;
         TokenId[] tokenIds;
@@ -375,8 +370,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     Offer[] public offers;
 
     event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-    event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-    event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
 
@@ -387,7 +382,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     error ExecutedTotalPriceLessThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error InsufficentEthersRemaining(uint ethersRequested, uint ethersRemaining);
     error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
-    error InsufficentCountRemaining(Count requested, Count remaining); // TODO Delete
     error InvalidInputData(string reason);
     error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
     error InvalidIndex(Index index);
@@ -435,16 +429,18 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.token = input.token;
             offer.buySell = input.buySell;
             offer.expiry = input.expiry;
-            offer.count = input.count;
             offer.nonce = nonce;
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
+
             } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
                 revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
+
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
                 revert InvalidInputData("ERC-721: tokenss array length must contain exactly one number");
             } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
                 revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
+
             } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
@@ -478,7 +474,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             }
             // if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
             offer.tokenss = input.tokenss;
-            emit Offered(Index.wrap(uint32(offers.length - 1)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            emit Offered(Index.wrap(uint32(offers.length - 1)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -489,7 +485,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             uint index = Index.unwrap(input.index);
             Offer storage offer = offers[index];
             offer.expiry = input.expiry;
-            offer.count = input.count;
             offer.nonce = nonce;
             TokenType tokenType = tokenTypes[offer.token];
             if (input.prices.length == 0) {
@@ -534,7 +529,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             // if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
             offer.tokenss = input.tokenss;
             // }
-            emit OfferUpdated(Index.wrap(uint32(index)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, offer.count, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
+            emit OfferUpdated(Index.wrap(uint32(index)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }
 
@@ -665,7 +660,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 // }
                 prices_ = new uint[](input.tokenIds.length);
                 tokenIds_ = new uint[](input.tokenIds.length);
-                tokenss_ = new uint[](input.tokenIds.length); // TODO: Delete
+                tokenss_ = new uint[](input.tokenIds.length);
                 for (uint j = 0; j < input.tokenIds.length; j++) {
                     uint p;
                     if (offer.tokenId16s.length + offer.tokenIds.length > 0) {
@@ -765,7 +760,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 } else {
                     tokenIds = offer.tokenIds;
                 }
-                results[k++] = OfferInfo(i, offer.token, tokenTypes[offer.token], offer.buySell, offer.expiry, offer.count, offer.nonce, offer.prices, tokenIds, offer.tokenss);
+                results[k++] = OfferInfo(i, offer.token, tokenTypes[offer.token], offer.buySell, offer.expiry, offer.nonce, offer.prices, tokenIds, offer.tokenss);
             }
         }
     }

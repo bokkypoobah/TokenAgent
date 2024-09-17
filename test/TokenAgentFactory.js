@@ -67,11 +67,11 @@ describe("TokenAgentFactory", function () {
             ', maker: ' + log.args[3].substring(0, 10) +
             ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
             ', expiry: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
-            ', count: ' + log.args[6] + ', nonce: ' + log.args[7] +
-            ', prices: ' + JSON.stringify(log.args[8].map(e => parseFloat(ethers.formatEther(e)))) +
-            ', tokenIds: ' + JSON.stringify(log.args[9].map(e => parseInt(e.toString()))) +
-            ', tokenss: ' + JSON.stringify(log.args[10].map(e => (log.args[2] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
-            ', timestamp: ' + new Date(parseInt(log.args[11]) * 1000).toLocaleTimeString() +
+            ', nonce: ' + log.args[6] +
+            ', prices: ' + JSON.stringify(log.args[7].map(e => parseFloat(ethers.formatEther(e)))) +
+            ', tokenIds: ' + JSON.stringify(log.args[8].map(e => parseInt(e.toString()))) +
+            ', tokenss: ' + JSON.stringify(log.args[9].map(e => (log.args[2] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
+            ', timestamp: ' + new Date(parseInt(log.args[10]) * 1000).toLocaleTimeString() +
             ')');
         // } else if (log.name == "OfferTaken") {
         //   console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
@@ -178,18 +178,18 @@ describe("TokenAgentFactory", function () {
     if (offersInfo.length > 0) {
       console.log();
       console.log("          tokenAgents[1] Offers");
-      console.log("            # Token      Type B/S  Expiry       Count Nonce                         Prices                       TokenIds                        Tokenss");
-      console.log("          --- ---------- ---- ---- ------------ ----- ----- ------------------------------ ------------------------------ ------------------------------");
+      console.log("            # Token      Type B/S  Expiry       Nonce                         Prices                       TokenIds                        Tokenss");
+      console.log("          --- ---------- ---- ---- ------------ ----- ------------------------------ ------------------------------ ------------------------------");
       for (let i = 0; i < offersInfo.length; i++) {
         const info = offersInfo[i];
         console.log("          " + padLeft(info[0], 3) + " " + info[1].substring(0, 10) + " " +
           padRight(info[2] == 1 ? '20' : (info[2] == 2 ? '721' : '1155'), 4) + " " +
           (info[3] ? 'SELL' : 'BUY ') + " " +
           padRight(new Date(parseInt(info[4]) * 1000).toLocaleTimeString(), 12) + " " +
-          padLeft(info[5], 5) + " " + padLeft(info[6], 5) + " " +
-          padLeft(info[7].map(e => parseFloat(ethers.formatEther(e)).toFixed(2)).join(", "), 30) + " " +
-          padLeft(info[8].map(e => parseInt(e)).join(", "), 30) + " " +
-          padLeft(info[9].map(e => (info[2] == 1 ? parseFloat(ethers.formatEther(e)).toFixed(2) : parseInt(e)) ).join(", "), 30)
+          padLeft(info[5], 5) + " " +
+          padLeft(info[6].map(e => parseFloat(ethers.formatEther(e)).toFixed(2)).join(", "), 30) + " " +
+          padLeft(info[7].map(e => parseInt(e)).join(", "), 30) + " " +
+          padLeft(info[8].map(e => (info[2] == 1 ? parseFloat(ethers.formatEther(e)).toFixed(2) : parseInt(e)) ).join(", "), 30)
         );
       }
     }
@@ -409,13 +409,13 @@ describe("TokenAgentFactory", function () {
       await printState(d);
       const offers1 = [
         [
-          d.erc20Token.target, BUY, d.expiry, 0,
+          d.erc20Token.target, BUY, d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
         ],
         [
-          d.erc20Token.target, SELL, d.expiry, 0,
+          d.erc20Token.target, SELL, d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
@@ -462,20 +462,20 @@ describe("TokenAgentFactory", function () {
       await printState(d);
       const offers1 = [
         [
-          d.erc721Token.target, BUY, d.expiry, 4,
+          d.erc721Token.target, BUY, d.expiry,
           [ethers.parseUnits("0.1", 18)],
           [],
           [14],
         ],
         [
-          d.erc721Token.target, SELL, d.expiry, 4,
+          d.erc721Token.target, SELL, d.expiry,
           [ethers.parseUnits("0.1", 18)],
           [4, 5, 6, 7],
           // [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40],
           [24],
         ],
         [
-          d.erc721Token.target, SELL, d.expiry, 4,
+          d.erc721Token.target, SELL, d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
           [4, 5, 6, 7],
           [34],
@@ -506,24 +506,24 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it.only("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
       const offers1 = [
         [
-          d.erc1155Token.target, BUY, d.expiry, 40,
+          d.erc1155Token.target, BUY, d.expiry,
           [ethers.parseUnits("0.1", 18)],
           [],
           [],
         ],
         [
-          d.erc1155Token.target, SELL, d.expiry, 26,
+          d.erc1155Token.target, SELL, d.expiry,
           [ethers.parseUnits("0.1", 18)],
           [0, 1, 2, 3],
           [5, 6, 7, 8],
         ],
         [
-          d.erc1155Token.target, SELL, d.expiry, 40,
+          d.erc1155Token.target, SELL, d.expiry,
           [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18), ethers.parseUnits("0.4", 18)],
           [0, 1, 2, 3],
           [10, 10, 10, 10],

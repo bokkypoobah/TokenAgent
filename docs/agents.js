@@ -100,7 +100,7 @@ const Agents = {
         newTokenAgent: {
           show: false,
         },
-        version: 2,
+        version: 3,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },

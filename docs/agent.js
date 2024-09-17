@@ -512,7 +512,7 @@ const Agent = {
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
 
-        version: 7,
+        version: 8,
       },
 
       events: [],

@@ -565,7 +565,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             uint price;
             uint[] memory prices_;
             uint[] memory tokenIds_;
-            uint[] memory tokenss_;
+            uint[] memory tokenss_; // TODO Delete
             if (tokenType == TokenType.ERC20) {
                 require(input.tokenss.length == 1, InvalidInputData("Expecting single tokens input"));
                 uint tokens = uint(Tokens.unwrap(input.tokenss[0]));
@@ -573,25 +573,22 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 uint totalWETHTokens;
                 prices_ = new uint[](offer.prices.length);
                 tokenIds_ = new uint[](0);
-                tokenss_ = new uint[](offer.prices.length);
+                tokenss_ = new uint[](0); // TODO Delete
                 uint k;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
                     uint _price = Price.unwrap(offer.prices[j]);
-                    if (Tokens.unwrap(offer.tokenss[j]) > Tokens.unwrap(offer.useds[j])) {
-                        uint remaining = Tokens.unwrap(offer.tokenss[j]) - Tokens.unwrap(offer.useds[j]);
-                        if (tokens >= remaining) {
-                            totalTokens += remaining;
-                            totalWETHTokens += remaining * _price / 10**18;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + uint128(remaining));
+                    if (Tokens.unwrap(offer.tokenss[j]) > 0) {
+                        if (tokens >= Tokens.unwrap(offer.tokenss[j])) {
+                            totalTokens += Tokens.unwrap(offer.tokenss[j]);
+                            totalWETHTokens += uint(Tokens.unwrap(offer.tokenss[j])) * _price / 10**18;
                             prices_[k] = _price;
-                            tokenss_[k] = remaining;
-                            tokens -= remaining;
+                            tokens -= Tokens.unwrap(offer.tokenss[j]);
+                            offer.tokenss[j] = Tokens.wrap(0);
                         } else {
                             totalTokens += tokens;
                             totalWETHTokens += tokens * _price / 10**18;
-                            offer.useds[j] = Tokens.wrap(Tokens.unwrap(offer.useds[j]) + uint128(tokens));
                             prices_[k] = _price;
-                            tokenss_[k] = tokens;
+                            offer.tokenss[j] = Tokens.wrap(uint128(uint(Tokens.unwrap(offer.tokenss[j])) - tokens));
                             tokens = 0;
                         }
                         k++;

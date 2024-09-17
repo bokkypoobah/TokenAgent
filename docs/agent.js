@@ -523,9 +523,9 @@ const Agent = {
         { value: 1, text: 'Sell' },
       ],
       pricing20Options: [
-        { value: 0, text: 'Single price without limit' },
+        { value: 0, text: 'Single price without limit', disabled: true },
         { value: 1, text: 'Single price with limit' },
-        { value: 1, text: 'Multiple prices and limits', disabled: true },
+        { value: 2, text: 'Multiple prices and limits', disabled: true },
       ],
       sortOptions: [
         { value: 'txorderasc', text: '▲ TxOrder' },
@@ -898,7 +898,6 @@ const Agent = {
                 this.settings.addOffers.token,
                 parseInt(this.settings.addOffers.buySell),
                 "2041432206", // Sat Sep 09 2034 16:30:06 GMT+0000
-                0,
                 prices,
                 [],
                 tokens,

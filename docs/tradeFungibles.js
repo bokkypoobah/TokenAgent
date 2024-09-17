@@ -611,7 +611,7 @@ data: {{ data }}
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -778,7 +778,7 @@ data: {{ data }}
 
     sellOffers() {
       const results = [];
-      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
+      console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         if (!(d.owner in collator)) {
@@ -837,7 +837,7 @@ data: {{ data }}
             ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
           );
           prices[i].tokensAvailable = tokensAvailable.toString();
-          if (tokensAvailable.gt(0)) {
+          // if (tokensAvailable.gt(0)) {
             const o = d.offers[e.offerIndex];
             results.push({
               txHash: o.txHash, logIndex: o.logIndex, maker: d.owner, tokenAgent,
@@ -845,11 +845,12 @@ data: {{ data }}
               offerIndex: e.offerIndex, priceIndex: e.priceIndex, price: e.price, tokens: tokens.toString(), tokensAvailable: tokensAvailable.toString(),
               expiry: o.expiry,
             });
-          }
+          // }
         }
         collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
       // console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
     filteredSortedSellOffers() {
@@ -881,7 +882,7 @@ data: {{ data }}
     buyOffers() {
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const results = [];
-      // console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
+      console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         if (!(d.owner in collator)) {
@@ -995,7 +996,7 @@ data: {{ data }}
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
       const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
       const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
-      const nonce = maker && this.data.tokenAgents[tokenAgent].nonce || null;
+      const nonce = maker && parseInt(this.data.tokenAgents[tokenAgent].nonce) || 0;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
       const trades = [];
       const prices = [];
@@ -1007,16 +1008,18 @@ data: {{ data }}
         let totalTokens = ethers.BigNumber.from(0);
         let totalWeth = ethers.BigNumber.from(0);
         for (const [offerIndex, o] of Object.entries(offers)) {
+          console.log(now() + " INFO TradeFungibles:computed.sellOffer - offerIndex: " + offerIndex + ", o: " + JSON.stringify(o, null, 2));
           if (nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
-            if (o.prices.length == 1 && o.tokenss.length == 0) {
-              prices.push({
-                offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, totalTokens: null, totalWeth: null, tokensRemaining: null,
-                expiry: o.expiry,
-                txHash: o.txHash,
-                logIndex: o.logIndex,
-                selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex == 0,
-              });
-            } else if (o.prices.length == o.tokenss.length) {
+            // if (o.prices.length == 1 && o.tokenss.length == 0) {
+            //   prices.push({
+            //     offerIndex: o.index, priceIndex: 0, price: o.prices[0], offer: null, tokens: null, wethAmount: null, totalTokens: null, totalWeth: null, tokensRemaining: null,
+            //     expiry: o.expiry,
+            //     txHash: o.txHash,
+            //     logIndex: o.logIndex,
+            //     selected: this.modalSellOffer.offerIndex == o.index && this.modalSellOffer.priceIndex == 0,
+            //   });
+            // } else
+            if (o.prices.length == o.tokenss.length) {
               for (let i = 0; i < o.prices.length; i++) {
                 prices.push({
                   offerIndex: o.index, priceIndex: i, price: o.prices[i], offer: o.tokenss[i], tokens: null, wethAmount: null, totalTokens: null, totalWeth: null, tokensRemaining: null,
@@ -1032,7 +1035,6 @@ data: {{ data }}
 
         prices.sort((a, b) => {
           const aP = ethers.BigNumber.from(a.price);
-          // TODO: handle null tokens
           const aT = a.offer != null && ethers.BigNumber.from(a.offer) || null;
           const bP = ethers.BigNumber.from(b.price);
           const bT = b.offer != null && ethers.BigNumber.from(b.offer) || null;
@@ -1066,13 +1068,23 @@ data: {{ data }}
           }
           let wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
           if (maxWeth != null) {
+            console.log("tokens: " + ethers.utils.formatEther(tokens));
+            console.log("e.price: " + ethers.utils.formatEther(e.price));
+            console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
+            // tokensRemaining = maxWeth * 10**18 / e.price
             const tokensRemaining = maxWeth.mul(TENPOW18).div(e.price);
+            console.log("maxWeth: " + ethers.utils.formatEther(maxWeth));
+            console.log("tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
             if (tokens.gt(tokensRemaining)) {
+              // wethAmount = tokensRemaining * e.price / 10**18
               wethAmount = tokensRemaining.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
               if (wethAmount.gt(0)) {
                 tokens = tokensRemaining;
+                console.log("tokens A: " + ethers.utils.formatEther(tokens));
               } else {
                 tokens = ethers.BigNumber.from(0);
+                console.log("tokens B: " + ethers.utils.formatEther(tokens));
               }
             }
             maxWeth = maxWeth.sub(wethAmount);
@@ -1149,7 +1161,7 @@ data: {{ data }}
         const contract = new ethers.Contract(this.sellOffer.tokenAgent, network.tokenAgent.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
         try {
-          const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth, { value: this.modalSellOffer.paymentsInEth ? this.sellOffer.filledWeth : 0 });
+          const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth ? 1 : 0, { value: this.modalSellOffer.paymentsInEth ? this.sellOffer.filledWeth : 0 });
           // const tx = { hash: "blah" };
           console.log(now() + " INFO TradeFungibles:methods.trade - tx: " + JSON.stringify(tx));
           const h = this.$createElement;
@@ -1232,6 +1244,10 @@ data: {{ data }}
               // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
               ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint24,uint128[],uint256[],uint128[],uint40)"),
 
+              // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+              // Traded (uint32 index, index_topic_1 address token, uint8 tokenType, index_topic_2 address maker, index_topic_3 address taker, uint8 makerBuySell, uint256[] prices, uint256[] tokenIds, uint256[] tokenss, uint128[] remainingTokenss, uint128 price, uint40 timestamp)
+              ethers.utils.id("Traded(uint32,address,uint8,address,address,uint8,uint256[],uint256[],uint256[],uint128[],uint128,uint40)"),
+
               // type Account is address;  // 2^160
               // type Index is uint32;     // 2^32  = 4,294,967,296
               // type Nonce is uint24;     // 2^24  = 16,777,216
@@ -1259,11 +1275,16 @@ data: {{ data }}
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
         for (const e of tokenAgentEvents) {
-          if (e.contract in tokenAgents && e.eventType == "Offered") {
-            tokenAgents[e.contract].offers[e.index] = e;
+          if (e.contract in tokenAgents) {
+            if (e.eventType == "Offered") {
+              tokenAgents[e.contract].offers[e.index] = e;
+            } else if (e.eventType == "Traded") {
+              tokenAgents[e.contract].offers[e.index].tokenss = e.remainingTokenss;
+            }
           }
         }
         Vue.set(this.data, 'tokenAgents', tokenAgents);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
 
         // TODO: const balance = await provider.getBalance(e.maker);
         const approvalAddressMap = {};

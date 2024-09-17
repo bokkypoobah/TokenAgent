@@ -137,15 +137,28 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
       const contract = log.address;
       let eventRecord = null;
       if (logData.eventFragment.name == "Offered") {
-        // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+        // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
         const [index, token, tokenType, maker, buySell, expiry, nonce, prices, tokenIds, tokenss, timestamp] = logData.args;
         eventRecord = {
-          eventType: "Offered", index, maker, token, tokenType, buySell, expiry, nonce,
+          eventType: "Offered", index, token, tokenType, maker, buySell, expiry, nonce,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
           tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
           timestamp,
         };
+      } else if (logData.eventFragment.name == "Traded") {
+        // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+        const [index, token, tokenType, maker, taker, makerBuySell, prices, tokenIds, tokenss, remainingTokenss, price, timestamp] = logData.args;
+        eventRecord = {
+          eventType: "Traded", index, token, tokenType, maker, taker, makerBuySell,
+          prices: prices.map(e => ethers.BigNumber.from(e).toString()),
+          tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
+          tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
+          remainingTokenss: remainingTokenss.map(e => ethers.BigNumber.from(e).toString()),
+          price: price.toString(),
+          timestamp,
+        };
+
       } else if (logData.eventFragment.name == "OffersInvalidated") {
         // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
         const [newNonce, timestamp] = logData.args;

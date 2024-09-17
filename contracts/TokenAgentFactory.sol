@@ -376,7 +376,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
     event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-    event OfferTaken(Index index, Token indexed token, TokenType tokenType, Account indexed maker, /* BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds,*/ Tokens[] tokenss, Unixtime timestamp);
     event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
     event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
@@ -571,18 +570,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 uint totalWETHTokens;
                 prices_ = new uint[](offer.prices.length);
                 tokenIds_ = new uint[](0);
-                tokenss_ = new uint[](0); // TODO Delete
+                tokenss_ = new uint[](offer.tokenss.length);
                 uint k;
                 for (uint j = 0; j < offer.prices.length && tokens > 0; j++) {
                     uint _price = Price.unwrap(offer.prices[j]);
                     if (Tokens.unwrap(offer.tokenss[j]) > 0) {
                         if (tokens >= Tokens.unwrap(offer.tokenss[j])) {
+                            tokenss_[k] = Tokens.unwrap(offer.tokenss[j]);
                             totalTokens += Tokens.unwrap(offer.tokenss[j]);
                             totalWETHTokens += uint(Tokens.unwrap(offer.tokenss[j])) * _price / 10**18;
                             prices_[k] = _price;
                             tokens -= Tokens.unwrap(offer.tokenss[j]);
                             offer.tokenss[j] = Tokens.wrap(0);
                         } else {
+                            tokenss_[k] = tokens;
                             totalTokens += tokens;
                             totalWETHTokens += tokens * _price / 10**18;
                             prices_[k] = _price;
@@ -612,7 +613,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 offer.tokenss[0] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[0]) - input.tokenIds.length));
                 prices_ = new uint[](input.tokenIds.length);
                 tokenIds_ = new uint[](input.tokenIds.length);
-                tokenss_ = new uint[](0);
+                tokenss_ = new uint[](1);
+                tokenss_[0] = input.tokenIds.length;
                 for (uint j = 0; j < input.tokenIds.length; j++) {
                     uint p;
                     if (offer.tokenIds.length > 0) {
@@ -714,7 +716,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
             }
             emit Traded(input.index, offer.token, tokenType, owner, Account.wrap(msg.sender), offer.buySell, prices_, tokenIds_, tokenss_, offer.tokenss, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
-            // emit OfferTaken(input.index, offer.token, tokenType, owner, /* BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds,*/ offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
         if (takerToOwnerTotal < ownerToTakerTotal) {
             uint diff = ownerToTakerTotal - takerToOwnerTotal;

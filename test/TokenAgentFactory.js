@@ -73,19 +73,19 @@ describe("TokenAgentFactory", function () {
             ', tokenss: ' + JSON.stringify(log.args[10].map(e => (log.args[2] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
             ', timestamp: ' + new Date(parseInt(log.args[11]) * 1000).toLocaleTimeString() +
             ')');
-        } else if (log.name == "OfferTaken") {
-          console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
-            ', token: ' + log.args[1].substring(0, 10) +
-            ', tokenType: ' + (log.args[2] == 1 ? '20' : (log.args[2] == 2 ? '721' : '1155')) +
-            ', maker: ' + log.args[3].substring(0, 10) +
-            // ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
-            // ', expiry: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
-            // ', count: ' + log.args[6] + ', nonce: ' + log.args[7] +
-            // ', prices: ' + JSON.stringify(log.args[8].map(e => parseFloat(ethers.formatEther(e)))) +
-            // ', tokenIds: ' + JSON.stringify(log.args[9].map(e => parseInt(e.toString()))) +
-            ', tokenss: ' + JSON.stringify(log.args[4].map(e => (log.args[2] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
-            ', timestamp: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
-            ')');
+        // } else if (log.name == "OfferTaken") {
+        //   console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
+        //     ', token: ' + log.args[1].substring(0, 10) +
+        //     ', tokenType: ' + (log.args[2] == 1 ? '20' : (log.args[2] == 2 ? '721' : '1155')) +
+        //     ', maker: ' + log.args[3].substring(0, 10) +
+        //     // ', buySell: ' + (log.args[4] ? 'SELL' : 'BUY') +
+        //     // ', expiry: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
+        //     // ', count: ' + log.args[6] + ', nonce: ' + log.args[7] +
+        //     // ', prices: ' + JSON.stringify(log.args[8].map(e => parseFloat(ethers.formatEther(e)))) +
+        //     // ', tokenIds: ' + JSON.stringify(log.args[9].map(e => parseInt(e.toString()))) +
+        //     ', tokenss: ' + JSON.stringify(log.args[4].map(e => (log.args[2] == 1 ? parseFloat(ethers.formatEther(e)) : parseInt(e.toString())))) +
+        //     ', timestamp: ' + new Date(parseInt(log.args[5]) * 1000).toLocaleTimeString() +
+        //     ')');
         } else if (log.name == "Traded") {
           console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
             ', token: ' + log.args[1].substring(0, 10) +
@@ -506,7 +506,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it.only("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
       const offers1 = [

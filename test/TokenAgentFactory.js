@@ -77,8 +77,8 @@ describe("TokenAgentFactory", function () {
           console.log("          + tokenAgents[" + tokenAgentAdresses[event.address] + "]." + log.name + '(index:' + parseInt(log.args[0]) +
             ', token: ' + log.args[1].substring(0, 10) +
             ', tokenType: ' + (log.args[2] == 1 ? '20' : (log.args[2] == 2 ? '721' : '1155')) +
-            ', taker: ' + log.args[3].substring(0, 10) +
-            ', maker: ' + log.args[4].substring(0, 10) +
+            ', maker: ' + log.args[3].substring(0, 10) +
+            ', taker: ' + log.args[4].substring(0, 10) +
             ', makerBuySell: ' + (log.args[5] ? 'SELL' : 'BUY') +
             ', prices: ' + JSON.stringify(log.args[6].map(e => parseFloat(ethers.formatEther(e)))) +
             ', tokenIds: ' + JSON.stringify(log.args[7].map(e => parseInt(e.toString()))) +

@@ -1,14 +1,14 @@
 pragma solidity ^0.8.27;
 
 // ----------------------------------------------------------------------------
-// TokenAgent with factory v0.8.3 testing
+// TokenAgent with factory v0.8.4 testing
 //
 // https://github.com/bokkypoobah/TokenAgent
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent template 0x8aA33A7899FCC8eA5fBe6A608A109c3893A1B8b2
-// - TokenAgentFactory 0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381
+// - TokenAgent template
+// - TokenAgentFactory
 //
 // TODO:
 // - FILL for ERC-721/1155?
@@ -378,9 +378,10 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
     event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+    event OfferTaken(Index index, Token indexed token, TokenType tokenType, Account indexed maker, /* BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds,*/ Tokens[] tokenss, Unixtime timestamp);
     event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
     event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-    event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed taker, Account indexed maker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
+    event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Price price, Unixtime timestamp);
 
     error CannotOfferWETH();
     error ExecutedAveragePriceGreaterThanSpecified(Price executedAveragePrice, Price tradeAveragePrice);
@@ -712,7 +713,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     takerToOwnerTotal += price;
                 }
             }
-            emit Traded(input.index, offer.token, tokenType, Account.wrap(msg.sender), owner, offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            emit Traded(input.index, offer.token, tokenType, owner, Account.wrap(msg.sender), offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
         }
         if (takerToOwnerTotal < ownerToTakerTotal) {
             uint diff = ownerToTakerTotal - takerToOwnerTotal;

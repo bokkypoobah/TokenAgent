@@ -104,13 +104,31 @@ ERC-20, WIP
 
 <kbd><img src="images/Screenshot_TradeFungibles_WIP_20240913.png" width="600"/></kbd>
 
-ERC-20 Sell Offers - tokens requested, WIP
+ERC-20 Sell Offers - tokens requested
 
 <kbd><img src="images/Screenshot_TradeFungibles_SellOffer_Token_WIP_20240917.png" width="600"/></kbd>
 
-ERC-20 Sell Offers - WETH requested, WIP
+ERC-20 Sell Offers - WETH requested
 
 <kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WETH_WIP_20240917.png" width="600"/></kbd>
+
+ERC-20 Sell Offers - Trade
+
+Note: Have to manually approve WETH currently.
+
+<kbd><img src="images/Screenshot_TradeFungibles_Trade_1_WIP_20240917.png" width="600"/></kbd>
+
+Confirm transaction
+
+<kbd><img src="images/Screenshot_TradeFungibles_Trade_2_WIP_20240917.png" width="600"/></kbd>
+
+Transaction submitted
+
+<kbd><img src="images/Screenshot_TradeFungibles_Trade_3_WIP_20240917.png" width="600"/></kbd>
+
+https://sepolia.etherscan.io/tx/0x78aed777e4b1825345aae7f0492f26d5ee1879fbb7dd934cb84abf627dc8c802
+
+<kbd><img src="images/Screenshot_TradeFungibles_Trade_4_WIP_20240917.png" width="600"/></kbd>
 
 ##### Contract
 

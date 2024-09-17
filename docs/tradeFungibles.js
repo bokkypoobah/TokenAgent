@@ -162,7 +162,7 @@ const TradeFungibles = {
                 </b-card>
               </b-col>
             </b-row>
-            <font size="-2">
+            <!-- <font size="-2">
               <pre>
 wethApprovals: {{ wethApprovals }}
 wethBalances: {{ wethBalances }}
@@ -173,7 +173,7 @@ sellOffer: {{ sellOffer }}
               <pre>
 modalSellOffer: {{ modalSellOffer }}
               </pre>
-            </font>
+            </font> -->
           </div>
         </b-modal>
 
@@ -713,16 +713,23 @@ data: {{ data }}
 
     tradeFeedback() {
       console.log(now() + " INFO TradeFungibles:computed.tradeFeedback");
-      if (this.coinbase == this.sellOffer.maker) {
-        return "Cannot self trade";
-      }
+      // if (this.coinbase == this.sellOffer.maker) {
+      //   return "Cannot self trade";
+      // }
+      const filledWeth = ethers.BigNumber.from(this.sellOffer.filledWeth || 0);
       if (this.modalSellOffer.paymentsInEth) {
-        const filledWeth = ethers.BigNumber.from(this.sellOffer.filledWeth);
         const balance = ethers.BigNumber.from(this.balance);
-        // console.log("filledWeth: " + filledWeth.toString());
-        // console.log("balance: " + balance.toString());
         if (balance.lt(filledWeth)) {
           return "Insufficient ETH balance"
+        }
+      } else {
+        const wethBalance = ethers.BigNumber.from(this.wethBalances[this.coinbase] && this.wethBalances[this.coinbase].tokens || 0);
+        if (wethBalance.lt(filledWeth)) {
+          return "Insufficient WETH balance"
+        }
+        const wethApproved = ethers.BigNumber.from(this.wethApprovals[this.coinbase] && this.wethApprovals[this.coinbase][this.sellOffer.tokenAgent] && this.wethApprovals[this.coinbase][this.sellOffer.tokenAgent].tokens || 0);
+        if (wethApproved.lt(filledWeth)) {
+          return "Insufficient WETH approved to Token Agent"
         }
       }
       return null;

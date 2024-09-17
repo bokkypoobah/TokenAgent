@@ -1167,9 +1167,9 @@ data: {{ data }}
             title: 'Transaction submitted',
             autoHideDelay: 5000,
           });
-          this.$refs['modalnewtokenagent'].hide();
-          this.settings.newTokenAgent.show = false;
-          this.saveSettings();
+          // this.$refs['modalnewtokenagent'].hide();
+          // this.settings.newTokenAgent.show = false;
+          // this.saveSettings();
         } catch (e) {
           console.log(now() + " ERROR TradeFungibles:methods.trade: " + JSON.stringify(e));
           this.$bvToast.toast(`${e.message}`, {

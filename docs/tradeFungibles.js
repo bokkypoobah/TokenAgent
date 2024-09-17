@@ -519,7 +519,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 4,
+        version: 5,
       },
 
       tokenAgentFactoryEvents: [],
@@ -531,6 +531,7 @@ data: {{ data }}
         token: null,
         weth: null,
         tokenAgents: {},
+        tokenAgentEvents: [],
         // buyEvents: [], // TODO: delete
         // sellEvents: [], // TODO: delete
         approvalAddresses: [],
@@ -550,7 +551,8 @@ data: {{ data }}
       wethApprovals: {},
 
       modalSellOffer: {
-        amount: "0.12345123", // null,
+        // amount: "0.12345123", // null,
+        amount: "0.10345123", // null,
         amountType: 'payWeth', // 'receiveTokens' or 'payWeth'
 
         paymentsInEth: false,
@@ -1068,31 +1070,31 @@ data: {{ data }}
           }
           let wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
           if (maxWeth != null) {
-            console.log("tokens: " + ethers.utils.formatEther(tokens));
-            console.log("e.price: " + ethers.utils.formatEther(e.price));
-            console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
+            console.log("tokens: " + ethers.utils.formatEther(tokens) + ", e.price: " + ethers.utils.formatEther(e.price) + ", wethAmount: " + ethers.utils.formatEther(wethAmount));
             // tokensRemaining = maxWeth * 10**18 / e.price
-            const tokensRemaining = maxWeth.mul(TENPOW18).div(e.price);
-            console.log("maxWeth: " + ethers.utils.formatEther(maxWeth));
-            console.log("tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
-            if (tokens.gt(tokensRemaining)) {
-              // wethAmount = tokensRemaining * e.price / 10**18
-              wethAmount = tokensRemaining.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
-              console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
-              if (wethAmount.gt(0)) {
-                tokens = tokensRemaining;
+            const maxTokensFromWeth = maxWeth.mul(TENPOW18).div(e.price);
+            console.log("maxWeth: " + ethers.utils.formatEther(maxWeth) + ", maxTokensFromWeth: " + ethers.utils.formatEther(maxTokensFromWeth));
+            if (tokens.gt(maxTokensFromWeth)) {
+              wethAmount = maxWeth;
+              // wethAmount = maxTokensFromWeth * e.price / 10**18
+              // wethAmount = maxTokensFromWeth.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
+              // console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
+              // if (wethAmount.gt(0)) {
+                tokens = maxTokensFromWeth;
                 console.log("tokens A: " + ethers.utils.formatEther(tokens));
-              } else {
-                tokens = ethers.BigNumber.from(0);
-                console.log("tokens B: " + ethers.utils.formatEther(tokens));
-              }
+              // } else {
+              //   tokens = ethers.BigNumber.from(0);
+              //   wethAmount = ethers.BigNumber.from(0);
+              //   console.log("tokens B: " + ethers.utils.formatEther(tokens));
+              // }
             }
             maxWeth = maxWeth.sub(wethAmount);
           }
           if (tokens.gt(0)) {
             // Trades[]
-            // function trade(TradeInput[] calldata inputs, bool paymentsInEth) external payable nonReentrant notOwner
+            // function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant notOwner {
             // enum Execution { FILL, FILLORKILL }
+            // enum PaymentType { WETH, ETH }
             // struct TradeInput {
             //     Index index;             // 32 bits
             //     Price price;             // 128 bits min - ERC-20 max average when buying, min average when selling; ERC-721/1155 max total price when buying, min total price when selling
@@ -1160,6 +1162,43 @@ data: {{ data }}
       if (network.tokenAgentFactory) {
         const contract = new ethers.Contract(this.sellOffer.tokenAgent, network.tokenAgent.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
+
+        console.log("tokenAgent: " + this.sellOffer.tokenAgent);
+        console.log("token: " + this.data.token);
+        console.log("WETH: " + this.data.weth);
+        console.log("maker: " + this.modalSellOffer.maker);
+        console.log("taker: " + this.coinbase);
+
+        const token = new ethers.Contract(this.data.token, ERC20ABI, provider);
+        const weth = new ethers.Contract(this.data.weth, ERC20ABI, provider);
+
+        const makerTokenBalance = await token.balanceOf(this.modalSellOffer.maker);
+        console.log("makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance));
+        const makerTokenApproved = await token.allowance(this.modalSellOffer.maker, this.sellOffer.tokenAgent);
+        console.log("makerTokenApproved: " + ethers.utils.formatEther(makerTokenApproved));
+
+        const makerWethBalance = await weth.balanceOf(this.modalSellOffer.maker);
+        console.log("makerWethBalance: " + ethers.utils.formatEther(makerWethBalance));
+        const makerWethApproved = await weth.allowance(this.modalSellOffer.maker, this.sellOffer.tokenAgent);
+        console.log("makerWethApproved: " + ethers.utils.formatEther(makerWethApproved));
+
+        const takerTokenBalance = await token.balanceOf(this.coinbase);
+        console.log("takerTokenBalance: " + ethers.utils.formatEther(takerTokenBalance));
+        const takerTokenApproved = await token.allowance(this.coinbase, this.sellOffer.tokenAgent);
+        console.log("takerTokenApproved: " + ethers.utils.formatEther(takerTokenApproved));
+
+        const takerWethBalance = await weth.balanceOf(this.coinbase);
+        console.log("takerWethBalance: " + ethers.utils.formatEther(takerWethBalance));
+        const takerWethApproved = await weth.allowance(this.coinbase, this.sellOffer.tokenAgent);
+        console.log("takerWethApproved: " + ethers.utils.formatEther(takerWethApproved));
+
+        // const maker = this.modalSellOffer.maker;
+        // const makerTokenBalance = maker && this.tokenBalances[maker] && this.tokenBalances[maker].tokens && ethers.BigNumber.from(this.tokenBalances[maker].tokens) || 0;
+        // // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
+        // const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
+        // const tokenAgentTokenApproval = maker && this.tokenApprovals[maker] && this.tokenApprovals[maker][tokenAgent] && ethers.BigNumber.from(this.tokenApprovals[maker][tokenAgent].tokens) || 0;
+
+
         try {
           const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth ? 1 : 0, { value: this.modalSellOffer.paymentsInEth ? this.sellOffer.filledWeth : 0 });
           // const tx = { hash: "blah" };
@@ -1273,6 +1312,7 @@ data: {{ data }}
           ]};
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        Vue.set(this.data, 'tokenAgentEvents', tokenAgentEvents);
 
         for (const e of tokenAgentEvents) {
           if (e.contract in tokenAgents) {
@@ -1417,11 +1457,108 @@ data: {{ data }}
     },
 
     computeState() {
-      // console.log(now() + " INFO TradeFungibles:methods.computeState");
+      console.log(now() + " INFO TradeFungibles:methods.computeState");
+
+      const collator = {};
+      const allEvents = [...this.data.tokenAgentEvents, ...this.data.tokenTransfers, ...this.data.tokenApprovals, ...this.data.wethTransfers, ...this.data.wethApprovals];
+      // console.log("allEvents: " + JSON.stringify(allEvents, null, 2));
+      for (const e of allEvents) {
+        // console.log("e: " + JSON.stringify(e));
+        if (!(e.txHash in collator)) {
+          collator[e.txHash] = {
+            blockNumber: e.blockNumber,
+            txIndex: e.txIndex,
+            trade: false,
+            events: {},
+          }
+        }
+        collator[e.txHash].events[e.logIndex] = e;
+        if (e.eventType == "Traded") {
+          collator[e.txHash].trade = true;
+        }
+      }
+      const list = [];
+      for (const [txHash, d] of Object.entries(collator)) {
+        list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, trade: d.trade, events: d.events });
+      }
+      list.sort((a, b) => {
+        if (a.blockNumber == b.blockNumber) {
+          return a.txIndex - b.txIndex;
+        } else {
+          return a.blockNumber - b.blockNumber;
+        }
+      });
+
       const balanceAddressMap = {};
       for (const a of this.data.balanceAddresses) {
         balanceAddressMap[a] = 1;
       }
+
+      const balances = {};
+      const approvals = {};
+
+      for (const l of list) {
+        const logIndexes = Object.keys(l.events);
+        logIndexes.sort((a, b) => {
+          return a - b;
+        });
+        for (const logIndex of logIndexes) {
+          const e = l.events[logIndex];
+          const trade = l.trade;
+          if (e.eventType == "Transfer" || e.eventType == "Deposit" || e.eventType == "Withdrawal") {
+            console.log(logIndex + ". Transfer - trade: " + trade + " " + JSON.stringify(e));
+
+            let from, to;
+            if (e.eventType == "Transfer") {
+              from = e.from;
+              to = e.to;
+            } else if (e.eventType == "Deposit") {
+              from = ADDRESS0;
+              to = e.to;
+            } else {
+              from = e.from;
+              to = ADDRESS0;
+            }
+
+            if (to in balanceAddressMap) {
+              if (!(e.contract in balances)) {
+                balances[e.contract] = {};
+              }
+              if (!(to in balances[e.contract])) {
+                balances[e.contract][to] = { tokens: e.tokens };
+              } else {
+                balances[e.contract][to].tokens = ethers.BigNumber.from(balances[e.contract][to].tokens).add(e.tokens).toString();
+              }
+            }
+            if (from in balanceAddressMap) {
+              if (!(e.contract in balances)) {
+                balances[e.contract] = {};
+              }
+              if (!(from in balances[e.contract])) {
+                balances[e.contract][from] = {
+                  tokens: from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
+                };
+              } else {
+                balances[e.contract][from].tokens = ethers.BigNumber.from(balances[e.contract][from].tokens).sub(e.tokens).toString();
+              }
+            }
+
+          } else if (e.eventType == "Approval") {
+            console.log(logIndex + ". Approval - trade: " + trade + " " + JSON.stringify(e));
+
+          } else if (e.eventType == "Offered") {
+            console.log(logIndex + ". Offered - trade: " + trade + " " + JSON.stringify(e));
+
+          } else if (e.eventType == "Traded") {
+            console.log(logIndex + ". Traded - trade: " + trade + " " + JSON.stringify(e));
+
+          } else {
+            console.log(logIndex + ". ELSE - trade: " + trade + " " + JSON.stringify(e));
+          }
+        }
+      }
+      console.log("balances: " + JSON.stringify(balances, null, 2));
+
       const tokenBalances = {};
       for (const transfer of this.data.tokenTransfers) {
         if (transfer.to in balanceAddressMap) {

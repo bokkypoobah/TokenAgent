@@ -1149,7 +1149,7 @@ data: {{ data }}
         const contract = new ethers.Contract(this.sellOffer.tokenAgent, network.tokenAgent.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
         try {
-          const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth, { value: this.sellOffer.filledWeth });
+          const tx = await contractWithSigner.trade(this.sellOffer.trades, this.modalSellOffer.paymentsInEth, { value: this.modalSellOffer.paymentsInEth ? this.sellOffer.filledWeth : 0 });
           // const tx = { hash: "blah" };
           console.log(now() + " INFO TradeFungibles:methods.trade - tx: " + JSON.stringify(tx));
           const h = this.$createElement;

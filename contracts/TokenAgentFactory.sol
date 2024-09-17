@@ -714,6 +714,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
             }
             emit Traded(input.index, offer.token, tokenType, owner, Account.wrap(msg.sender), offer.buySell, prices_, tokenIds_, tokenss_, Price.wrap(uint128(price)), Unixtime.wrap(uint40(block.timestamp)));
+            // event OfferTaken(Index index, Token indexed token, TokenType tokenType, Account indexed maker, /* BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds,*/ Tokens[] tokenss, Unixtime timestamp);
+            emit OfferTaken(input.index, offer.token, tokenType, owner, /* BuySell buySell, Unixtime expiry, Count count, Nonce nonce, Price[] prices, TokenId[] tokenIds,*/ offer.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
         if (takerToOwnerTotal < ownerToTakerTotal) {
             uint diff = ownerToTakerTotal - takerToOwnerTotal;

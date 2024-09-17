@@ -11,14 +11,15 @@ pragma solidity ^0.8.27;
 // - TokenAgentFactory
 //
 // TODO:
-// - FILL for ERC-721/1155?
+// - FILL for ERC-721/1155? No
+// - Parameter options for ERC-721/1155
 //
 // SPDX-License-Identifier: MIT
 //
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
 // ----------------------------------------------------------------------------
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
@@ -129,6 +130,7 @@ type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,
 enum BuySell { BUY, SELL }
 enum Execution { FILL, FILLORKILL }
 enum TokenIdType { TOKENID256, TOKENID16 }
+enum PaymentType { WETH, ETH }
 enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
 
 bytes4 constant ERC721_INTERFACE = 0x80ac58cd;
@@ -388,6 +390,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     error InvalidToken(Token token);
     error InvalidTokenId(TokenId tokenId);
     error OfferExpired(Index index, Unixtime expiry);
+    error PricesMustBeSortedWithNoDuplicates();
     error TokenIdsMustBeSortedWithNoDuplicates();
 
     constructor() {
@@ -404,13 +407,12 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     // AddOffer:
     // ERC-20
-    //   prices[price0], tokenIds[], tokenss[]
-    //   prices[price0], tokenIds[], tokenss[tokens0, tokens1, ...]
+    //   prices[price0], tokenIds[], tokenss[tokens0]
     //   prices[price0, price1, ...], tokenIds[], tokenss[tokens0, tokens1, ...]
     // ERC-721
-    //   prices[price0], tokenIds[], tokenss[]
-    //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
-    //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[]
+    //   prices[price0], tokenIds[], tokenss[count]
+    //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[count]
+    //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[count]
     // ERC-1155
     //   prices[price0], tokenIds[], tokenss[]
     //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
@@ -433,7 +435,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
 
-            } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
+            } else if (tokenType == TokenType.ERC20 && input.tokenss.length != input.prices.length) {
                 revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
@@ -447,7 +449,19 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
             offer.prices = input.prices;
-            if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
+            if (tokenType == TokenType.ERC20) {
+                if (input.prices.length > 1) {
+                    if (input.buySell == BuySell.BUY) {
+                        for (uint j = 1; j < input.prices.length; j++) {
+                            require(Price.unwrap(input.prices[j - 1]) > Price.unwrap(input.prices[j]), PricesMustBeSortedWithNoDuplicates());
+                        }
+                    } else {
+                        for (uint j = 1; j < input.prices.length; j++) {
+                            require(Price.unwrap(input.prices[j - 1]) < Price.unwrap(input.prices[j]), PricesMustBeSortedWithNoDuplicates());
+                        }
+                    }
+                }
+            } else if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
                 if (input.tokenIds.length > 1) {
                     for (uint j = 1; j < input.tokenIds.length; j++) {
                         require(TokenId.unwrap(input.tokenIds[j - 1]) < TokenId.unwrap(input.tokenIds[j]), TokenIdsMustBeSortedWithNoDuplicates());
@@ -489,14 +503,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
 
-            } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
+            } else if (tokenType == TokenType.ERC20 && input.tokenss.length != input.prices.length) {
                 revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
                 revert InvalidInputData("ERC-721: tokenss array length must contain exactly one number");
             } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
                 revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
-                
+
             } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
@@ -540,7 +554,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[]
     // ERC-1155
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-    function trade(TradeInput[] calldata inputs, bool paymentsInEth) external payable nonReentrant notOwner {
+    function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant notOwner {
         uint totalEth = msg.value;
         if (totalEth > 0) {
             emit InternalTransfer(msg.sender, address(this), totalEth, Unixtime.wrap(uint40(block.timestamp)));
@@ -612,7 +626,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 tokenss_[0] = input.tokenIds.length;
                 for (uint j = 0; j < input.tokenIds.length; j++) {
                     uint p;
-                    if (offer.tokenIds.length > 0) {
+                    if ((offer.tokenId16s.length + offer.tokenIds.length) > 0) {
                         uint k;
                         if (offer.tokenIdType == TokenIdType.TOKENID16) {
                             if (TokenId.unwrap(input.tokenIds[j]) < 2 ** 16) {
@@ -650,20 +664,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                 }
             } else if (tokenType == TokenType.ERC1155) {
                 require(input.tokenIds.length == input.tokenss.length, InvalidInputData("tokenIds must have the same length as tokenss"));
-                // uint totalCount;
-                // for (uint j = 0; j < input.tokenss.length; j++) {
-                //     totalCount += Tokens.unwrap(input.tokenss[j]);
-                // }
-                // if (Count.unwrap(offer.count) != type(uint16).max) {
-                //     require(Count.unwrap(offer.count) >= totalCount, InsufficentCountRemaining(Count.wrap(uint16(totalCount)), offer.count));
-                //     offer.count = Count.wrap(Count.unwrap(offer.count) - uint16(totalCount));
-                // }
+                if ((offer.tokenId16s.length + offer.tokenIds.length) == 0) {
+                    uint totalCount;
+                    for (uint j = 0; j < input.tokenss.length; j++) {
+                        totalCount += Tokens.unwrap(input.tokenss[j]);
+                    }
+                    require(totalCount <= Tokens.unwrap(offer.tokenss[0]), InsufficentTokensRemaining(Tokens.wrap(uint128(totalCount)), offer.tokenss[0]));
+                    offer.tokenss[0] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[0]) - totalCount));
+                }
                 prices_ = new uint[](input.tokenIds.length);
                 tokenIds_ = new uint[](input.tokenIds.length);
                 tokenss_ = new uint[](input.tokenIds.length);
                 for (uint j = 0; j < input.tokenIds.length; j++) {
                     uint p;
-                    if (offer.tokenId16s.length + offer.tokenIds.length > 0) {
+                    if ((offer.tokenId16s.length + offer.tokenIds.length) > 0) {
                         uint k;
                         if (offer.tokenIdType == TokenIdType.TOKENID16) {
                             if (TokenId.unwrap(input.tokenIds[j]) < 2 ** 16) {
@@ -684,13 +698,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         }
                     } else {
                         p = Price.unwrap(offer.prices[0]);
-                        // TODO: Check count in tokenss[0]
-                        // uint totalCount;
-                        // for (uint j = 0; j < input.tokenss.length; j++) {
-                        //     totalCount += Tokens.unwrap(input.tokenss[j]);
-                        // }
-                        // require(Tokens.unwrap(input.tokenss[j]) <= Tokens.unwrap(offer.tokenss[k]), InsufficentTokensRemaining(input.tokenss[j], offer.tokenss[k]));
-                        // offer.tokenss[k] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[k]) - Tokens.unwrap(input.tokenss[j])));
                     }
                     prices_[j] = p;
                     tokenIds_[j] = uint(TokenId.unwrap(input.tokenIds[j]));
@@ -714,7 +721,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         }
         if (takerToOwnerTotal < ownerToTakerTotal) {
             uint diff = ownerToTakerTotal - takerToOwnerTotal;
-            if (paymentsInEth) {
+            if (paymentType == PaymentType.ETH) {
                 weth.transferFrom(Account.unwrap(owner), address(this), diff);
                 weth.withdraw(diff);
                 emit InternalTransfer(address(this), msg.sender, diff, Unixtime.wrap(uint40(block.timestamp)));
@@ -724,7 +731,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             }
         } else if (takerToOwnerTotal > ownerToTakerTotal){
             uint diff = takerToOwnerTotal - ownerToTakerTotal;
-            if (paymentsInEth) {
+            if (paymentType == PaymentType.ETH) {
                 require(diff <= totalEth, InsufficentEthersRemaining(diff, totalEth));
                 totalEth -= diff;
                 emit InternalTransfer(address(this), address(weth), diff, Unixtime.wrap(uint40(block.timestamp)));

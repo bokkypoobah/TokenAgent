@@ -19,6 +19,9 @@ const ERC1155 = 2;
 const FILL = 0;
 const FILLORKILL = 1;
 
+const PAYMENTTYPE_WETH = 0;
+const PAYMENTTYPE_ETH = 1;
+
 // const DATE_FORMAT_OPTIONS = {
 //   year: "numeric",
 //   month: "numeric",
@@ -410,7 +413,7 @@ describe("TokenAgentFactory", function () {
       const offers1 = [
         [
           d.erc20Token.target, BUY, d.expiry,
-          [ethers.parseUnits("0.1", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.3", 18)],
+          [ethers.parseUnits("0.3", 18), ethers.parseUnits("0.2", 18), ethers.parseUnits("0.1", 18)],
           [],
           [ethers.parseUnits("1", 18), ethers.parseUnits("1", 18), ethers.parseUnits("0.1", 18)],
         ],
@@ -436,13 +439,13 @@ describe("TokenAgentFactory", function () {
 
       if (true) {
         const trades1 = [
-          // [indices[0], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [ethers.parseUnits("1.05", 18).toString()]],
-          [indices[1], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
+          [indices[0], ethers.parseUnits("0.295238095238095238", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
+          // [indices[1], ethers.parseUnits("0.104761904761904761", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, PAYMENTTYPE_WETH, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, PAYMENTTYPE_WETH)", trades1TxReceipt);
         await printState(d);
       }
       if (false) {
@@ -450,9 +453,9 @@ describe("TokenAgentFactory", function () {
           [indices[0], ethers.parseUnits("0.209523809523809523", 18).toString(), FILLORKILL, [], [ethers.parseUnits("1.05", 18).toString()]],
         ];
         console.log("        * trades2: " + JSON.stringify(trades2));
-        const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2, false);
+        const trades2Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades2, PAYMENTTYPE_WETH);
         const trades2TxReceipt = await trades2Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades2, false)", trades2TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades2, PAYMENTTYPE_WETH)", trades2TxReceipt);
         await printState(d);
       }
     });
@@ -499,9 +502,9 @@ describe("TokenAgentFactory", function () {
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, PAYMENTTYPE_WETH, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, PAYMENTTYPE_WETH)", trades1TxReceipt);
         await printState(d);
       }
     });
@@ -549,9 +552,9 @@ describe("TokenAgentFactory", function () {
           // [indices[2], ethers.parseUnits("1", 18).toString(), FILLORKILL, [4, 5, 6, 7]],
         ];
         console.log("        * trades1: " + JSON.stringify(trades1));
-        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, false, {value: ethers.parseEther("10.0")});
+        const trades1Tx = await d.tokenAgents[1].connect(d.accounts[2]).trade(trades1, PAYMENTTYPE_WETH, {value: ethers.parseEther("10.0")});
         const trades1TxReceipt = await trades1Tx.wait();
-        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, false)", trades1TxReceipt);
+        printLogs(d, "accounts[2]->tokenAgents[1].trade(trades1, PAYMENTTYPE_WETH)", trades1TxReceipt);
         await printState(d);
       }
     });

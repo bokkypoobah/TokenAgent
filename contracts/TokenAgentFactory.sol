@@ -472,7 +472,6 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.tokenIds = input.tokenIds;
                 }
             }
-            // if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
             offer.tokenss = input.tokenss;
             emit Offered(Index.wrap(uint32(offers.length - 1)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
@@ -489,12 +488,15 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             TokenType tokenType = tokenTypes[offer.token];
             if (input.prices.length == 0) {
                 revert InvalidInputData("all: prices array must contain at least one price");
+
             } else if (tokenType == TokenType.ERC20 && input.prices.length != 1 && input.tokenss.length != input.prices.length) {
                 revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
+
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
                 revert InvalidInputData("ERC-721: tokenss array length must contain exactly one number");
             } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
                 revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
+                
             } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
                 revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
@@ -526,9 +528,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     offer.tokenIds = input.tokenIds;
                 }
             }
-            // if (tokenType == TokenType.ERC20 || tokenType == TokenType.ERC1155) {
             offer.tokenss = input.tokenss;
-            // }
             emit OfferUpdated(Index.wrap(uint32(index)), offer.token, tokenType, Account.wrap(msg.sender), offer.buySell, offer.expiry, nonce, input.prices, input.tokenIds, input.tokenss, Unixtime.wrap(uint40(block.timestamp)));
         }
     }

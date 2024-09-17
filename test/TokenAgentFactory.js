@@ -391,12 +391,12 @@ describe("TokenAgentFactory", function () {
       const tokenAgentAddress = tokenAgentsByOwnerInfo[1][2];
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
-      const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry, 0, [888], [], ["999999999999999999999999999999999997"]]];
+      const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry, [888], [], ["999999999999999999999999999999999997"]]];
       await expect(tokenAgent.addOffers(invalidOffer1))
         .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
         .withArgs(d.accounts[0].address);
       const invalidOffer2 = [
-        [d.weth.target, SELL, d.expiry, 0, [888], [], ["999999999999999999999999999999999997"]],
+        [d.weth.target, SELL, d.expiry, [888], [], ["999999999999999999999999999999999997"]],
       ];
       await expect(tokenAgent.addOffers(invalidOffer2))
         .to.be.revertedWithCustomError(tokenAgent, "CannotOfferWETH");
@@ -506,7 +506,7 @@ describe("TokenAgentFactory", function () {
       }
     });
 
-    it.only("Test TokenAgent ERC-1155 offers and trades", async function () {
+    it("Test TokenAgent ERC-1155 offers and trades", async function () {
       const d = await loadFixture(deployContracts);
       await printState(d);
       const offers1 = [

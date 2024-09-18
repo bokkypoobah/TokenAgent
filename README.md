@@ -36,7 +36,18 @@ Click on [Deploy] and confirm in your web3 wallet
 Click on the [Refresh] icon and your newly deployed Token Agent should show up
 <kbd><img src="images/Screenshot_SetupTokenAgent_3_20240918.png" width="600"/></kbd>
 
+##### Add Offers To Your Token Agent
 
+Go to the Agent tab. Select your Token Agent from the dropdown
+<kbd><img src="images/Screenshot_AddOffers_1_20240918.png" width="600"/></kbd>
+
+Select the `WEENUS` token from the Token dropdown
+<kbd><img src="images/Screenshot_AddOffers_2_20240918.png" width="600"/></kbd>
+
+Select `Buy` or `Sell`, enter a price and number of tokens. Click [Add Offer] and confirm in your web3 browser.
+<kbd><img src="images/Screenshot_AddOffers_3_20240918.png" width="600"/></kbd>
+
+Note that at this moment, you will have to manually approve spending of your `WEENUS` and `WETH` tokens to Token Agents belonging to you and other accounts
 
 #### Contract
 

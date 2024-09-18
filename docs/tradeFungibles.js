@@ -1682,8 +1682,55 @@ data: {{ data }}
 
     addSellOffer() {
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
-      // const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
-      return {};
+      const collator = {};
+      for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
+        if (d.owner == this.coinbase) {
+          // if (!(d.owner in collator)) {
+          //   collator[d.owner] = {
+          //     tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
+          //     tokenAgents: {},
+          //   };
+          // }
+          collator[tokenAgent] = {
+            tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
+            offers: {},
+            prices: [],
+          };
+          const prices = [];
+          for (const [offerIndex, o] of Object.entries(d.offers)) {
+            if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+              collator[tokenAgent].offers[offerIndex] = o;
+              if (o.prices.length == 1 && o.tokenss.length == 0) {
+                prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
+              } else if (o.prices.length == o.tokenss.length) {
+                for (let i = 0; i < o.prices.length; i++) {
+                  prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], tokensAvailable: null });
+                }
+              }
+            }
+          }
+          prices.sort((a, b) => {
+            const aP = ethers.BigNumber.from(a.price);
+            // TODO: handle null tokens
+            const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
+            const bP = ethers.BigNumber.from(b.price);
+            const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
+            if (aP.eq(bP)) {
+              if (aT == null) {
+                return 1;
+              } else if (bT == null) {
+                return -1;
+              } else {
+                return aT.lt(bT) ? 1 : -1;
+              }
+            } else {
+              return aP.lt(bP) ? -1 : 1;
+            }
+          });
+          collator[tokenAgent].prices = prices;
+        }
+      }
+      return { collator };
     },
 
     eventsList() {

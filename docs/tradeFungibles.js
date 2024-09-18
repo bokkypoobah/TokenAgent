@@ -1955,7 +1955,7 @@ data: {{ data }}
             blockNumber: e.blockNumber,
             txIndex: e.txIndex,
             // logIndex: e.logIndex,
-            // tokenAgent: null,
+            tokenAgent: null,
             // timestamp: e.timestamp || null,
             events: {},
           }
@@ -1973,7 +1973,7 @@ data: {{ data }}
       }
       const list = [];
       for (const [txHash, d] of Object.entries(events)) {
-        list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, /*tokenAgent: d.tokenAgent,*/ events: d.events });
+        list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, tokenAgent: d.tokenAgent, events: d.events });
       }
       list.sort((a, b) => {
         if (a.blockNumber == b.blockNumber) {

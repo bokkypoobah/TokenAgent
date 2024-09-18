@@ -468,7 +468,7 @@ buyOffers: {{ buyOffers }}
 
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <div class="d-flex flex-wrap m-0 mt-1 p-0">
-            <div class="mt-1 pr-1">
+            <div class="mt-0 pr-1">
               <b-form-select size="sm" v-model="settings.events.eventTypeOption" @change="saveSettings" :options="eventTypeOptions"></b-form-select>
             </div>
             <div class="mt-0 flex-grow-1">
@@ -607,7 +607,7 @@ buyOffers: {{ buyOffers }}
                         </b-link>
                       </b-col>
                       <b-col cols="5" class="text-left">
-                        bs: {{ info.buySell == 0 ? 'Buy' : 'Sell' }}, offerId: {{ info.index }}, nonce: {{ info.nonce }}, exp: {{ formatTimestamp(info.expiry )}}
+                        {{ info.buySell == 0 ? 'BUY' : 'SELL' }} offerId: {{ info.index }}, nonce: {{ info.nonce }}, exp: {{ formatTimestamp(info.expiry )}}
                         <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
                           <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}</li>
                         </div>
@@ -625,10 +625,10 @@ buyOffers: {{ buyOffers }}
                         </b-link>
                       </b-col>
                       <b-col cols="1">
-                        {{ info.eventType }}
+                        {{ info.eventType == 'InternalTransfer' ? 'Transfer' : info.eventType }}
                       </b-col>
                       <b-col cols="2">
-                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer' || info.eventType == 'Deposit' || info.eventType == 'Withdrawal'">
                           <b-link v-if="info.from" size="sm" :href="explorer + 'address/' + info.from" variant="link" v-b-popover.hover.ds500="info.from" target="_blank">
                             <span v-if="info.from == data.weth">
                               WETH
@@ -645,7 +645,7 @@ buyOffers: {{ buyOffers }}
                         </div>
                       </b-col>
                       <b-col cols="2">
-                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer' || info.eventType == 'Deposit' || info.eventType == 'Withdrawal'">
                           <b-link v-if="info.to" size="sm" :href="explorer + 'address/' + info.to" variant="link" v-b-popover.hover.ds500="info.to" target="_blank">
                             <span v-if="info.to == data.weth">
                               WETH
@@ -662,7 +662,7 @@ buyOffers: {{ buyOffers }}
                         </div>
                       </b-col>
                       <b-col cols="1">
-                        <div v-if="info.eventType == 'Transfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'Deposit' || info.eventType == 'Withdrawal'">
                           <b-link size="sm" :href="explorer + 'contract/' + info.contract" variant="link" v-b-popover.hover.ds500="info.contract" target="_blank">
                             <span v-if="info.contract == data.token">
                               {{ settings.symbol }}
@@ -693,14 +693,14 @@ buyOffers: {{ buyOffers }}
                         </div>
                       </b-col>
                       <b-col cols="5" class="text-left">
-                        <div v-if="info.eventType == 'Transfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'Deposit' || info.eventType == 'Withdrawal'">
                           {{ formatDecimals(info.tokens, 18) }}
                         </div>
                         <div v-else-if="info.eventType == 'InternalTransfer'">
                           {{ formatDecimals(info.ethers, 18) }}
                         </div>
                         <div v-else>
-                          makerBS: {{ info.makerBuySell == 0 ? 'Buy' : 'Sell' }}, offerId: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
+                          maker {{ info.makerBuySell == 0 ? 'BUY' : 'SELL' }} offerId: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
                           <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
                             <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}, remain: {{ formatDecimals(info.remainingTokenss[i], settings.decimals) }}</li>
                           </div>
@@ -710,18 +710,66 @@ buyOffers: {{ buyOffers }}
                   </div>
                 </div>
                 <div v-else>
-                  <font size="-2">
-                    Other: {{ data1.item }}
-                  </font>
+                  <div v-for="(info, logIndex) in data1.item.events"  v-bind:key="logIndex" class="m-0 p-0">
+                    <b-row>
+                      <b-col cols="1">
+                        <b-link size="sm" :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + logIndex" variant="link" v-b-popover.hover.ds500="logIndex" target="_blank">
+                          {{ logIndex }}
+                        </b-link>
+                      </b-col>
+                      <b-col cols="1">
+                        {{ info.eventType }}
+                      </b-col>
+                      <b-col cols="2">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link v-if="info.from" size="sm" :href="explorer + 'address/' + info.from" variant="link" v-b-popover.hover.ds500="info.from" target="_blank">
+                            <span v-if="info.from == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.from.substring(0, 8) + '...' + info.from.slice(-6) }}
+                            </span>
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="2">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link v-if="info.to" size="sm" :href="explorer + 'address/' + info.to" variant="link" v-b-popover.hover.ds500="info.to" target="_blank">
+                            <span v-if="info.to == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.to.substring(0, 8) + '...' + info.to.slice(-6) }}
+                            </span>
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="1">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link size="sm" :href="explorer + 'contract/' + info.contract" variant="link" v-b-popover.hover.ds500="info.contract" target="_blank">
+                            <span v-if="info.contract == data.token">
+                              {{ settings.symbol }}
+                            </span>
+                            <span v-else-if="info.contract == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.contract.substring(0, 8) + '...' + info.contract.slice(-6) }}
+                            </span>
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="5" class="text-left">
+                        <div v-if="info.eventType == 'Transfer'">
+                          {{ formatDecimals(info.tokens, 18) }}
+                        </div>
+                      </b-col>
+                    </b-row>
+                  </div>
                 </div>
               </template>
             </b-table>
           </font>
-          <!-- <font size="-2">
-            <pre>
-{{ pagedFilteredSortedEvents }}
-            </pre>
-          </font> -->
         </b-card>
 
         <font v-if="settings.tabIndex == 2 || settings.tabIndex == 3" size="-2">
@@ -1962,11 +2010,12 @@ data: {{ data }}
               ethers.utils.id("Transfer(address,address,uint256)"),
             ],
             null,
-            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            internalTransferAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
           ]};
         const wethTransferToEventsEventLogs = await provider.getLogs(wethTransferToEventsfilter);
         const wethTransferToEvents = parseTokenEventLogs(wethTransferToEventsEventLogs, this.chainId, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
 
         const wethTransferFromEventsfilter = {
           address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
@@ -1978,12 +2027,13 @@ data: {{ data }}
               // WETH event  Withdrawal(address indexed src, uint wad);
               ethers.utils.id("Withdrawal(address,uint256)"),
             ],
-            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            internalTransferAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
             null,
           ]};
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
         const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
         const tokenTransfers = [...tokenTransferToEvents, ...tokenTransferFromEvents];
         tokenTransfers.sort((a, b) => {

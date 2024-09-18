@@ -1829,6 +1829,34 @@ data: {{ data }}
         Vue.set(this.data, 'balanceAddresses', balanceAddresses);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
 
+        const internalTransferFromEventsfilter = {
+          address: null, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
+              // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+              ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
+            ],
+            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            null,
+            null,
+          ]};
+        const internalTransferFromEventsEventLogs = await provider.getLogs(internalTransferFromEventsfilter);
+        const internalTransferFromEvents = parseTokenAgentEventLogs(internalTransferFromEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferFromEvents: " + JSON.stringify(internalTransferFromEvents));
+
+        const internalTransferToEventsfilter = {
+          address: null, fromBlock: 0, toBlock: blockNumber,
+          topics: [[
+            // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+              ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
+            ],
+            null,
+            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            null,
+          ]};
+        const internalTransferToEventsEventLogs = await provider.getLogs(internalTransferToEventsfilter);
+        const internalTransferToEvents = parseTokenAgentEventLogs(internalTransferToEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferToEvents: " + JSON.stringify(internalTransferToEvents));
+
         if (approvalAddresses.length > 0) {
           const tokenApprovalsfilter = {
             address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,

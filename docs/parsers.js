@@ -159,6 +159,10 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAb
           timestamp,
         };
 
+      } else if (logData.eventFragment.name == "InternalTransfer") {
+        // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+        const [from, to, ethers, timestamp] = logData.args;
+        eventRecord = { eventType: "InternalTransfer", from, to, ethers: ethers.toString(), timestamp };
       } else if (logData.eventFragment.name == "OffersInvalidated") {
         // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
         const [newNonce, timestamp] = logData.args;

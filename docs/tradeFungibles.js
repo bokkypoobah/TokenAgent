@@ -630,7 +630,12 @@ buyOffers: {{ buyOffers }}
                       <b-col cols="2">
                         <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
                           <b-link v-if="info.from" size="sm" :href="explorer + 'address/' + info.from" variant="link" v-b-popover.hover.ds500="info.from" target="_blank">
-                            {{ info.from.substring(0, 8) + '...' + info.from.slice(-6) }}
+                            <span v-if="info.from == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.from.substring(0, 8) + '...' + info.from.slice(-6) }}
+                            </span>
                           </b-link>
                         </div>
                         <div v-else>
@@ -642,7 +647,12 @@ buyOffers: {{ buyOffers }}
                       <b-col cols="2">
                         <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
                           <b-link v-if="info.to" size="sm" :href="explorer + 'address/' + info.to" variant="link" v-b-popover.hover.ds500="info.to" target="_blank">
-                            {{ info.to.substring(0, 8) + '...' + info.to.slice(-6) }}
+                            <span v-if="info.to == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.to.substring(0, 8) + '...' + info.to.slice(-6) }}
+                            </span>
                           </b-link>
                         </div>
                         <div v-else>

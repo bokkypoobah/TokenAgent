@@ -9,11 +9,31 @@ const TradeFungibles = {
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pl-1 pr-0">
                 <font size="-1">
+                  Maker:
+                </font>
+                <b-link v-if="coinbase" :href="explorer + 'address/' + coinbase" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ coinbase.substring(0, 10) + '...' + coinbase.slice(-8) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 pr-0">
+                <font size="-1">
                   {{ settings.symbol }}:
                 </font>
                 <b-link :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + coinbase" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
                   <b-badge variant="link" class="m-0 mt-1">
                     {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 pr-0">
+                <font size="-1">
+                  WETH:
+                </font>
+                <b-link :href="explorer + 'token/' + data.weth + '?a=' + coinbase" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ formatDecimals(balances[data.weth] && balances[data.weth][coinbase] && balances[data.weth][coinbase].tokens || 0, settings.decimals) }}
                   </b-badge>
                 </b-link>
               </div>

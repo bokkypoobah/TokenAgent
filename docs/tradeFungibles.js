@@ -469,7 +469,7 @@ buyOffers: {{ buyOffers }}
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <div class="d-flex flex-wrap m-0 mt-1 p-0">
             <div class="mt-1 pr-1">
-              Events
+              <b-form-select size="sm" v-model="settings.events.eventTypeOption" @change="saveSettings" :options="eventTypeOptions"></b-form-select>
             </div>
             <div class="mt-0 flex-grow-1">
             </div>
@@ -480,13 +480,12 @@ buyOffers: {{ buyOffers }}
               <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedEvents.length + '/' + eventsList.length }}</font>
             </div>
             <div class="mt-0 pr-1">
-              <b-pagination size="sm" v-model="settings.events.currentPage" @input="saveSettings" :total-rows="eventsList.length" :per-page="settings.events.pageSize" style="height: 0;"></b-pagination>
+              <b-pagination size="sm" v-model="settings.events.currentPage" @input="saveSettings" :total-rows="filteredSortedEvents.length" :per-page="settings.events.pageSize" style="height: 0;"></b-pagination>
             </div>
             <div class="mt-0 pl-1">
               <b-form-select size="sm" v-model="settings.events.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
           </div>
-          <!-- <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1"> -->
           <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
             <template #cell(number)="data">
               <font size="-1">
@@ -505,17 +504,95 @@ buyOffers: {{ buyOffers }}
                 </b-link>
               </font>
             </template>
-            <template #cell(info)="data">
+            <template #cell(from)="data">
               <font size="-1">
-                {{ data.item }}
+                <b-link v-if="data.item.from" size="sm" :href="explorer + 'address/' + data.item.from" variant="link" v-b-popover.hover.ds500="data.item.from" target="_blank">
+                  {{ data.item.from.substring(0, 8) + '...' + data.item.from.slice(-6) }}
+                </b-link>
               </font>
             </template>
+            <template #cell(to)="data">
+              <font size="-1">
+                <b-link v-if="data.item.to" size="sm" :href="explorer + 'address/' + data.item.to" variant="link" v-b-popover.hover.ds500="data.item.to" target="_blank">
+                  {{ data.item.to.substring(0, 8) + '...' + data.item.to.slice(-6) }}
+                </b-link>
+              </font>
+            </template>
+            <template #head(info)="data">
+              <b-row>
+                <b-col cols="1">
+                  #
+                </b-col>
+                <b-col cols="2">
+                  From
+                </b-col>
+                <b-col cols="2">
+                  To
+                </b-col>
+                <b-col cols="2">
+                  Token
+                </b-col>
+                <b-col cols="5" class="text-right">
+                  Tokens / Info
+                </b-col>
+              </b-row>
+            </template>
+            <template #cell(info)="data1">
+              <div v-if="data1.item.eventType == 'Transfer' || data1.item.eventType == 'Approval'">
+                <b-row>
+                  <b-col cols="1">
+                    <font size="-1" class="muted">
+                      {{ data1.item.logIndex }}
+                    </font>
+                  </b-col>
+                  <b-col cols="2">
+                    <font size="-1">
+                      <b-link v-if="data1.item.from" size="sm" :href="explorer + 'address/' + data1.item.from" variant="link" v-b-popover.hover.ds500="data1.item.from" target="_blank">
+                        {{ data1.item.from.substring(0, 8) + '...' + data1.item.from.slice(-6) }}
+                      </b-link>
+                    </font>
+                  </b-col>
+                  <b-col cols="2">
+                    <font size="-1">
+                      <b-link v-if="data1.item.to" size="sm" :href="explorer + 'address/' + data1.item.to" variant="link" v-b-popover.hover.ds500="data1.item.to" target="_blank">
+                        {{ data1.item.to.substring(0, 8) + '...' + data1.item.to.slice(-6) }}
+                      </b-link>
+                    </font>
+                  </b-col>
+                  <b-col cols="2">
+                    <font size="-1">
+                      <b-link v-if="data1.item.contract" size="sm" :href="explorer + 'token/' + data1.item.contract" variant="link" v-b-popover.hover.ds500="data1.item.contract" target="_blank">
+                        <span v-if="data1.item.contract == data.token">
+                          {{ settings.symbol }}
+                        </span>
+                        <span v-else-if="data1.item.contract == data.weth">
+                          WETH
+                        </span>
+                        <span v-else>
+                          {{ data1.item.contract.substring(0, 8) + '...' + data1.item.contract.slice(-6) }}
+                        </span>
+                      </b-link>
+                    </font>
+                  </b-col>
+                  <b-col cols="5" class="text-right">
+                    <font size="-1">
+                      {{ formatDecimals(data1.item.tokens, 18) }}
+                    </font>
+                  </b-col>
+                </b-row>
+              </div>
+              <div v-else>
+                <font size="-2">
+                  {{ data1.item }}
+                </font>
+              </div>
+            </template>
           </b-table>
-          <font size="-2">
+          <!-- <font size="-2">
             <pre>
 {{ pagedFilteredSortedEvents }}
             </pre>
-          </font>
+          </font> -->
         </b-card>
 
         <font v-if="settings.tabIndex == 2 || settings.tabIndex == 3" size="-2">
@@ -556,6 +633,7 @@ data: {{ data }}
         },
         events: {
           filter: null,
+          eventTypeOption: null,
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
@@ -580,7 +658,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 8,
+        version: 9,
       },
 
       tokenAgentFactoryEvents: [],
@@ -675,6 +753,14 @@ data: {{ data }}
         // TODO: Deploy new TokenContractFactory with index worked out
         // { value: 'indexasc', text: '▲ Index' },
         // { value: 'indexdsc', text: '▼ Index' },
+      ],
+      eventTypeOptions: [
+        { value: null, text: 'All' },
+        { value: 'Offered', text: 'Offers' },
+        { value: 'Traded', text: 'Trades' },
+        { value: 'Transfer', text: 'Transfers' },
+        { value: 'Approval', text: 'Approvals' },
+        { value: 'Other', text: 'Others' },
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -1359,10 +1445,10 @@ data: {{ data }}
 
         if (isOffered) {
           // console.log("isOffered: " + txHash + " => " + JSON.stringify(d1.events));
-          record = { timestamp, logIndex, contract: tokenAgent, eventType: "Offered", events: d1.events };
+          record = { timestamp, logIndex, tokenAgent, eventType: "Offered", events: d1.events };
         } else if (isTraded) {
           // console.log("isTraded: " + txHash + " => " + JSON.stringify(d1.events));
-          record = { timestamp, logIndex, contract: tokenAgent, eventType: "Traded", events: d1.events };
+          record = { timestamp, logIndex, tokenAgent, eventType: "Traded", events: d1.events };
         } else if (Object.keys(d1.events).length == 1) {
           // Regular transfers and approvals
           for (const [logIndex2, d2] of Object.entries(d1.events)) {
@@ -1370,11 +1456,11 @@ data: {{ data }}
             if (d2.eventType == "Transfer" || d2.eventType == "Deposit" || d2.eventType == "Withdrawal") {
               from = d2.from;
               to = d2.to;
-              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
+              record = { logIndex: logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
             } else if (d2.eventType == "Approval") {
               from = d2.owner;
               to = d2.spender;
-              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
+              record = { logIndex: logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
             }
           }
         } else {
@@ -1401,7 +1487,20 @@ data: {{ data }}
       return results;
     },
     filteredSortedEvents() {
-      const results = this.eventsList;
+      const results = [];
+
+      const eventTypeOption = this.settings.events.eventTypeOption;
+
+      for (const e of this.eventsList) {
+        if (eventTypeOption == null) {
+          results.push(e);
+        } else if (eventTypeOption == e.eventType) {
+          results.push(e);
+        }
+      }
+
+
+
       if (this.settings.events.sortOption == 'txorderasc') {
         results.sort((a, b) => {
           if (a.blockNumber == b.blockNumber) {

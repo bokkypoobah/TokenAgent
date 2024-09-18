@@ -10,125 +10,33 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
 ##### Screenshots
 
-###### Addresses
-<kbd><img src="images/Screenshot_Addresses_20240909.png" width="600"/></kbd>
+###### Setup Token Contract
 
-###### Token Contracts
+Go to the Token Contracts tab
+<kbd><img src="images/Screenshot_SetupTokenContract_1_20240918.png" width="600"/></kbd>
 
-Click on the [+] button to add a new token contract
+Click on [+] to add a new token contract. Select `WEENUS` from the dropdown list. Click on [+]
+<kbd><img src="images/Screenshot_SetupTokenContract_2_20240918.png" width="600"/></kbd>
 
-<kbd><img src="images/Screenshot_TokenContracts_1_20240910.png" width="600"/></kbd>
+You should now see `WEENUS` in your list
+<kbd><img src="images/Screenshot_SetupTokenContract_3_20240918.png" width="600"/></kbd>
 
-Enter an ERC-20/721/1155 token contract address on the Sepolia network, or select one from the dropdown
-
-<kbd><img src="images/Screenshot_TokenContracts_2_20240910.png" width="600"/></kbd>
-
-List of token contracts.
-
-Click on the [eye] checkbox for this app to watch for transfers and approval events from this token contract.
-
-Click on the [right arrow] checkbox to permit transfers and approvals of this token contract within this app
-
-<kbd><img src="images/Screenshot_TokenContracts_3_20240910.png" width="600"/></kbd>
-
-###### Agents
-
-Click on the [+] button to deploy your new Token Agent
-
-<kbd><img src="images/Screenshot_Agents_1_20240910.png" width="600"/></kbd>
-
-<br />
-
-Click on [Deploy] and confirm your web3 transaction
-
-<kbd><img src="images/Screenshot_Agents_2_20240910.png" width="600"/></kbd>
-
-<br />
-
-Click on the link on the top right to view the transaction
-
-<kbd><img src="images/Screenshot_Agents_3_20240910.png" width="600"/></kbd>
-
-<br />
-
-Click on the [Sync] button
-
-<kbd><img src="images/Screenshot_Agents_4_20240910.png" width="600"/></kbd>
-
-<br />
-
-Select Token Agent Factory and click [Do It!].
-
-<kbd><img src="images/Screenshot_Agents_5_20240910.png" width="600"/></kbd>
-
-<br />
-
-Your newly deployed Token Agent should appear
-
-<kbd><img src="images/Screenshot_Agents_6_20240910.png" width="600"/></kbd>
-
-###### Agent
-
-Owner of the Token Agent can add offers in the Console tab. ERC-20 only currently, as a single price with or without a limit
-
-<kbd><img src="images/Screenshot_Agent_Console_20240911.png" width="600"/></kbd>
-
-<br />
-
-List of offers added by the Token Agent owner
-
-<kbd><img src="images/Screenshot_Agent_Offers_20240911.png" width="600"/></kbd>
-
-<br />
-
-List of events emitted by this Token Agent
-
-<kbd><img src="images/Screenshot_Agent_Events_20240911.png" width="600"/></kbd>
-
-<br />
-
-All offers invalidated after the Token Agent owner call's `invalidateOffers()` to increase the `nonce`
-
-<kbd><img src="images/Screenshot_Agent_OffersInvalidated_20240911.png" width="600"/></kbd>
-
-<br />
-
-ERC-20/721/1155 token `Approval` and `ApprovalForAll` events with this Token Agent as the `spender` or `operator`.
-
-<kbd><img src="images/Screenshot_Agent_Approvals_20240911.png" width="600"/></kbd>
+Click on the [->] icon to permit usage of this token.
+<kbd><img src="images/Screenshot_SetupTokenContract_4_20240918.png" width="600"/></kbd>
 
 
-###### Trade Fungibles
+###### Setup Token Agent
 
-ERC-20, WIP
+Go to the Token Agent tab. Click on [+] to deploy your own token agent.
+<kbd><img src="images/Screenshot_SetupTokenAgent_1_20240918.png" width="600"/></kbd>
 
-<kbd><img src="images/Screenshot_TradeFungibles_WIP_20240913.png" width="600"/></kbd>
+Click on [Deploy] and confirm in your web3 wallet
+<kbd><img src="images/Screenshot_SetupTokenAgent_2_20240918.png" width="600"/></kbd>
 
-ERC-20 Sell Offers - tokens requested
+Click on the [Refresh] icon and your newly deployed Token Agent should show up
+<kbd><img src="images/Screenshot_SetupTokenAgent_3_20240918.png" width="600"/></kbd>
 
-<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_Token_WIP_20240917.png" width="600"/></kbd>
 
-ERC-20 Sell Offers - WETH requested
-
-<kbd><img src="images/Screenshot_TradeFungibles_SellOffer_WETH_WIP_20240917.png" width="600"/></kbd>
-
-ERC-20 Sell Offers - Trade
-
-Note: Have to manually approve WETH currently.
-
-<kbd><img src="images/Screenshot_TradeFungibles_Trade_1_WIP_20240917.png" width="600"/></kbd>
-
-Confirm transaction
-
-<kbd><img src="images/Screenshot_TradeFungibles_Trade_2_WIP_20240917.png" width="600"/></kbd>
-
-Transaction submitted
-
-<kbd><img src="images/Screenshot_TradeFungibles_Trade_3_WIP_20240917.png" width="600"/></kbd>
-
-https://sepolia.etherscan.io/tx/0x78aed777e4b1825345aae7f0492f26d5ee1879fbb7dd934cb84abf627dc8c802
-
-<kbd><img src="images/Screenshot_TradeFungibles_Trade_4_WIP_20240917.png" width="600"/></kbd>
 
 ##### Contract
 

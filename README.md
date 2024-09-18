@@ -49,6 +49,23 @@ Select `Buy` or `Sell`, enter a price and number of tokens. Click [Add Offer] an
 
 Note that at this moment, you will have to manually approve spending of your `WEENUS` and `WETH` tokens to Token Agents belonging to you and other accounts
 
+##### Trade Tokens
+
+Only the Sell Offers for ERC-20 tokens work at the moment.
+
+Go to the Trade Fungibles tab. Select the `WEENUS` token from the dropdown
+<kbd><img src="images/Screenshot_TradeFungibles_1_20240918.png" width="600"/></kbd>
+
+Sell offers should be displayed. Click on either rows on the left
+<kbd><img src="images/Screenshot_TradeFungibles_2_20240918.png" width="600"/></kbd>
+
+Here are the offers for a single Token Agent. You will have to manually approve tokens to the Token Agent for the `WEENUS` and `WETH` tokens
+<kbd><img src="images/Screenshot_TradeFungibles_3_20240918.png" width="600"/></kbd>
+
+The Events tab will display the list of offers, trades, and token transfers and approvals
+<kbd><img src="images/Screenshot_TradeFungibles_4_20240918.png" width="600"/></kbd>
+
+
 #### Contract
 
 [contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)

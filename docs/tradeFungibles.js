@@ -3,9 +3,42 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modaladdselloffers" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
-          <template #modal-title>Add Sell Offers - Fungibles</template>
+        <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
+          <template #modal-title>Add Sell Offer - Fungibles</template>
           <div class="m-0 p-1">
+            <div class="d-flex flex-wrap m-0 p-0">
+              <div class="mt-0 pl-1 pr-0">
+                <font size="-1">
+                  {{ settings.symbol }}:
+                </font>
+                <b-link :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + coinbase" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                  <b-badge variant="link" class="m-0 mt-1">
+                    {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }}
+                  </b-badge>
+                </b-link>
+              </div>
+              <div class="mt-0 pr-0">
+                <!-- {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }} -->
+              </div>
+            </div>
+            <b-row class="m-0 mt-1 p-0">
+              <b-col class="m-0 p-0">
+                <b-card sub-title="One" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                  <b-card-text class="m-0 p-0">
+                    <b-form-group label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
+                    </b-form-group>
+                  </b-card-text>
+                </b-card>
+              </b-col>
+              <b-col class="m-0 p-0">
+                <b-card sub-title="Two" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                  <b-card-text class="m-0 p-0">
+                    Two
+                  </b-card-text>
+                </b-card>
+              </b-col>
+            </b-row>
           </div>
         </b-modal>
 
@@ -336,7 +369,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-button size="sm" :disabled="!networkSupported" @click="addSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offers'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                  <b-button size="sm" :disabled="!networkSupported" @click="addSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -406,7 +439,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-button size="sm" :disabled="!networkSupported" @click="addBuyOffer" variant="link" v-b-popover.hover.ds500="'Add Buy Offers'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                  <b-button size="sm" :disabled="!networkSupported" @click="addBuyOffer" variant="link" v-b-popover.hover.ds500="'Add Buy Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -833,6 +866,10 @@ data: {{ data }}
           sortOption: 'txorderdsc',
         },
 
+        addSellOffer: {
+          tokenAgent: null,
+        },
+
         tokenAgentAddress: null,
         tokenAgentOwner: null,
         addOffers: {
@@ -852,7 +889,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 9,
+        version: 10,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1062,6 +1099,18 @@ data: {{ data }}
       return store.getters['data/registry'];
     },
 
+    myTokenAgentOptions() {
+      const results = [];
+      results.push({ value: null, text: '(Select Token Agent)' });
+      for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
+        if (d.owner == this.coinbase) {
+          results.push({ value: tokenAgent, text: d.indexByOwner + '. ' + tokenAgent.substring(0, 10) + '...' + tokenAgent.slice(-8) });
+        }
+      }
+      // console.log(now() + " INFO TradeFungibles:computed.myTokenAgentOptions - results: " + JSON.stringify(results, null, 2));
+      return results;
+    },
+
     tokenAgentsDropdownOptions() {
       const results = (store.getters['data/forceRefresh'] % 2) == 0 ? [] : [];
       for (const [tokenAgent, d] of Object.entries(this.tokenAgents[this.chainId] || {})) {
@@ -1221,7 +1270,7 @@ data: {{ data }}
         }
         collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
-      console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - collator: " + JSON.stringify(collator, null, 2));
       // console.log(now() + " INFO TradeFungibles:computed.sellOffers - results: " + JSON.stringify(results, null, 2));
       return results;
     },
@@ -1816,6 +1865,7 @@ data: {{ data }}
         for (const record of this.tokenAgentFactoryEvents) {
           tokenAgents[record.tokenAgent] = { index: record.index, indexByOwner: record.indexByOwner, owner: record.owner, nonce: 0, blockNumber: record.blockNumber, timestamp: record.timestamp, offers: {} };
         }
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
 
         // Get latest nonces
         const tokenAgentOffersInvalidatedEventsfilter = {
@@ -1838,7 +1888,7 @@ data: {{ data }}
             tokenAgents[record.contract].timestamp = record.timestamp;
           }
         }
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents, null, 2));
         this.data.chainId = this.chainId;
         this.data.blockNumber = blockNumber;
         this.data.timestamp = block.timestamp;
@@ -1891,7 +1941,7 @@ data: {{ data }}
           }
         }
         Vue.set(this.data, 'tokenAgents', tokenAgents);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
+        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents: " + JSON.stringify(tokenAgents, null, 2));
 
         // TODO: const balance = await provider.getBalance(e.maker);
         const approvalAddressMap = {};
@@ -2032,7 +2082,7 @@ data: {{ data }}
           ]};
         const wethTransferToEventsEventLogs = await provider.getLogs(wethTransferToEventsfilter);
         const wethTransferToEvents = parseTokenEventLogs(wethTransferToEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
 
         const wethTransferFromEventsfilter = {
           address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
@@ -2050,7 +2100,7 @@ data: {{ data }}
           ]};
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
         const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
         const tokenTransfers = [...tokenTransferToEvents, ...tokenTransferFromEvents];
         tokenTransfers.sort((a, b) => {
@@ -2197,7 +2247,7 @@ data: {{ data }}
 
     addSellOffer() {
       console.log(now() + " INFO Addresses:methods.addSellOffer BEGIN");
-      this.$refs.modaladdselloffers.show();
+      this.$refs.modaladdselloffer.show();
     },
 
     addBuyOffer() {

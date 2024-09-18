@@ -628,7 +628,7 @@ buyOffers: {{ buyOffers }}
                         {{ info.eventType }}
                       </b-col>
                       <b-col cols="2">
-                        <div v-if="info.eventType == 'Transfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
                           <b-link v-if="info.from" size="sm" :href="explorer + 'address/' + info.from" variant="link" v-b-popover.hover.ds500="info.from" target="_blank">
                             {{ info.from.substring(0, 8) + '...' + info.from.slice(-6) }}
                           </b-link>
@@ -640,7 +640,7 @@ buyOffers: {{ buyOffers }}
                         </div>
                       </b-col>
                       <b-col cols="2">
-                        <div v-if="info.eventType == 'Transfer'">
+                        <div v-if="info.eventType == 'Transfer' || info.eventType == 'InternalTransfer'">
                           <b-link v-if="info.to" size="sm" :href="explorer + 'address/' + info.to" variant="link" v-b-popover.hover.ds500="info.to" target="_blank">
                             {{ info.to.substring(0, 8) + '...' + info.to.slice(-6) }}
                           </b-link>
@@ -665,6 +665,9 @@ buyOffers: {{ buyOffers }}
                             </span>
                           </b-link>
                         </div>
+                        <div v-else-if="info.eventType == 'InternalTransfer'">
+                          ETH
+                        </div>
                         <div v-else>
                           <b-link size="sm" :href="explorer + 'token/' + info.token" variant="link" v-b-popover.hover.ds500="info.token" target="_blank">
                             <span v-if="info.token == data.token">
@@ -682,6 +685,9 @@ buyOffers: {{ buyOffers }}
                       <b-col cols="5" class="text-left">
                         <div v-if="info.eventType == 'Transfer'">
                           {{ formatDecimals(info.tokens, 18) }}
+                        </div>
+                        <div v-else-if="info.eventType == 'InternalTransfer'">
+                          {{ formatDecimals(info.ethers, 18) }}
                         </div>
                         <div v-else>
                           makerBS: {{ info.makerBuySell == 0 ? 'Buy' : 'Sell' }}, offerId: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
@@ -1748,14 +1754,16 @@ data: {{ data }}
           ]};
         const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
         const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const validTokenAgentOffersInvalidatedEvents = [];
         for (const record of tokenAgentOffersInvalidated) {
           if (record.contract in tokenAgents) {
+            validTokenAgentOffersInvalidatedEvents.push(record);
             tokenAgents[record.contract].nonce = record.newNonce;
             tokenAgents[record.contract].blockNumber = record.blockNumber;
             tokenAgents[record.contract].timestamp = record.timestamp;
           }
         }
-        console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - tokenAgents after invalidations: " + JSON.stringify(tokenAgents));
         this.data.chainId = this.chainId;
         this.data.blockNumber = blockNumber;
         this.data.timestamp = block.timestamp;
@@ -1797,7 +1805,6 @@ data: {{ data }}
           ]};
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
         const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        Vue.set(this.data, 'tokenAgentEvents', tokenAgentEvents);
 
         for (const e of tokenAgentEvents) {
           if (e.contract in tokenAgents) {
@@ -1814,7 +1821,9 @@ data: {{ data }}
         // TODO: const balance = await provider.getBalance(e.maker);
         const approvalAddressMap = {};
         const balanceAddressMap = {};
+        const internalTransferAddressMap = {};
         balanceAddressMap[this.coinbase] = 1;
+        internalTransferAddressMap[this.coinbase] = 1;
         for (const e of tokenAgentEvents) {
           if (!(e.contract in approvalAddressMap)) {
             approvalAddressMap[e.contract] = 1;
@@ -1822,12 +1831,19 @@ data: {{ data }}
           if (!(e.maker in balanceAddressMap)) {
             balanceAddressMap[e.maker] = 1;
           }
+          if (!(e.contract in internalTransferAddressMap)) {
+            internalTransferAddressMap[e.contract] = 1;
+          }
+          if (!(e.maker in internalTransferAddressMap)) {
+            internalTransferAddressMap[e.maker] = 1;
+          }
         }
         const approvalAddresses = Object.keys(approvalAddressMap);
         Vue.set(this.data, 'approvalAddresses', approvalAddresses);
         const balanceAddresses = Object.keys(balanceAddressMap);
         Vue.set(this.data, 'balanceAddresses', balanceAddresses);
-        // console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses));
+        const internalTransferAddresses = Object.keys(internalTransferAddressMap);
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - balanceAddresses: " + JSON.stringify(balanceAddresses) + ", internalTransferAddresses: " + JSON.stringify(internalTransferAddresses));
 
         const internalTransferFromEventsfilter = {
           address: null, fromBlock: 0, toBlock: blockNumber,
@@ -1835,13 +1851,20 @@ data: {{ data }}
               // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
               ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
             ],
-            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            internalTransferAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
             null,
           ]};
         const internalTransferFromEventsEventLogs = await provider.getLogs(internalTransferFromEventsfilter);
         const internalTransferFromEvents = parseTokenAgentEventLogs(internalTransferFromEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferFromEvents: " + JSON.stringify(internalTransferFromEvents));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferFromEvents: " + JSON.stringify(internalTransferFromEvents));
+        const validInternalTransferFromEvents = [];
+        for (const record of internalTransferFromEvents) {
+          if (record.contract in tokenAgents) {
+            validInternalTransferFromEvents.push(record);
+          }
+        }
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - validInternalTransferFromEvents: " + JSON.stringify(validInternalTransferFromEvents));
 
         const internalTransferToEventsfilter = {
           address: null, fromBlock: 0, toBlock: blockNumber,
@@ -1850,12 +1873,21 @@ data: {{ data }}
               ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
             ],
             null,
-            balanceAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
+            internalTransferAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             null,
           ]};
         const internalTransferToEventsEventLogs = await provider.getLogs(internalTransferToEventsfilter);
         const internalTransferToEvents = parseTokenAgentEventLogs(internalTransferToEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
-        console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferToEvents: " + JSON.stringify(internalTransferToEvents));
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferToEvents: " + JSON.stringify(internalTransferToEvents));
+        const validInternalTransferToEvents = [];
+        for (const record of internalTransferToEvents) {
+          if (record.contract in tokenAgents) {
+            validInternalTransferToEvents.push(record);
+          }
+        }
+        // console.log(now() + " INFO TradeFungibles:methods.loadData - validInternalTransferToEvents: " + JSON.stringify(validInternalTransferToEvents));
+
+        Vue.set(this.data, 'tokenAgentEvents', [...validTokenAgentOffersInvalidatedEvents, ...validInternalTransferFromEvents, ...validInternalTransferToEvents, ...tokenAgentEvents]);
 
         if (approvalAddresses.length > 0) {
           const tokenApprovalsfilter = {

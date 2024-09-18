@@ -520,10 +520,10 @@ buyOffers: {{ buyOffers }}
                     Event
                   </b-col>
                   <b-col cols="2">
-                    From / Taker
+                    From / Maker
                   </b-col>
                   <b-col cols="2">
-                    To / Maker
+                    To / Taker
                   </b-col>
                   <b-col cols="1">
                     Token
@@ -584,7 +584,7 @@ buyOffers: {{ buyOffers }}
                         {{ data1.item.eventType }}
                       </b-col>
                       <b-col cols="2">
-                        <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="info.maker" target="_blank">
+                        <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="'Maker ' + info.maker" target="_blank">
                           {{ info.maker.substring(0, 8) + '...' + info.maker.slice(-6) }}
                         </b-link>
                       </b-col>
@@ -607,7 +607,7 @@ buyOffers: {{ buyOffers }}
                         </b-link>
                       </b-col>
                       <b-col cols="5" class="text-left">
-                        bs: {{ info.buySell == 0 ? 'Buy' : 'Sell' }}, orderIndex: {{ info.index }}, non: {{ info.nonce }}, exp: {{ formatTimestamp(info.expiry )}}
+                        bs: {{ info.buySell == 0 ? 'Buy' : 'Sell' }}, offerId: {{ info.index }}, nonce: {{ info.nonce }}, exp: {{ formatTimestamp(info.expiry )}}
                         <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
                           <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}</li>
                         </div>
@@ -634,8 +634,8 @@ buyOffers: {{ buyOffers }}
                           </b-link>
                         </div>
                         <div v-else>
-                          <b-link v-if="info.taker" size="sm" :href="explorer + 'address/' + info.taker" variant="link" v-b-popover.hover.ds500="'Taker ' + info.taker" target="_blank">
-                            {{ info.taker.substring(0, 8) + '...' + info.taker.slice(-6) }}
+                          <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="'Maker ' + info.maker" target="_blank">
+                            {{ info.maker.substring(0, 8) + '...' + info.maker.slice(-6) }}
                           </b-link>
                         </div>
                       </b-col>
@@ -646,8 +646,8 @@ buyOffers: {{ buyOffers }}
                           </b-link>
                         </div>
                         <div v-else>
-                          <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="'Maker ' + info.maker" target="_blank">
-                            {{ info.maker.substring(0, 8) + '...' + info.maker.slice(-6) }}
+                          <b-link v-if="info.taker" size="sm" :href="explorer + 'address/' + info.taker" variant="link" v-b-popover.hover.ds500="'Taker ' + info.taker" target="_blank">
+                            {{ info.taker.substring(0, 8) + '...' + info.taker.slice(-6) }}
                           </b-link>
                         </div>
                       </b-col>
@@ -684,7 +684,7 @@ buyOffers: {{ buyOffers }}
                           {{ formatDecimals(info.tokens, 18) }}
                         </div>
                         <div v-else>
-                          makerBS: {{ info.makerBuySell == 0 ? 'Buy' : 'Sell' }}, orderIndex: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
+                          makerBS: {{ info.makerBuySell == 0 ? 'Buy' : 'Sell' }}, offerId: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
                           <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
                             <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}, remain: {{ formatDecimals(info.remainingTokenss[i], settings.decimals) }}</li>
                           </div>

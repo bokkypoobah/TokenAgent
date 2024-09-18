@@ -39,6 +39,11 @@ const TradeFungibles = {
                 </b-card>
               </b-col>
             </b-row>
+            <font size="-2">
+              <pre>
+{{ addSellOffer }}
+              </pre>
+            </font>
           </div>
         </b-modal>
 
@@ -369,7 +374,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
-                  <b-button size="sm" :disabled="!networkSupported" @click="addSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                  <b-button size="sm" :disabled="!networkSupported" @click="viewAddSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -1654,6 +1659,13 @@ data: {{ data }}
       // console.log(now() + " INFO TradeFungibles:computed.buyOffers - collator: " + JSON.stringify(collator, null, 2));
       return results;
     },
+
+    addSellOffer() {
+      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
+      // const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
+      return {};
+    },
+
     eventsList() {
       const results = [];
       for (const [txHash, d1] of Object.entries(this.events)) {
@@ -1731,9 +1743,7 @@ data: {{ data }}
     },
     filteredSortedEvents() {
       const results = [];
-
       const eventTypeOption = this.settings.events.eventTypeOption;
-
       for (const e of this.eventsList) {
         if (eventTypeOption == null) {
           results.push(e);
@@ -1741,9 +1751,6 @@ data: {{ data }}
           results.push(e);
         }
       }
-
-
-
       if (this.settings.events.sortOption == 'txorderasc') {
         results.sort((a, b) => {
           if (a.blockNumber == b.blockNumber) {
@@ -2245,8 +2252,8 @@ data: {{ data }}
       Vue.set(this, 'approvals', approvals);
     },
 
-    addSellOffer() {
-      console.log(now() + " INFO Addresses:methods.addSellOffer BEGIN");
+    viewAddSellOffer() {
+      console.log(now() + " INFO Addresses:methods.viewAddSellOffer BEGIN");
       this.$refs.modaladdselloffer.show();
     },
 

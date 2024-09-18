@@ -2,15 +2,15 @@
 
 Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
-##### UI URL
+#### UI URL
 [https://bokkypoobah.github.io/TokenAgent/](https://bokkypoobah.github.io/TokenAgent/)
 
-##### Requirements
+#### Requirements
 * Web3 browser, connected to Sepolia Testnet currently
 
-##### Screenshots
+#### Screenshots
 
-###### Setup Token Contract
+##### Setup Token Contract
 
 Go to the Token Contracts tab
 <kbd><img src="images/Screenshot_SetupTokenContract_1_20240918.png" width="600"/></kbd>
@@ -25,7 +25,7 @@ Click on the [->] icon to permit usage of this token.
 <kbd><img src="images/Screenshot_SetupTokenContract_4_20240918.png" width="600"/></kbd>
 
 
-###### Setup Token Agent
+##### Setup Token Agent
 
 Go to the Token Agent tab. Click on [+] to deploy your own token agent.
 <kbd><img src="images/Screenshot_SetupTokenAgent_1_20240918.png" width="600"/></kbd>
@@ -38,18 +38,18 @@ Click on the [Refresh] icon and your newly deployed Token Agent should show up
 
 
 
-##### Contract
+#### Contract
 
 [contracts/TokenAgentFactory.sol](contracts/TokenAgentFactory.sol)
 
-##### Deployments to Sepolia
+#### Deployments to Sepolia
 * v0.8.0 template [TokenAgent](https://sepolia.etherscan.io/address/0x0514e4402fe93b6ba0b014b30e5b715ed0943c25#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x598b17e44c3e8894dfcc9aaec16dad81756f5651#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.0](deployed/TokenAgentFactory_v0.8.0_Sepolia_0x598b17E44c3e8894DfcC9aAec16DaD81756F5651.sol)
 * v0.8.1 template [TokenAgent](https://sepolia.etherscan.io/address/0x35e401362D24a2243b9a441542a4D4FFe50db1bF#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.1](deployed/TokenAgentFactory_v0.8.1_Sepolia_0x81c9d0d4c60e6Ec7bb13879f703b113c930Cd914.sol)
 * v0.8.2 template [TokenAgent](https://sepolia.etherscan.io/address/0x5446e959103b19e983848FB53d9fbD096eDb21A9#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0xB6426d5E4B6515E627Ff510424978eBe223c39C4#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.2](deployed/TokenAgentFactory_v0.8.2_Sepolia_0xB6426d5E4B6515E627Ff510424978eBe223c39C4.sol)
 * v0.8.3 template [TokenAgent](https://sepolia.etherscan.io/address/0x8aA33A7899FCC8eA5fBe6A608A109c3893A1B8b2#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.3](deployed/TokenAgentFactory_v0.8.3_Sepolia_0x6ea79A57697fa6F018ee2cf3cb75F198E7dC7381.sol)
 * v0.8.4 template [TokenAgent](https://sepolia.etherscan.io/address/0x6441869d29DDb30A6B532aa3a78bFcb392354Fe8#code) and [TokenAgentFactory](https://sepolia.etherscan.io/address/0x953Cdc57222c36809AD72fe7aa010dB51E096B60#code) using [WETH](https://sepolia.etherscan.io/address/0x07391dbE03e7a0DEa0fce6699500da081537B6c3#code) - [deployed/TokenAgentFactorysol v0.8.3](deployed/TokenAgentFactory_v0.8.4_Sepolia_0x953Cdc57222c36809AD72fe7aa010dB51E096B60.sol)
 
-##### Notes
+#### Notes
 This project is currently heavily under development. Clear your browser's LocalStorage and IndexedDB if this dapp is not operating as expected as the configuration data may have a new format.
 
 <br />
@@ -58,14 +58,14 @@ This project is currently heavily under development. Clear your browser's LocalS
 
 #### Info
 
-###### How It Works - ERC-20 ATM
+##### How It Works - ERC-20 ATM
 
 * `account1` deploys `TokenAgent1`, cloned via `TokenAgentFactory`
 * `account1` approves for `TokenAgent1` to transfer WETH and ERC20
 * `account1` adds offers to `TokenAgent1` to, e.g., BUY ERC20: 100 @ 0.1 ERC20/WETH, 200 @ 0.2 ERC20/WETH, ...
 * `account2` interacts with `TokenAgent1` to, e.g., SELL ERC20 for WETH against the `account1`'s offers
 
-###### How The Dapp Will Work
+##### How The Dapp Will Work
 
 * Incrementally scrape all `NewTokenAgent(tokenAgent, owner, index, timestamp)` events emitted by `TokenAgentFactory` to create a list of valid `TokenAgent` addresses
 * Incrementally scrape all events emitted by all the deployed `TokenAgent`, filtering by the valid `TokenAgent` addresses
@@ -78,14 +78,14 @@ This project is currently heavily under development. Clear your browser's LocalS
 
 #### Testing
 
-###### First Install
+##### First Install
 Clone/download this repository, and in the new folder on your computer:
 
 ```bash
 npm install --save-dev hardhat
 ```
 
-###### Run Test Script
+##### Run Test Script
 
 Or run the test with the output saved in [./testIt.out](./testIt.out).
 You may initially have to mark the script as executable using the command `chmod 700 ./10_testIt.sh`.

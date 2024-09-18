@@ -1003,9 +1003,11 @@ data: {{ data }}
       let maxWeth = this.modalSellOffer.amount != null && this.modalSellOffer.amount.trim().length != 0 && this.modalSellOffer.amountType == 'payWeth' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
       const maker = this.modalSellOffer.maker;
       const makerTokenBalance = ethers.BigNumber.from(maker && this.balances[this.data.token] && this.balances[this.data.token][maker] && this.balances[this.data.token][maker].tokens && this.balances[this.data.token][maker].tokens || 0);
+      // console.log("makerTokenBalance: " + ethers.utils.formatEther(makerTokenBalance));
       // const makerTokenBalance = ethers.BigNumber.from("5100000000000000000");
       const tokenAgent = maker && this.modalSellOffer.tokenAgent || null;
-      const tokenAgentTokenApproval = ethers.BigNumber.from(maker && this.approvals[this.data.token] && this.approvals[this.data.token] &&[maker] && this.approvals[this.data.token] &&[maker][tokenAgent] && this.approvals[this.data.token] &&[maker][tokenAgent].tokens || 0);
+      const tokenAgentTokenApproval = ethers.BigNumber.from(maker && this.approvals[this.data.token] && this.approvals[this.data.token][maker] && this.approvals[this.data.token][maker][tokenAgent] && this.approvals[this.data.token][maker][tokenAgent].tokens || 0);
+      // console.log("tokenAgentTokenApproval: " + ethers.utils.formatEther(tokenAgentTokenApproval));
       const nonce = maker && parseInt(this.data.tokenAgents[tokenAgent].nonce) || 0;
       const offers = maker && this.data.tokenAgents[tokenAgent].offers || [];
       const trades = [];
@@ -1514,6 +1516,7 @@ data: {{ data }}
         for (const logIndex of logIndexes) {
           const e = l.events[logIndex];
           if (e.eventType == "Transfer" || e.eventType == "Deposit" || e.eventType == "Withdrawal") {
+            // console.log(logIndex + ". Transfer - l.tokenAgent: " + l.tokenAgent + ", from: " + e.from + ", to: " + e.to + ", tokens: " + ethers.utils.formatEther(e.tokens));
             if (e.to in balanceAddressMap) {
               if (!(e.contract in balances)) {
                 balances[e.contract] = {};
@@ -1536,8 +1539,6 @@ data: {{ data }}
                 balances[e.contract][e.from].tokens = ethers.BigNumber.from(balances[e.contract][e.from].tokens).sub(e.tokens).toString();
               }
               if (l.tokenAgent != null) {
-                // console.log(logIndex + ". Transfer - l.tokenAgent: " + l.tokenAgent + ", from: " + e.from + ", to: " + e.to + ", tokens: " + ethers.utils.formatEther(e.tokens));
-                // console.log(logIndex + "  e: " + JSON.stringify(e));
                 if (approvals[e.contract] && approvals[e.contract][e.from] && approvals[e.contract][e.from][l.tokenAgent]) {
                   approvals[e.contract][e.from][l.tokenAgent].spent = ethers.BigNumber.from(approvals[e.contract][e.from][l.tokenAgent].spent).add(e.tokens).toString();
                   approvals[e.contract][e.from][l.tokenAgent].tokens = ethers.BigNumber.from(approvals[e.contract][e.from][l.tokenAgent].tokens).sub(e.tokens).toString();
@@ -1571,69 +1572,6 @@ data: {{ data }}
       // console.log("approvals: " + JSON.stringify(approvals, null, 2));
       Vue.set(this, 'balances', balances);
       Vue.set(this, 'approvals', approvals);
-
-      // const tokenBalances = {};
-      // for (const transfer of this.data.tokenTransfers) {
-      //   if (transfer.to in balanceAddressMap) {
-      //     if (!(transfer.to in tokenBalances)) {
-      //       tokenBalances[transfer.to] = { tokens: transfer.tokens };
-      //     } else {
-      //       tokenBalances[transfer.to].tokens = ethers.BigNumber.from(tokenBalances[transfer.to].tokens).add(transfer.tokens).toString();
-      //     }
-      //   }
-      //   if (transfer.from in balanceAddressMap) {
-      //     if (!(transfer.from in tokenBalances)) {
-      //       tokenBalances[transfer.from] = {
-      //         tokens: transfer.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(transfer.tokens).toString(),
-      //       };
-      //     } else {
-      //       tokenBalances[transfer.from].tokens = ethers.BigNumber.from(tokenBalances[transfer.from].tokens).sub(transfer.tokens).toString();
-      //     }
-      //   }
-      // }
-      // Vue.set(this, 'tokenBalances', tokenBalances);
-      // console.log(now() + " INFO TradeFungibles:methods.computeState - tokenBalances: " + JSON.stringify(tokenBalances));
-      //
-      // const wethBalances = {};
-      // for (const e of this.data.wethTransfers) {
-      //   if (e.to in balanceAddressMap) {
-      //     if (!(e.to in wethBalances)) {
-      //       wethBalances[e.to] = { tokens: e.tokens };
-      //     } else {
-      //       wethBalances[e.to].tokens = ethers.BigNumber.from(wethBalances[e.to].tokens).add(e.tokens).toString();
-      //     }
-      //   }
-      //   if (e.from in balanceAddressMap) {
-      //     if (!(e.from in wethBalances)) {
-      //       wethBalances[e.from] = {
-      //         tokens: e.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
-      //       };
-      //     } else {
-      //       wethBalances[e.from].tokens = ethers.BigNumber.from(wethBalances[e.from].tokens).sub(e.tokens).toString();
-      //     }
-      //   }
-      // }
-      // Vue.set(this, 'wethBalances', wethBalances);
-      // console.log(now() + " INFO TradeFungibles:methods.computeState - wethBalances: " + JSON.stringify(wethBalances));
-      //
-      // const tokenApprovals = {};
-      // for (const e of this.data.tokenApprovals) {
-      //   if (!(e.owner in tokenApprovals)) {
-      //     tokenApprovals[e.owner] = {};
-      //   }
-      //   tokenApprovals[e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex };
-      // }
-      // Vue.set(this, 'tokenApprovals', tokenApprovals);
-      // console.log(now() + " INFO TradeFungibles:methods.computeState - tokenApprovals: " + JSON.stringify(tokenApprovals));
-      // const wethApprovals = {};
-      // for (const e of this.data.wethApprovals) {
-      //   if (!(e.owner in wethApprovals)) {
-      //     wethApprovals[e.owner] = {};
-      //   }
-      //   wethApprovals[e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex };
-      // }
-      // Vue.set(this, 'wethApprovals', wethApprovals);
-      // console.log(now() + " INFO TradeFungibles:methods.computeState - wethApprovals: " + JSON.stringify(wethApprovals));
     },
 
     sellOffersRowSelected(item) {

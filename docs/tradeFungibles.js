@@ -486,14 +486,12 @@ buyOffers: {{ buyOffers }}
               <b-form-select size="sm" v-model="settings.events.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
             </div>
           </div>
-          <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
-            <template #cell(number)="data">
-              <font size="-1">
+          <font size="-1">
+            <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1">
+              <template #cell(number)="data">
                 {{ parseInt(data.index) + ((settings.events.currentPage - 1) * settings.events.pageSize) + 1 }}
-              </font>
-            </template>
-            <template #cell(when)="data">
-              <font size="-1">
+              </template>
+              <template #cell(when)="data">
                 <b-link size="sm" :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" variant="link" v-b-popover.hover.ds500="data.item.blockNumber + ':' + data.item.txIndex + '.' + data.item.logIndex" target="_blank">
                   <span v-if="data.item.timestamp">
                     {{ formatTimestamp(data.item.timestamp) }}
@@ -502,65 +500,61 @@ buyOffers: {{ buyOffers }}
                     {{ data.item.blockNumber + ':' + data.item.txIndex }}
                   </span>
                 </b-link>
-              </font>
-            </template>
-            <template #cell(from)="data">
-              <font size="-1">
+              </template>
+              <template #cell(from)="data">
                 <b-link v-if="data.item.from" size="sm" :href="explorer + 'address/' + data.item.from" variant="link" v-b-popover.hover.ds500="data.item.from" target="_blank">
                   {{ data.item.from.substring(0, 8) + '...' + data.item.from.slice(-6) }}
                 </b-link>
-              </font>
-            </template>
-            <template #cell(to)="data">
-              <font size="-1">
+              </template>
+              <template #cell(to)="data">
                 <b-link v-if="data.item.to" size="sm" :href="explorer + 'address/' + data.item.to" variant="link" v-b-popover.hover.ds500="data.item.to" target="_blank">
                   {{ data.item.to.substring(0, 8) + '...' + data.item.to.slice(-6) }}
                 </b-link>
-              </font>
-            </template>
-            <template #head(info)="data">
-              <b-row>
-                <b-col cols="1">
-                  #
-                </b-col>
-                <b-col cols="2">
-                  From
-                </b-col>
-                <b-col cols="2">
-                  To
-                </b-col>
-                <b-col cols="2">
-                  Token
-                </b-col>
-                <b-col cols="5" class="text-right">
-                  Tokens / Info
-                </b-col>
-              </b-row>
-            </template>
-            <template #cell(info)="data1">
-              <div v-if="data1.item.eventType == 'Transfer' || data1.item.eventType == 'Approval'">
+              </template>
+              <template #head(info)="data">
                 <b-row>
                   <b-col cols="1">
-                    <font size="-1" class="muted">
-                      {{ data1.item.logIndex }}
-                    </font>
+                    LogIx
+                  </b-col>
+                  <b-col cols="1">
+                    Event
                   </b-col>
                   <b-col cols="2">
-                    <font size="-1">
+                    From / Taker
+                  </b-col>
+                  <b-col cols="2">
+                    To / Maker
+                  </b-col>
+                  <b-col cols="1">
+                    Token
+                  </b-col>
+                  <b-col cols="5" class="text-left">
+                    Tokens/Info
+                  </b-col>
+                </b-row>
+              </template>
+              <template #cell(info)="data1">
+                <div v-if="data1.item.eventType == 'Transfer' || data1.item.eventType == 'Approval'">
+                  <b-row>
+                    <b-col cols="1">
+                      <b-link size="sm" :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" variant="link" v-b-popover.hover.ds500="data1.item.logIndex" target="_blank">
+                        {{ data1.item.logIndex }}
+                      </b-link>
+                    </b-col>
+                    <b-col cols="1">
+                      {{ data1.item.eventType }}
+                    </b-col>
+                    <b-col cols="2">
                       <b-link v-if="data1.item.from" size="sm" :href="explorer + 'address/' + data1.item.from" variant="link" v-b-popover.hover.ds500="data1.item.from" target="_blank">
                         {{ data1.item.from.substring(0, 8) + '...' + data1.item.from.slice(-6) }}
                       </b-link>
-                    </font>
-                  </b-col>
-                  <b-col cols="2">
-                    <font size="-1">
+                    </b-col>
+                    <b-col cols="2">
                       <b-link v-if="data1.item.to" size="sm" :href="explorer + 'address/' + data1.item.to" variant="link" v-b-popover.hover.ds500="data1.item.to" target="_blank">
                         {{ data1.item.to.substring(0, 8) + '...' + data1.item.to.slice(-6) }}
                       </b-link>
-                    </font>
-                  </b-col>
-                  <b-col cols="2">
-                    <font size="-1">
+                    </b-col>
+                    <b-col cols="1">
                       <b-link v-if="data1.item.contract" size="sm" :href="explorer + 'token/' + data1.item.contract" variant="link" v-b-popover.hover.ds500="data1.item.contract" target="_blank">
                         <span v-if="data1.item.contract == data.token">
                           {{ settings.symbol }}
@@ -572,22 +566,141 @@ buyOffers: {{ buyOffers }}
                           {{ data1.item.contract.substring(0, 8) + '...' + data1.item.contract.slice(-6) }}
                         </span>
                       </b-link>
-                    </font>
-                  </b-col>
-                  <b-col cols="5" class="text-right">
-                    <font size="-1">
+                    </b-col>
+                    <b-col cols="5" class="text-left">
                       {{ formatDecimals(data1.item.tokens, 18) }}
-                    </font>
-                  </b-col>
-                </b-row>
-              </div>
-              <div v-else>
-                <font size="-2">
-                  {{ data1.item }}
-                </font>
-              </div>
-            </template>
-          </b-table>
+                    </b-col>
+                  </b-row>
+                </div>
+                <div v-else-if="data1.item.eventType == 'Offered'">
+                  <div v-for="(info, logIndex) in data1.item.events"  v-bind:key="logIndex" class="m-0 p-0">
+                    <b-row>
+                      <b-col cols="1">
+                        <b-link size="sm" :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + logIndex" variant="link" v-b-popover.hover.ds500="logIndex" target="_blank">
+                          {{ logIndex }}
+                        </b-link>
+                      </b-col>
+                      <b-col cols="1">
+                        {{ data1.item.eventType }}
+                      </b-col>
+                      <b-col cols="2">
+                        <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="info.maker" target="_blank">
+                          {{ info.maker.substring(0, 8) + '...' + info.maker.slice(-6) }}
+                        </b-link>
+                      </b-col>
+                      <b-col cols="2">
+                        <!-- <b-link v-if="data1.item.to" size="sm" :href="explorer + 'address/' + data1.item.to" variant="link" v-b-popover.hover.ds500="data1.item.to" target="_blank">
+                          {{ data1.item.to.substring(0, 8) + '...' + data1.item.to.slice(-6) }}
+                        </b-link> -->
+                      </b-col>
+                      <b-col cols="1">
+                        <b-link v-if="info.token" size="sm" :href="explorer + 'token/' + info.token" variant="link" v-b-popover.hover.ds500="info.token" target="_blank">
+                          <span v-if="info.token == data.token">
+                            {{ settings.symbol }}
+                          </span>
+                          <span v-else-if="info.token == data.weth">
+                            WETH
+                          </span>
+                          <span v-else>
+                            {{ info.token.substring(0, 8) + '...' + info.token.slice(-6) }}
+                          </span>
+                        </b-link>
+                      </b-col>
+                      <b-col cols="5" class="text-left">
+                        bs: {{ info.buySell == 0 ? 'Buy' : 'Sell' }}, orderIndex: {{ info.index }}, non: {{ info.nonce }}, exp: {{ formatTimestamp(info.expiry )}}
+                        <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
+                          <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}</li>
+                        </div>
+                      </b-col>
+                    </b-row>
+                  </div>
+                </div>
+                <div v-else-if="data1.item.eventType == 'Traded'">
+                  <div v-for="(info, logIndex) in data1.item.events"  v-bind:key="logIndex" class="m-0 p-0">
+                    <!-- {{ logIndex }} . {{ info }} -->
+                    <b-row>
+                      <b-col cols="1">
+                        <b-link size="sm" :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + logIndex" variant="link" v-b-popover.hover.ds500="logIndex" target="_blank">
+                          {{ logIndex }}
+                        </b-link>
+                      </b-col>
+                      <b-col cols="1">
+                        {{ info.eventType }}
+                      </b-col>
+                      <b-col cols="2">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link v-if="info.from" size="sm" :href="explorer + 'address/' + info.from" variant="link" v-b-popover.hover.ds500="info.from" target="_blank">
+                            {{ info.from.substring(0, 8) + '...' + info.from.slice(-6) }}
+                          </b-link>
+                        </div>
+                        <div v-else>
+                          <b-link v-if="info.taker" size="sm" :href="explorer + 'address/' + info.taker" variant="link" v-b-popover.hover.ds500="'Taker ' + info.taker" target="_blank">
+                            {{ info.taker.substring(0, 8) + '...' + info.taker.slice(-6) }}
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="2">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link v-if="info.to" size="sm" :href="explorer + 'address/' + info.to" variant="link" v-b-popover.hover.ds500="info.to" target="_blank">
+                            {{ info.to.substring(0, 8) + '...' + info.to.slice(-6) }}
+                          </b-link>
+                        </div>
+                        <div v-else>
+                          <b-link v-if="info.maker" size="sm" :href="explorer + 'address/' + info.maker" variant="link" v-b-popover.hover.ds500="'Maker ' + info.maker" target="_blank">
+                            {{ info.maker.substring(0, 8) + '...' + info.maker.slice(-6) }}
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="1">
+                        <div v-if="info.eventType == 'Transfer'">
+                          <b-link size="sm" :href="explorer + 'contract/' + info.contract" variant="link" v-b-popover.hover.ds500="info.contract" target="_blank">
+                            <span v-if="info.contract == data.token">
+                              {{ settings.symbol }}
+                            </span>
+                            <span v-else-if="info.contract == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.contract.substring(0, 8) + '...' + info.contract.slice(-6) }}
+                            </span>
+                          </b-link>
+                        </div>
+                        <div v-else>
+                          <b-link size="sm" :href="explorer + 'token/' + info.token" variant="link" v-b-popover.hover.ds500="info.token" target="_blank">
+                            <span v-if="info.token == data.token">
+                              {{ settings.symbol }}
+                            </span>
+                            <span v-else-if="info.token == data.weth">
+                              WETH
+                            </span>
+                            <span v-else>
+                              {{ info.token.substring(0, 8) + '...' + info.token.slice(-6) }}
+                            </span>
+                          </b-link>
+                        </div>
+                      </b-col>
+                      <b-col cols="5" class="text-left">
+                        <div v-if="info.eventType == 'Transfer'">
+                          {{ formatDecimals(info.tokens, 18) }}
+                        </div>
+                        <div v-else>
+                          makerBS: {{ info.makerBuySell == 0 ? 'Buy' : 'Sell' }}, orderIndex: {{ info.index }}, avg price: {{ formatDecimals(info.price, 18) }}
+                          <div v-for="(point, i) in info.prices"  v-bind:key="i" class="m-0 p-0">
+                            <li>{{ formatDecimals(info.tokenss[i], settings.decimals) }} @ {{ formatDecimals(point, 18) }}, remain: {{ formatDecimals(info.remainingTokenss[i], settings.decimals) }}</li>
+                          </div>
+                        </div>
+                      </b-col>
+                    </b-row>
+                  </div>
+                </div>
+                <div v-else>
+                  <font size="-2">
+                    Other: {{ data1.item }}
+                  </font>
+                </div>
+              </template>
+            </b-table>
+          </font>
           <!-- <font size="-2">
             <pre>
 {{ pagedFilteredSortedEvents }}
@@ -808,9 +921,9 @@ data: {{ data }}
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'eventType', label: 'Type', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'from', label: 'From', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'to', label: 'To', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 70%;', thClass: 'text-left', tdClass: 'text-left' },
+        // { key: 'from', label: 'From', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        // { key: 'to', label: 'To', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 100%;', thClass: 'text-left', tdClass: 'text-left' },
         // { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },

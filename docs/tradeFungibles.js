@@ -3,6 +3,12 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
+        <b-modal ref="modaladdselloffers" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
+          <template #modal-title>Add Sell Offers - Fungibles</template>
+          <div class="m-0 p-1">
+          </div>
+        </b-modal>
+
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
           <template #modal-title>Take Sell Offer - Fungibles</template>
           <div class="m-0 p-1">
@@ -58,7 +64,8 @@ const TradeFungibles = {
             </div>
 
             <font size="-1">
-              <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
+              <!-- <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1"> -->
+              <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
                 <template #cell(price)="data">
                   <font size="-1">
                     {{ formatDecimals(data.item.price, 18) }}
@@ -329,6 +336,11 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
+                  <b-button size="sm" :disabled="!networkSupported" @click="addSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offers'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                </div>
+                <div class="mt-0 flex-grow-1">
+                </div>
+                <div class="mt-0 pr-1">
                   <b-form-select size="sm" v-model="settings.sellOffers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
                 </div>
                 <div class="mt-0 pr-1">
@@ -390,6 +402,11 @@ modalBuyOffer: {{ modalBuyOffer }}
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
                 <div class="mt-1 pr-1">
                   Buy Offers
+                </div>
+                <div class="mt-0 flex-grow-1">
+                </div>
+                <div class="mt-0 pr-1">
+                  <b-button size="sm" :disabled="!networkSupported" @click="addBuyOffer" variant="link" v-b-popover.hover.ds500="'Add Buy Offers'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -2176,6 +2193,15 @@ data: {{ data }}
       Vue.set(this, 'events', events);
       Vue.set(this, 'balances', balances);
       Vue.set(this, 'approvals', approvals);
+    },
+
+    addSellOffer() {
+      console.log(now() + " INFO Addresses:methods.addSellOffer BEGIN");
+      this.$refs.modaladdselloffers.show();
+    },
+
+    addBuyOffer() {
+      console.log(now() + " INFO Addresses:methods.addBuyOffer TODO");
     },
 
     sellOffersRowSelected(item) {

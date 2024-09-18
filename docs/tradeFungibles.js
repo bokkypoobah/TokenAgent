@@ -4,7 +4,7 @@ const TradeFungibles = {
       <b-card no-body no-header class="border-0">
 
         <b-modal ref="modalselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
-          <template #modal-title>Trade Fungibles - Maker Sell Offer</template>
+          <template #modal-title>Take Sell Offer - Fungibles</template>
           <div class="m-0 p-1">
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 ml-2 pr-0">
@@ -324,7 +324,7 @@ modalBuyOffer: {{ modalBuyOffer }}
             <b-col class="m-0 mr-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
                 <div class="mt-1 pr-1">
-                  Taker Buy / Maker Sell
+                  Sell Offers
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -389,7 +389,7 @@ modalBuyOffer: {{ modalBuyOffer }}
             <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
                 <div class="mt-1 pr-1">
-                  Taker Sell / Maker Buy
+                  Buy Offers
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>

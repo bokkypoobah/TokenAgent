@@ -1468,18 +1468,19 @@ data: {{ data }}
           collator[e.txHash] = {
             blockNumber: e.blockNumber,
             txIndex: e.txIndex,
-            trade: false,
+            tokenAgent: null,
             events: {},
           }
         }
         collator[e.txHash].events[e.logIndex] = e;
         if (e.eventType == "Traded") {
-          collator[e.txHash].trade = true;
+          // console.log("Traded: " + JSON.stringify(e));
+          collator[e.txHash].tokenAgent = e.contract;
         }
       }
       const list = [];
       for (const [txHash, d] of Object.entries(collator)) {
-        list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, trade: d.trade, events: d.events });
+        list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, tokenAgent: d.tokenAgent, events: d.events });
       }
       list.sort((a, b) => {
         if (a.blockNumber == b.blockNumber) {
@@ -1504,60 +1505,68 @@ data: {{ data }}
         });
         for (const logIndex of logIndexes) {
           const e = l.events[logIndex];
-          const trade = l.trade;
           if (e.eventType == "Transfer" || e.eventType == "Deposit" || e.eventType == "Withdrawal") {
-            console.log(logIndex + ". Transfer - trade: " + trade + " " + JSON.stringify(e));
-
-            let from, to;
-            if (e.eventType == "Transfer") {
-              from = e.from;
-              to = e.to;
-            } else if (e.eventType == "Deposit") {
-              from = ADDRESS0;
-              to = e.to;
-            } else {
-              from = e.from;
-              to = ADDRESS0;
-            }
-
-            if (to in balanceAddressMap) {
+            if (e.to in balanceAddressMap) {
               if (!(e.contract in balances)) {
                 balances[e.contract] = {};
               }
-              if (!(to in balances[e.contract])) {
-                balances[e.contract][to] = { tokens: e.tokens };
+              if (!(e.to in balances[e.contract])) {
+                balances[e.contract][e.to] = { tokens: e.tokens };
               } else {
-                balances[e.contract][to].tokens = ethers.BigNumber.from(balances[e.contract][to].tokens).add(e.tokens).toString();
+                balances[e.contract][e.to].tokens = ethers.BigNumber.from(balances[e.contract][e.to].tokens).add(e.tokens).toString();
               }
             }
-            if (from in balanceAddressMap) {
+            if (e.from in balanceAddressMap) {
               if (!(e.contract in balances)) {
                 balances[e.contract] = {};
               }
-              if (!(from in balances[e.contract])) {
-                balances[e.contract][from] = {
-                  tokens: from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
+              if (!(e.from in balances[e.contract])) {
+                balances[e.contract][e.from] = {
+                  tokens: e.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
                 };
               } else {
-                balances[e.contract][from].tokens = ethers.BigNumber.from(balances[e.contract][from].tokens).sub(e.tokens).toString();
+                balances[e.contract][e.from].tokens = ethers.BigNumber.from(balances[e.contract][e.from].tokens).sub(e.tokens).toString();
+              }
+              // TODO: Handle reduction in approvals when trades occur
+              if (l.tokenAgent != null) {
+                console.log(logIndex + ". Transfer - l.tokenAgent: " + l.tokenAgent + ", from: " + e.from + ", to: " + e.to + ", tokens: " + ethers.utils.formatEther(e.tokens));
+                console.log(logIndex + "  e: " + JSON.stringify(e));
+                // console.log(logIndex + "  collator[txHash]: " + JSON.stringify(collator[e.txHash]));
+                // if (!(e.contract in approvals)) {
+                //   approvals[e.contract] = {};
+                // }
+                // if (!(e.from in approvals[e.contract])) {
+                //   approvals[e.contract][e.from] = {};
+                // }
+                approvals[e.contract][e.from][l.tokenAgent].spent = ethers.BigNumber.from(approvals[e.contract][e.from][l.tokenAgent].spent).add(e.tokens).toString();
+                approvals[e.contract][e.from][l.tokenAgent].spends.push({ txHash: e.txHash, logIndex: e.logIndex, tokens: e.tokens });
+                // approvals[e.contract][e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex };
               }
             }
 
           } else if (e.eventType == "Approval") {
-            console.log(logIndex + ". Approval - trade: " + trade + " " + JSON.stringify(e));
+            // console.log(logIndex + ". Approval - trade: " + trade + " " + JSON.stringify(e));
+            if (!(e.contract in approvals)) {
+              approvals[e.contract] = {};
+            }
+            if (!(e.owner in approvals[e.contract])) {
+              approvals[e.contract][e.owner] = {};
+            }
+            approvals[e.contract][e.owner][e.spender] = { tokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex, spent: 0, spends: [] };
 
           } else if (e.eventType == "Offered") {
-            console.log(logIndex + ". Offered - trade: " + trade + " " + JSON.stringify(e));
+            // console.log(logIndex + ". Offered - trade: " + trade + " " + JSON.stringify(e));
 
           } else if (e.eventType == "Traded") {
-            console.log(logIndex + ". Traded - trade: " + trade + " " + JSON.stringify(e));
+            // console.log(logIndex + ". Traded - trade: " + trade + " " + JSON.stringify(e));
 
           } else {
-            console.log(logIndex + ". ELSE - trade: " + trade + " " + JSON.stringify(e));
+            // console.log(logIndex + ". ELSE - trade: " + trade + " " + JSON.stringify(e));
           }
         }
       }
-      console.log("balances: " + JSON.stringify(balances, null, 2));
+      // console.log("balances: " + JSON.stringify(balances, null, 2));
+      console.log("approvals: " + JSON.stringify(approvals, null, 2));
 
       const tokenBalances = {};
       for (const transfer of this.data.tokenTransfers) {

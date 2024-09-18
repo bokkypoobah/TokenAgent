@@ -721,7 +721,10 @@ data: {{ data }}
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'when', label: 'When', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 80%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'eventType', label: 'Type', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'from', label: 'From', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'to', label: 'To', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'info', label: 'Info', sortable: false, thStyle: 'width: 70%;', thClass: 'text-left', tdClass: 'text-left' },
         // { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -1332,18 +1335,23 @@ data: {{ data }}
         let tokenAgent = null;
         let logIndex = null;
         let timestamp = null;
+        let from = null;
+        let to = null;
         for (const [logIndex2, d2] of Object.entries(d1.events)) {
           if (d2.eventType == "Offered") {
             isOffered = true;
             tokenAgent = d2.contract;
             logIndex = logIndex2;
             timestamp = d2.timestamp;
+            from = d2.maker;
             break;
           } else if (d2.eventType == "Traded") {
             isTraded = true;
             tokenAgent = d2.contract;
             logIndex = logIndex2;
             timestamp = d2.timestamp;
+            from = d2.taker;
+            to = d2.maker;
             break;
           }
         }
@@ -1360,9 +1368,13 @@ data: {{ data }}
           for (const [logIndex2, d2] of Object.entries(d1.events)) {
             // console.log("One: " + txHash + "/" + logIndex2 + " => " + JSON.stringify(d2));
             if (d2.eventType == "Transfer" || d2.eventType == "Deposit" || d2.eventType == "Withdrawal") {
-              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, from: d2.from, to: d2.to, tokens: d2.tokens };
+              from = d2.from;
+              to = d2.to;
+              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
             } else if (d2.eventType == "Approval") {
-              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, owner: d2.owner, spender: d2.spender, tokens: d2.tokens };
+              from = d2.owner;
+              to = d2.spender;
+              record = { logIndex2, contract: d2.contract, eventType: d2.eventType, tokens: d2.tokens };
             }
           }
         } else {
@@ -1374,6 +1386,8 @@ data: {{ data }}
             blockNumber: d1.blockNumber,
             txIndex: d1.txIndex,
             txHash,
+            from,
+            to,
             // logIndex,
             // tokenAgent: tokenAgent,
             // timestamp: d1.timestamp,

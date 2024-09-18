@@ -13,38 +13,48 @@ Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 ##### Setup Token Contract
 
 Go to the Token Contracts tab
+
 <kbd><img src="images/Screenshot_SetupTokenContract_1_20240918.png" width="600"/></kbd>
 
 Click on [+] to add a new token contract. Select `WEENUS` from the dropdown list. Click on [+]
+
 <kbd><img src="images/Screenshot_SetupTokenContract_2_20240918.png" width="600"/></kbd>
 
 You should now see `WEENUS` in your list
+
 <kbd><img src="images/Screenshot_SetupTokenContract_3_20240918.png" width="600"/></kbd>
 
 Click on the [->] icon to permit usage of this token.
+
 <kbd><img src="images/Screenshot_SetupTokenContract_4_20240918.png" width="600"/></kbd>
 
 
 ##### Setup Token Agent
 
 Go to the Token Agent tab. Click on [+] to deploy your own token agent.
+
 <kbd><img src="images/Screenshot_SetupTokenAgent_1_20240918.png" width="600"/></kbd>
 
 Click on [Deploy] and confirm in your web3 wallet
+
 <kbd><img src="images/Screenshot_SetupTokenAgent_2_20240918.png" width="600"/></kbd>
 
 Click on the [Refresh] icon and your newly deployed Token Agent should show up
+
 <kbd><img src="images/Screenshot_SetupTokenAgent_3_20240918.png" width="600"/></kbd>
 
 ##### Add Offers To Your Token Agent
 
 Go to the Agent tab. Select your Token Agent from the dropdown
+
 <kbd><img src="images/Screenshot_AddOffers_1_20240918.png" width="600"/></kbd>
 
 Select the `WEENUS` token from the Token dropdown
+
 <kbd><img src="images/Screenshot_AddOffers_2_20240918.png" width="600"/></kbd>
 
 Select `Buy` or `Sell`, enter a price and number of tokens. Click [Add Offer] and confirm in your web3 browser.
+
 <kbd><img src="images/Screenshot_AddOffers_3_20240918.png" width="600"/></kbd>
 
 Note that at this moment, you will have to manually approve spending of your `WEENUS` and `WETH` tokens to Token Agents belonging to you and other accounts
@@ -54,15 +64,19 @@ Note that at this moment, you will have to manually approve spending of your `WE
 Only the Sell Offers for ERC-20 tokens work at the moment.
 
 Go to the Trade Fungibles tab. Select the `WEENUS` token from the dropdown
+
 <kbd><img src="images/Screenshot_TradeFungibles_1_20240918.png" width="600"/></kbd>
 
 Sell offers should be displayed. Click on either rows on the left
+
 <kbd><img src="images/Screenshot_TradeFungibles_2_20240918.png" width="600"/></kbd>
 
 Here are the offers for a single Token Agent. You will have to manually approve tokens to the Token Agent for the `WEENUS` and `WETH` tokens
+
 <kbd><img src="images/Screenshot_TradeFungibles_3_20240918.png" width="600"/></kbd>
 
 The Events tab will display the list of offers, trades, and token transfers and approvals
+
 <kbd><img src="images/Screenshot_TradeFungibles_4_20240918.png" width="600"/></kbd>
 
 

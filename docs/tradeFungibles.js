@@ -468,6 +468,7 @@ buyOffers: {{ buyOffers }}
 
         <font v-if="settings.tabIndex == 1 || settings.tabIndex == 2 || settings.tabIndex == 3" size="-2">
           <pre>
+events: {{ events }}
 balances: {{ balances }}
 approvals: {{ approvals }}
 data: {{ data }}
@@ -521,7 +522,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 5,
+        version: 7,
       },
 
       tokenAgentFactoryEvents: [],
@@ -545,6 +546,7 @@ data: {{ data }}
         wethTransfers: [],
       },
 
+      events: {},
       balances: {},
       approvals: {},
 
@@ -1469,27 +1471,27 @@ data: {{ data }}
     computeState() {
       console.log(now() + " INFO TradeFungibles:methods.computeState");
 
-      const collator = {};
+      const events = {};
       const allEvents = [...this.data.tokenAgentEvents, ...this.data.tokenTransfers, ...this.data.tokenApprovals, ...this.data.wethTransfers, ...this.data.wethApprovals];
       // console.log("allEvents: " + JSON.stringify(allEvents, null, 2));
       for (const e of allEvents) {
         // console.log("e: " + JSON.stringify(e));
-        if (!(e.txHash in collator)) {
-          collator[e.txHash] = {
+        if (!(e.txHash in events)) {
+          events[e.txHash] = {
             blockNumber: e.blockNumber,
             txIndex: e.txIndex,
             tokenAgent: null,
             events: {},
           }
         }
-        collator[e.txHash].events[e.logIndex] = e;
+        events[e.txHash].events[e.logIndex] = e;
         if (e.eventType == "Traded") {
           // console.log("Traded: " + JSON.stringify(e));
-          collator[e.txHash].tokenAgent = e.contract;
+          events[e.txHash].tokenAgent = e.contract;
         }
       }
       const list = [];
-      for (const [txHash, d] of Object.entries(collator)) {
+      for (const [txHash, d] of Object.entries(events)) {
         list.push({ blockNumber: d.blockNumber, txIndex: d.txIndex, txHash, tokenAgent: d.tokenAgent, events: d.events });
       }
       list.sort((a, b) => {
@@ -1570,6 +1572,7 @@ data: {{ data }}
       }
       // console.log("balances: " + JSON.stringify(balances, null, 2));
       // console.log("approvals: " + JSON.stringify(approvals, null, 2));
+      Vue.set(this, 'events', events);
       Vue.set(this, 'balances', balances);
       Vue.set(this, 'approvals', approvals);
     },

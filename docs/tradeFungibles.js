@@ -1066,11 +1066,11 @@ data: {{ data }}
         });
 
         // console.log(now() + " INFO Addresses:methods.sellOffer prices: " + JSON.stringify(prices));
-        console.log(now() + " INFO Addresses:methods.sellOffer maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) + ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null));
+        // console.log(now() + " INFO Addresses:methods.sellOffer maxTokens: " + (maxTokens && ethers.utils.formatEther(maxTokens) || null) + ", maxWeth: " + (maxWeth && ethers.utils.formatEther(maxWeth) || null));
         let tokensRemaining = makerTokenBalance.lte(tokenAgentTokenApproval) ? makerTokenBalance: tokenAgentTokenApproval;
-        console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
-        console.log("offIx pIx           price           offer                  tokens             total tokens                  weth               total weth" + padLeft(maxWeth != null ? "requestd weth remaining" : "requestd tokens remaining", 26));
-        console.log("----- --- --------------- --------------- ----------------------- ----------------------- ----------------------- ----------------------- -------------------------");
+        // console.log(now() + " INFO Addresses:methods.sellOffer tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
+        console.log("offIx pIx           price                   offer                  tokens             total tokens                  weth               total weth" + padLeft(maxWeth != null ? "requestd weth remaining" : "requestd tokens remaining", 26));
+        console.log("----- --- --------------- ----------------------- ----------------------- ----------------------- ----------------------- ----------------------- -------------------------");
         for (const [i, e] of prices.entries()) {
           const offer = ethers.BigNumber.from(e.offer);
           let tokens = offer.lte(tokensRemaining) ? offer : tokensRemaining;
@@ -1082,10 +1082,10 @@ data: {{ data }}
           }
           let wethAmount = tokens.mul(ethers.BigNumber.from(e.price)).div(TENPOW18);
           if (maxWeth != null) {
-            console.log("tokens: " + ethers.utils.formatEther(tokens) + ", e.price: " + ethers.utils.formatEther(e.price) + ", wethAmount: " + ethers.utils.formatEther(wethAmount));
+            // console.log("tokens: " + ethers.utils.formatEther(tokens) + ", e.price: " + ethers.utils.formatEther(e.price) + ", wethAmount: " + ethers.utils.formatEther(wethAmount));
             // tokensRemaining = maxWeth * 10**18 / e.price
             const maxTokensFromWeth = maxWeth.mul(TENPOW18).div(e.price);
-            console.log("maxWeth: " + ethers.utils.formatEther(maxWeth) + ", maxTokensFromWeth: " + ethers.utils.formatEther(maxTokensFromWeth));
+            // console.log("maxWeth: " + ethers.utils.formatEther(maxWeth) + ", maxTokensFromWeth: " + ethers.utils.formatEther(maxTokensFromWeth));
             if (tokens.gt(maxTokensFromWeth)) {
               wethAmount = maxWeth;
               // wethAmount = maxTokensFromWeth * e.price / 10**18
@@ -1093,7 +1093,7 @@ data: {{ data }}
               // console.log("wethAmount: " + ethers.utils.formatEther(wethAmount));
               // if (wethAmount.gt(0)) {
                 tokens = maxTokensFromWeth;
-                console.log("tokens A: " + ethers.utils.formatEther(tokens));
+                // console.log("tokens A: " + ethers.utils.formatEther(tokens));
               // } else {
               //   tokens = ethers.BigNumber.from(0);
               //   wethAmount = ethers.BigNumber.from(0);
@@ -1123,7 +1123,7 @@ data: {{ data }}
             padLeft(e.offerIndex, 5) +
             padLeft(e.priceIndex, 4) +
             padLeft(ethers.utils.formatEther(e.price), 16) +
-            padLeft(ethers.utils.formatEther(offer), 16) +
+            padLeft(ethers.utils.formatEther(offer), 24) +
             padLeft(ethers.utils.formatEther(tokens), 24) +
             padLeft(ethers.utils.formatEther(totalTokens), 24) +
             padLeft(ethers.utils.formatEther(wethAmount), 24) +
@@ -1478,16 +1478,22 @@ data: {{ data }}
         // console.log("e: " + JSON.stringify(e));
         if (!(e.txHash in events)) {
           events[e.txHash] = {
+            chainId: e.chainId,
             blockNumber: e.blockNumber,
             txIndex: e.txIndex,
             tokenAgent: null,
+            timestamp: e.timestamp || null,
             events: {},
           }
         }
-        events[e.txHash].events[e.logIndex] = e;
+        events[e.txHash].events[e.logIndex] = { ...e, chainId: undefined, txHash: undefined, blockNumber: undefined, txIndex: undefined, timestamp: undefined, confirmations: undefined };
         if (e.eventType == "Traded") {
           // console.log("Traded: " + JSON.stringify(e));
           events[e.txHash].tokenAgent = e.contract;
+        }
+        if (events[e.txHash].timestamp == null && e.eventType != "Transfer") {
+          // console.log("Traded: " + JSON.stringify(e));
+          events[e.txHash].timestamp = e.timestamp || null;
         }
       }
       const list = [];

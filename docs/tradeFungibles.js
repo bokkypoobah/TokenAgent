@@ -189,7 +189,7 @@ const TradeFungibles = {
                             <b-form-input size="sm" v-model.trim="data.item.tokens" style="direction: rtl;"></b-form-input>
                           </template>
                           <template #cell(wethAmount)="data">
-                            <b-form-input size="sm" plaintext :value="data.item.price * data.item.tokens" style="direction: rtl;"></b-form-input>
+                            <b-form-input size="sm" plaintext :value="parseFloat(data.item.price * data.item.tokens).toFixed(9)" style="direction: rtl;"></b-form-input>
                           </template>
                           <template #bottom-row="data">
                             <b-td>
@@ -1051,8 +1051,8 @@ data: {{ data }}
           includeInvalidated: false,
           ignoreMyApprovals: false,
           points: [
-            { price: "0.008", tokens: "12.34", wethAmount: "0.09872" },
-            { price: "0.012", tokens: "23.45", wethAmount: "0.2814" },
+            { price: "0.008", tokens: "12.34" },
+            { price: "0.012", tokens: "23.45" },
           ],
           currentPage: 1,
           pageSize: 10,

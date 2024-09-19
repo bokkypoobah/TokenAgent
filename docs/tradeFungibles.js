@@ -125,6 +125,9 @@ const TradeFungibles = {
                   </span>
                 </template>
                 <template #cell(maker)="data">
+                  <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="'Maker ' + data.item.owner" target="_blank">
+                    {{ data.item.owner.substring(0, 12) }}
+                  </b-link>
                   <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent + ', nonce: ' + data.item.currentNonce" target="_blank">
                     <b-badge variant="link" class="m-0 p-0 mt-1">
                       {{ data.item.indexByOwner }}
@@ -146,9 +149,6 @@ const TradeFungibles = {
                   <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex" class="m-0 p-0 mt-1">
                     {{ data.item.priceIndex }}
                   </b-badge>
-                  <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="'Maker ' + data.item.owner" target="_blank">
-                    {{ data.item.owner.substring(0, 12) }}
-                  </b-link>
                 </template>
                 <template #cell(expiry)="data1">
                   <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
@@ -1188,22 +1188,13 @@ data: {{ data }}
         { value: 'Other', text: 'Others' },
       ],
       addSellOfferFields: [
-        // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
-        // { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalWeth', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
-        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
-        // { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
-        // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
-        // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
-        // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
-        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
       ],
       addSellOfferPointsFields: [
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
@@ -1947,7 +1938,27 @@ data: {{ data }}
           }
         }
       }
-      // console.log("prices: " + JSON.stringify(prices, null, 2));
+      // console.log("this.coinbase: " + this.coinbase);
+      if (simulate) {
+        for (const [i, point] of points.entries()) {
+          console.log(i + " => " + JSON.stringify(point));
+          prices.push({
+            // txHash: o.txHash, logIndex: o.logIndex,
+            // tokenAgent,
+            owner: this.coinbase,
+            // indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner,
+            // offerIndex: o.index, nonce: o.nonce, currentNonce: d.nonce,
+            // valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp),
+            valid: true,
+            simulated: true,
+            priceIndex: i,
+            price: ethers.utils.parseEther(point.price).toString(),
+            tokens: ethers.utils.parseUnits(point.tokens, this.settings.decimals).toString(),
+            // expiry: o.expiry, tokensAvailable: null,
+          });
+        }
+      }
+      console.log("prices: " + JSON.stringify(prices, null, 2));
       prices.sort((a, b) => {
         if (a.valid && !b.valid) {
           return -1;
@@ -1994,10 +2005,11 @@ data: {{ data }}
       let totalWeth = ethers.BigNumber.from(0);
       for (const [i, price] of prices.entries()) {
         const ignoreApproval = price.owner == this.coinbase && this.settings.addSellOffer.ignoreMyApprovals;
-        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
-        const tokenApproval = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
+        const tokenBalance = ethers.BigNumber.from(!price.simulated && tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
+        const tokenApproval = ethers.BigNumber.from(!price.simulated && tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
         let tokens = ethers.BigNumber.from(price.tokens);
         let wethAmount = null;
+        console.log("  price: " + JSON.stringify(price));
         if (price.valid) {
           console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0) + ", ignoreApproval: " + ignoreApproval);
           if (tokens.gt(tokenBalance)) {

@@ -61,8 +61,8 @@ const TradeFungibles = {
                 </b-form-checkbox>
               </div>
               <div class="mt-1 pr-1">
-                <b-form-checkbox size="sm" v-model="settings.addSellOffer.applyMyApprovals" @input="saveSettings" v-b-popover.hover.ds500="'Apply approvals for my offers?'">
-                  Apply My Approvals
+                <b-form-checkbox size="sm" v-model="settings.addSellOffer.ignoreMyApprovals" @input="saveSettings" v-b-popover.hover.ds500="'Ignore approvals calculations for my offers? As approvals can be easily updated'">
+                  Ignore My Approvals
                 </b-form-checkbox>
               </div>
               <div class="mt-0 flex-grow-1">
@@ -973,7 +973,7 @@ data: {{ data }}
           mineOnly: true,
           includeExpired: false,
           includeInvalidated: false,
-          applyMyApprovals: true,
+          ignoreMyApprovals: false,
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
@@ -998,7 +998,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 13,
+        version: 14,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1863,20 +1863,37 @@ data: {{ data }}
           }
         }
       }
-      // TODO: Testing
-      tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"] = "1000000000000000000";
+      // // TODO: Testing
+      // tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"] = "16660000000000000000";
+      // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenApprovals) {
+      //   tokenApprovals["0x000001f568875F378Bf6d170B790967FE429C81A"]["0x9cb5B0C7839B2b770335f592966fFDA2BbFB7E8D"] = "13330000000000000000";
+      // }
       // console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
       // console.log("tokenApprovals: " + JSON.stringify(tokenApprovals, null, 2));
       for (const [i, price] of prices.entries()) {
-        console.log(i + " => " + JSON.stringify(price));
-        const tokenBalance = tokenBalances[price.owner];
-        console.log("  tokenBalance: " + ethers.utils.formatEther(tokenBalance));
-        const tokenApproval = tokenApprovals[price.owner][price.tokenAgent];
-        console.log("  tokenApproval: " + ethers.utils.formatEther(tokenApproval));
-        const tokens = 123;
-        records.push({ ...price, offer: price.tokens, tokens });
+        const ignoreApproval = price.owner == this.coinbase && this.settings.addSellOffer.ignoreMyApprovals;
+        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] || 0);
+        const tokenApproval = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent] || 0);
+        let tokens = ethers.BigNumber.from(price.tokens);
+        if (price.valid) {
+          console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner]) + ", ignoreApproval: " + ignoreApproval);
+          if (tokens.gt(tokenBalance)) {
+            tokens = tokenBalance;
+          }
+          if (!ignoreApproval && tokens.gt(tokenApproval)) {
+            tokens = tokenApproval;
+          }
+          if (tokens.gt(0)) {
+            tokenBalances[price.owner] = ethers.BigNumber.from(tokenBalances[price.owner]).sub(tokens).toString();
+            if (!ignoreApproval) {
+              tokenApprovals[price.owner][price.tokenAgent] = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent]).sub(tokens).toString();
+            }
+          }
+          console.log("  tokens AFTER: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner]));
+        }
+        records.push({ ...price, offer: price.tokens, tokens: tokens.toString() });
       }
-      console.log("records: " + JSON.stringify(records, null, 2));
+      // console.log("records: " + JSON.stringify(records, null, 2));
       // console.log("collator: " + JSON.stringify(collator, null, 2));
       return { tokenBalances, tokenApprovals, records, collator };
     },

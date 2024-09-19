@@ -1749,7 +1749,7 @@ data: {{ data }}
 
     addSellOffer() {
       // TODO: Show expired and invalidated orders
-      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
+      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
           if (!(d.owner in collator)) {
@@ -1758,45 +1758,63 @@ data: {{ data }}
               tokenAgents: {},
             };
           }
-          collator[d.owner][tokenAgent] = {
+          collator[d.owner].tokenAgents[tokenAgent] = {
             tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
             offers: {},
             prices: [],
           };
           const prices = [];
           for (const [offerIndex, o] of Object.entries(d.offers)) {
-            if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
-              collator[d.owner][tokenAgent].offers[offerIndex] = o;
-              if (o.prices.length == 1 && o.tokenss.length == 0) {
-                prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
-              } else if (o.prices.length == o.tokenss.length) {
+            let include = o.buySell = 1;
+            // if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+            if (include && (!this.settings.addSellOffer.includeInvalidated && d.nonce != o.nonce)) {
+              include = false;
+            }
+            if (include && (!this.settings.addSellOffer.includeExpired && o.expiry != 0 && o.expiry < this.data.timestamp)) {
+              include = false;
+            }
+
+            if (include) {
+              collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
+              if (o.prices.length == o.tokenss.length) {
                 for (let i = 0; i < o.prices.length; i++) {
-                  prices.push({ offerIndex: o.index, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], tokensAvailable: null });
+                  prices.push({ offerIndex: o.index, nonce: o.nonce, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
                 }
               }
             }
           }
-          prices.sort((a, b) => {
-            const aP = ethers.BigNumber.from(a.price);
-            // TODO: handle null tokens
-            const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
-            const bP = ethers.BigNumber.from(b.price);
-            const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
-            if (aP.eq(bP)) {
-              if (aT == null) {
-                return 1;
-              } else if (bT == null) {
-                return -1;
-              } else {
-                return aT.lt(bT) ? 1 : -1;
-              }
-            } else {
-              return aP.lt(bP) ? -1 : 1;
-            }
-          });
-          collator[d.owner][tokenAgent].prices = prices;
+          // prices.sort((a, b) => {
+          //   const aP = ethers.BigNumber.from(a.price);
+          //   // TODO: handle null tokens
+          //   const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
+          //   const bP = ethers.BigNumber.from(b.price);
+          //   const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
+          //   if (aP.eq(bP)) {
+          //     if (aT == null) {
+          //       return 1;
+          //     } else if (bT == null) {
+          //       return -1;
+          //     } else {
+          //       return aT.lt(bT) ? 1 : -1;
+          //     }
+          //   } else {
+          //     return aP.lt(bP) ? -1 : 1;
+          //   }
+          // });
+          collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
       const records = [];
+      for (const [owner, d1] of Object.entries(collator)) {
+        // console.log(owner + " => " + JSON.stringify(d1));
+        console.log(owner + " => tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
+        for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
+          console.log(owner + "/" + tokenAgent + " => tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          // console.log(owner + "/" + tokenAgent + " => " + JSON.stringify(d2));
+          for (const [i1, e1] of d2.prices.entries()) {
+            console.log("  " + i1 + " " + JSON.stringify(e1));
+          }
+        }
+      }
       records.push({ tokenAgent: "abc", orderIndex: 12, priceIndex: 2, price: 0.009, offer: 10, tokens: 10, totalTokens: 10, wethAmount: 0.09, totalWeth: 0.09, expiry: 'Blah' });
       records.push({ tokenAgent: "bce", orderIndex: 23, priceIndex: 3, price: 0.01, offer: 10, tokens: 10, totalTokens: 20, wethAmount: 0.1, totalWeth: 0.19, expiry: 'Blah' });
       return { records, collator };

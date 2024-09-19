@@ -177,7 +177,37 @@ const TradeFungibles = {
               <b-col class="m-0 p-0">
                 <b-card sub-title="Simulate Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    Two
+                    <!-- {{ settings.addSellOffer.points }} -->
+                    <!-- <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;"> -->
+                    <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <font size="-1">
+                        <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="200px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
+                          <template #cell(price)="data">
+                            <b-form-input size="sm" v-model.trim="data.item.price" style="direction: rtl;" ></b-form-input>
+                          </template>
+                          <template #cell(tokens)="data">
+                            <b-form-input size="sm" v-model.trim="data.item.tokens" style="direction: rtl;"></b-form-input>
+                          </template>
+                          <template #cell(wethAmount)="data">
+                            <b-form-input size="sm" plaintext :value="data.item.price * data.item.tokens" style="direction: rtl;"></b-form-input>
+                          </template>
+                          <template #bottom-row="data">
+                            <b-td>
+                            </b-td>
+                            <b-td>
+                            </b-td>
+                            <b-td class="text-right">
+                              <b-button size="sm" @click="settings.addSellOffer.points.push({ price: null, tokens: null })" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                            </b-td>
+                          </template>
+                        </b-table>
+                      </font>
+                    </b-form-group>
+                    <font size="-2">
+                      <pre>
+{{ settings.addSellOffer.points }}
+                      </pre>
+                    </font>
                   </b-card-text>
                 </b-card>
               </b-col>
@@ -1020,6 +1050,10 @@ data: {{ data }}
           includeExpired: false,
           includeInvalidated: false,
           ignoreMyApprovals: false,
+          points: [
+            { price: "0.008", tokens: "12.34", wethAmount: "0.09872" },
+            { price: "0.012", tokens: "23.45", wethAmount: "0.2814" },
+          ],
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
@@ -1044,7 +1078,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 14,
+        version: 15,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1165,6 +1199,13 @@ data: {{ data }}
         // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+      ],
+      addSellOfferPointsFields: [
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
+        <!-- { key: 'totalTokens', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
+        { key: 'wethAmount', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+        <!-- { key: 'totalWeth', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },

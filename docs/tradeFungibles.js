@@ -181,10 +181,10 @@ const TradeFungibles = {
                       <font size="-1">
                         <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
                           <template #cell(price)="data">
-                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" style="float: right;" ></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" debounce="600" style="float: right;" ></b-form-input>
                           </template>
                           <template #cell(tokens)="data">
-                            <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" style="float: right;"></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" debounce="600" style="float: right;"></b-form-input>
                           </template>
                           <template #cell(wethAmount)="data">
                             <b-form-input size="sm" readonly :value="formatNumber(bigNumberMultiply(data.item.price, data.item.tokens))" style="float: right;"></b-form-input>

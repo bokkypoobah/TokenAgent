@@ -43,19 +43,19 @@ const TradeFungibles = {
               </div>
             </div>
           </div>
-          <div class="m-0 p-0">
-            <div class="d-flex flex-wrap m-0 mt-1 p-0 px-1">
-              <div class="mt-0 pr-1">
+          <div class="m-0 p-0 px-1">
+            <div class="d-flex flex-wrap m-0 mt-1 p-0">
+              <div class="mt-1 pl-1 pr-1">
                 <b-form-checkbox size="sm" v-model="settings.addSellOffer.mineOnly" @input="saveSettings" v-b-popover.hover.ds500="'Show offers only from my Token Agents'">
                   Mine Only
                 </b-form-checkbox>
               </div>
-              <div class="mt-0 pr-1">
+              <div class="mt-1 pr-1">
                 <b-form-checkbox size="sm" v-model="settings.addSellOffer.includeExpired" @input="saveSettings" v-b-popover.hover.ds500="'Show expired offers?'">
                   Expired
                 </b-form-checkbox>
               </div>
-              <div class="mt-0 pr-1">
+              <div class="mt-1 pr-1">
                 <b-form-checkbox size="sm" v-model="settings.addSellOffer.includeInvalidated" @input="saveSettings" v-b-popover.hover.ds500="'Show invalidated offers?'">
                   Invalidated
                 </b-form-checkbox>
@@ -80,6 +80,11 @@ const TradeFungibles = {
                 <b-form-select size="sm" v-model="settings.addSellOffer.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
               </div>
             </div>
+            <font size="-1">
+              <!-- <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1"> -->
+              <b-table ref="addSellOfferTable" small fixed striped responsive hover :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
+              </b-table>
+            </font>
             <b-row class="m-0 mt-0 p-0">
               <b-col class="m-0 p-0">
                 <b-card sub-title="One" class="m-1 p-1 border-1" body-class="m-1 p-1">

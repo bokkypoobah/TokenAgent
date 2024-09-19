@@ -175,39 +175,44 @@ const TradeFungibles = {
                 </b-card>
               </b-col>
               <b-col class="m-0 p-0">
-                <b-card sub-title="Simulate Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <!-- {{ settings.addSellOffer.points }} -->
                     <!-- <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;"> -->
-                    <b-form-group label="" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <b-form-group label="Points:" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
                       <font size="-1">
-                        <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="200px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
+                        <!-- <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="200px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;"> -->
+                        <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
                           <template #cell(price)="data">
-                            <b-form-input size="sm" v-model.trim="data.item.price" style="direction: rtl;" ></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" style="float: right;" ></b-form-input>
                           </template>
                           <template #cell(tokens)="data">
-                            <b-form-input size="sm" v-model.trim="data.item.tokens" style="direction: rtl;"></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" style="float: right;"></b-form-input>
                           </template>
                           <template #cell(wethAmount)="data">
-                            <b-form-input size="sm" plaintext :value="parseFloat(data.item.price * data.item.tokens).toFixed(9)" style="direction: rtl;"></b-form-input>
+                            <b-form-input size="sm" readonly :value="formatNumber(bigNumberMultiply(data.item.price, data.item.tokens))" style="float: right;"></b-form-input>
+                          </template>
+                          <template #cell(option)="data">
+                            <b-button size="sm" @click="settings.addSellOffer.points.splice(data.index, 1); saveSettings();" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-dash shift-v="+1" font-scale="1.2"></b-icon-dash></b-button>
                           </template>
                           <template #bottom-row="data">
                             <b-td>
                             </b-td>
                             <b-td>
                             </b-td>
-                            <b-td class="text-right">
-                              <b-button size="sm" @click="settings.addSellOffer.points.push({ price: null, tokens: null })" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
+                            <b-td>
+                            </b-td>
+                            <b-td>
+                              <b-button size="sm" @click="settings.addSellOffer.points.push({ price: null, tokens: null }); saveSettings();" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                             </b-td>
                           </template>
                         </b-table>
                       </font>
                     </b-form-group>
-                    <font size="-2">
+                    <!-- <font size="-2">
                       <pre>
 {{ settings.addSellOffer.points }}
                       </pre>
-                    </font>
+                    </font> -->
                   </b-card-text>
                 </b-card>
               </b-col>
@@ -1051,8 +1056,8 @@ data: {{ data }}
           includeInvalidated: false,
           ignoreMyApprovals: false,
           points: [
-            { price: "0.008", tokens: "12.34" },
-            { price: "0.012", tokens: "23.45" },
+            // { price: "0.008", tokens: "12.34" },
+            // { price: "0.012", tokens: "23.45" },
           ],
           currentPage: 1,
           pageSize: 10,
@@ -1201,11 +1206,12 @@ data: {{ data }}
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
       ],
       addSellOfferPointsFields: [
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
         <!-- { key: 'totalTokens', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
-        { key: 'wethAmount', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
         <!-- { key: 'totalWeth', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
+        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right m-0 p-0' },
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -1342,6 +1348,27 @@ data: {{ data }}
         }
       }
       return results;
+    },
+
+    pointsFeedback() {
+      console.log(now() + " INFO TradeFungibles:computed.pointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
+
+      for (const [i, point] of this.settings.addSellOffer.points.entries()) {
+        console.log(i + " => " + JSON.stringify(point));
+        if (point.price == null || point.price == "") {
+          return "Invalid price";
+        }
+        if (point.tokens == null || point.tokens == "") {
+          return "Invalid tokens";
+        }
+        if (i > 0) {
+          // console.log(i + " => " + JSON.stringify(point) + " vs prev: " + JSON.stringify(this.settings.addSellOffer.points[i - 1]));
+          if (parseFloat(point.price) <= parseFloat(this.settings.addSellOffer.points[i - 1].price)) {
+            return "Prices must be in descending order with no duplicates";
+          }
+        }
+      }
+      return  null;
     },
 
     tradeFeedback() {
@@ -2724,6 +2751,18 @@ data: {{ data }}
     },
     formatDecimals(e, decimals = 18) {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
+    },
+    formatNumber(n) {
+      return n == null ? "" : n.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+    },
+    bigNumberMultiply(price, tokens) {
+      try {
+        const bPrice = ethers.utils.parseEther(price);
+        const bTokens = ethers.utils.parseUnits(tokens, this.settings.decimals);
+        return ethers.utils.formatUnits(bPrice.mul(bTokens).div(ethers.BigNumber.from("1000000000000000000")), this.settings.decimals).toString();
+      } catch (e) {
+      }
+      return 0;
     },
     validNumber(n, d) {
       if (n && d != null) {

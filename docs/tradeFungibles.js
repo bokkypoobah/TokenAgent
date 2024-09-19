@@ -67,15 +67,15 @@ const TradeFungibles = {
               </div>
               <div class="mt-0 flex-grow-1">
               </div>
-              <div class="mt-0 pr-1">
+              <div class="mt-0 pl-1">
                 <b-form-select size="sm" v-model="settings.addSellOffer.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
               </div>
-              <div class="mt-0 pr-1">
-                <!-- <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedSellOffers.length + '/' + sellOffers.length }}</font> -->
+              <div class="mt-0 pl-1">
+                <font size="-2" v-b-popover.hover.ds500="'# filtered entries'">{{ addSellOffer.records.length }}</font>
               </div>
-              <div class="mt-0 pr-1">
-                <!-- <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedSellOffers.length" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination> -->
-              </div>
+              <!-- <div class="mt-0 pl-1">
+                <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedSellOffers.length" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination>
+              </div> -->
               <div class="mt-0 pl-1">
                 <b-form-select size="sm" v-model="settings.addSellOffer.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
               </div>
@@ -1797,8 +1797,8 @@ data: {{ data }}
           collator[d.owner][tokenAgent].prices = prices;
       }
       const records = [];
-      records.push({ price: 0.009, offer: 10, tokens: 10, totalTokens: 10, wethAmount: 0.09, totalWeth: 0.09, expiry: 'Blah' });
-      records.push({ price: 0.01, offer: 10, tokens: 10, totalTokens: 20, wethAmount: 0.1, totalWeth: 0.19, expiry: 'Blah' });
+      records.push({ tokenAgent: "abc", orderIndex: 12, priceIndex: 2, price: 0.009, offer: 10, tokens: 10, totalTokens: 10, wethAmount: 0.09, totalWeth: 0.09, expiry: 'Blah' });
+      records.push({ tokenAgent: "bce", orderIndex: 23, priceIndex: 3, price: 0.01, offer: 10, tokens: 10, totalTokens: 20, wethAmount: 0.1, totalWeth: 0.19, expiry: 'Blah' });
       return { records, collator };
     },
 

@@ -1785,25 +1785,12 @@ data: {{ data }}
       // TODO: Show expired and invalidated orders
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const collator = {};
+      const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         // console.log(tokenAgent + " => " + JSON.stringify(d));
         if (!this.settings.addSellOffer.mineOnly || d.owner == this.coinbase) {
-          if (!(d.owner in collator)) {
-            collator[d.owner] = {
-              tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
-              tokenAgents: {},
-            };
-          }
-          collator[d.owner].tokenAgents[tokenAgent] = {
-            tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
-            nonce: d.nonce,
-            offers: {},
-            prices: [],
-          };
-          const prices = [];
           for (const [offerIndex, o] of Object.entries(d.offers)) {
-            let include = o.buySell = 1;
-            // if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
+            let include = o.buySell == 1;
             if (include && (!this.settings.addSellOffer.includeInvalidated && d.nonce != o.nonce)) {
               include = false;
             }
@@ -1811,34 +1798,50 @@ data: {{ data }}
               include = false;
             }
             if (include) {
+              if (!(d.owner in collator)) {
+                collator[d.owner] = {
+                  tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
+                  tokenAgents: {},
+                };
+              }
+              if (!(tokenAgent in collator[d.owner])) {
+                collator[d.owner].tokenAgents[tokenAgent] = {
+                  tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
+                  indexByOwner: d.indexByOwner,
+                  nonce: d.nonce,
+                  offers: {},
+                  prices: [],
+                };
+              }
               collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == o.tokenss.length) {
                 for (let i = 0; i < o.prices.length; i++) {
-                  prices.push({ offerIndex: o.index, nonce: o.nonce, valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp), priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
+                  prices.push({ txHash: o.txHash, logIndex: o.logIndex, tokenAgent, owner: d.owner, indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner, offerIndex: o.index, nonce: o.nonce, currentNonce: d.nonce, valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp), priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
                 }
               }
             }
           }
-          prices.sort((a, b) => {
-            const priceA = ethers.BigNumber.from(a.price);
-            const tokensA = ethers.BigNumber.from(a.tokens);
-            const priceB = ethers.BigNumber.from(b.price);
-            const tokensB = ethers.BigNumber.from(b.tokens);
-            if (a.valid && !b.valid) {
-              return -1;
-            } else if (!a.valid && b.valid) {
-              return 1;
-            }
-            if (priceA.lt(priceB)) {
-              return -1;
-            } else if (priceA.gt(priceB)) {
-              return 1;
-            }
-            return tokensA.lt(tokensB) ? 1 : -1;
-          });
-          collator[d.owner].tokenAgents[tokenAgent].prices = prices;
         }
       }
+      // console.log("prices: " + JSON.stringify(prices, null, 2));
+      prices.sort((a, b) => {
+        if (a.valid && !b.valid) {
+          return -1;
+        } else if (!a.valid && b.valid) {
+          return 1;
+        }
+        const priceA = ethers.BigNumber.from(a.price);
+        const tokensA = ethers.BigNumber.from(a.tokens);
+        const priceB = ethers.BigNumber.from(b.price);
+        const tokensB = ethers.BigNumber.from(b.tokens);
+        if (priceA.lt(priceB)) {
+          return -1;
+        } else if (priceA.gt(priceB)) {
+          return 1;
+        }
+        return tokensA.lt(tokensB) ? 1 : -1;
+      });
+      // collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       const records = [];
       const tokenBalances = {};
       const tokenApprovals = {};
@@ -1846,15 +1849,20 @@ data: {{ data }}
         tokenBalances[owner] = d1.tokenBalance;
         tokenApprovals[owner] = {};
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
-          console.log(tokenAgent + " => " + JSON.stringify(d2));
+          // console.log(tokenAgent + " => " + JSON.stringify(d2));
           tokenApprovals[owner][tokenAgent] = d2.tokenApproval;
           for (const [i1, e1] of d2.prices.entries()) {
             const o = d2.offers[e1.offerIndex];
-            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, currentNonce: d2.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
+            // records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, currentNonce: d2.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }
+      for (const [i, price] of prices.entries()) {
+        console.log(i + " => " + JSON.stringify(price));
+        records.push({ ...price, offer: price.tokens });
+      }
       console.log("records: " + JSON.stringify(records, null, 2));
+      // console.log("collator: " + JSON.stringify(collator, null, 2));
       return { tokenBalances, tokenApprovals, records, collator };
     },
 

@@ -1820,27 +1820,21 @@ data: {{ data }}
             }
           }
           prices.sort((a, b) => {
-            const aP = ethers.BigNumber.from(a.price);
-            const aT = ethers.BigNumber.from(a.tokens);
-            const bP = ethers.BigNumber.from(b.price);
-            const bT = ethers.BigNumber.from(b.tokens);
+            const priceA = ethers.BigNumber.from(a.price);
+            const tokensA = ethers.BigNumber.from(a.tokens);
+            const priceB = ethers.BigNumber.from(b.price);
+            const tokensB = ethers.BigNumber.from(b.tokens);
             if (a.valid && !b.valid) {
               return -1;
             } else if (!a.valid && b.valid) {
               return 1;
-            } else {
-              if (aP.eq(bP)) {
-                if (aT == null) {
-                  return 1;
-                } else if (bT == null) {
-                  return -1;
-                } else {
-                  return aT.lt(bT) ? 1 : -1;
-                }
-              } else {
-                return aP.lt(bP) ? -1 : 1;
-              }
             }
+            if (priceA.lt(priceB)) {
+              return -1;
+            } else if (priceA.gt(priceB)) {
+              return 1;
+            }
+            return tokensA.lt(tokensB) ? 1 : -1;
           });
           collator[d.owner].tokenAgents[tokenAgent].prices = prices;
         }

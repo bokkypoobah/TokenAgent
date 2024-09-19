@@ -86,39 +86,35 @@ const TradeFungibles = {
               </div>
             </div>
             <font size="-1">
-              <!-- <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1"> -->
               <b-table ref="addSellOfferTable" small fixed striped responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
                 <template #cell(price)="data">
-                  <font size="-1">
-                    {{ formatDecimals(data.item.price, 18) }}
-                  </font>
+                  {{ formatDecimals(data.item.price, 18) }}
                 </template>
                 <template #cell(offer)="data">
-                  <font size="-1">
+                  <span v-if="data.item.nonce == data.item.currentNonce">
                     {{ formatDecimals(data.item.offer, settings.decimals) }}
-                  </font>
+                  </span>
+                  <span v-else v-b-popover.hover.ds500="'Invalid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
+                    <strike>{{ formatDecimals(data.item.offer, settings.decimals) }}</strike>
+                  </span>
                 </template>
                 <template #head(tokens)="data">
                   {{ settings.symbol }}
                 </template>
                 <template #cell(tokens)="data">
-                  <font size="-1">
-                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
-                  </font>
+                  {{ formatDecimals(data.item.tokens, settings.decimals) }}
                 </template>
                 <template #cell(expiry)="data1">
-                  <font size="-1">
-                    <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
-                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
-                        {{ formatTimestamp(data1.item.expiry) }}
-                      </b-link>
-                    </span>
-                    <span v-else>
-                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'Expired. View log'" target="_blank">
-                        <strike>{{ formatTimestamp(data1.item.expiry) }}</strike>
-                      </b-link>
-                    </span>
-                  </font>
+                  <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
+                    <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
+                      {{ formatTimestamp(data1.item.expiry) }}
+                    </b-link>
+                  </span>
+                  <span v-else>
+                    <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'Expired. View log'" target="_blank">
+                      <strike>{{ formatTimestamp(data1.item.expiry) }}</strike>
+                    </b-link>
+                  </span>
                 </template>
               </b-table>
             </font>
@@ -1790,6 +1786,7 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
+        // console.log(tokenAgent + " => " + JSON.stringify(d));
         if (!this.settings.addSellOffer.mineOnly || d.owner == this.coinbase) {
           if (!(d.owner in collator)) {
             collator[d.owner] = {
@@ -1799,6 +1796,7 @@ data: {{ data }}
           }
           collator[d.owner].tokenAgents[tokenAgent] = {
             tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
+            nonce: d.nonce,
             offers: {},
             prices: [],
           };
@@ -1816,7 +1814,7 @@ data: {{ data }}
               collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == o.tokenss.length) {
                 for (let i = 0; i < o.prices.length; i++) {
-                  prices.push({ offerIndex: o.index, nonce: o.nonce, valid: d.nonce == o.nonce, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
+                  prices.push({ offerIndex: o.index, nonce: o.nonce, valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp), priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
                 }
               }
             }
@@ -1826,16 +1824,22 @@ data: {{ data }}
             const aT = ethers.BigNumber.from(a.tokens);
             const bP = ethers.BigNumber.from(b.price);
             const bT = ethers.BigNumber.from(b.tokens);
-            if (aP.eq(bP)) {
-              if (aT == null) {
-                return 1;
-              } else if (bT == null) {
-                return -1;
-              } else {
-                return aT.lt(bT) ? 1 : -1;
-              }
+            if (a.valid && !b.valid) {
+              return -1;
+            } else if (!a.valid && b.valid) {
+              return 1;
             } else {
-              return aP.lt(bP) ? -1 : 1;
+              if (aP.eq(bP)) {
+                if (aT == null) {
+                  return 1;
+                } else if (bT == null) {
+                  return -1;
+                } else {
+                  return aT.lt(bT) ? 1 : -1;
+                }
+              } else {
+                return aP.lt(bP) ? -1 : 1;
+              }
             }
           });
           collator[d.owner].tokenAgents[tokenAgent].prices = prices;
@@ -1845,19 +1849,14 @@ data: {{ data }}
       const tokenBalances = {};
       const tokenApprovals = {};
       for (const [owner, d1] of Object.entries(collator)) {
-        // console.log(owner + " => " + JSON.stringify(d1));
-        // console.log(owner + " => tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
         tokenBalances[owner] = d1.tokenBalance;
         tokenApprovals[owner] = {};
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
-          // console.log(owner + "/" + tokenAgent + " => tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          console.log(tokenAgent + " => " + JSON.stringify(d2));
           tokenApprovals[owner][tokenAgent] = d2.tokenApproval;
-          // console.log(owner + "/" + tokenAgent + " => " + JSON.stringify(d2));
           for (const [i1, e1] of d2.prices.entries()) {
-            // console.log("  " + i1 + " " + JSON.stringify(e1));
             const o = d2.offers[e1.offerIndex];
-            // console.log("  o: " + JSON.stringify(o));
-            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
+            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, currentNonce: d2.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }

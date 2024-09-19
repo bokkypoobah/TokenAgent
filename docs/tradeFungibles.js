@@ -1816,7 +1816,13 @@ data: {{ data }}
               collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == o.tokenss.length) {
                 for (let i = 0; i < o.prices.length; i++) {
-                  prices.push({ txHash: o.txHash, logIndex: o.logIndex, tokenAgent, owner: d.owner, indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner, offerIndex: o.index, nonce: o.nonce, currentNonce: d.nonce, valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp), priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
+                  prices.push({
+                    txHash: o.txHash, logIndex: o.logIndex,
+                    tokenAgent, owner: d.owner, indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner,
+                    offerIndex: o.index, nonce: o.nonce, currentNonce: d.nonce, valid: d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp),
+                    priceIndex: i, price: o.prices[i], tokens: o.tokenss[i],
+                    expiry: o.expiry, tokensAvailable: null,
+                  });
                 }
               }
             }
@@ -1857,9 +1863,18 @@ data: {{ data }}
           }
         }
       }
+      // TODO: Testing
+      tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"] = "1000000000000000000";
+      // console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
+      // console.log("tokenApprovals: " + JSON.stringify(tokenApprovals, null, 2));
       for (const [i, price] of prices.entries()) {
         console.log(i + " => " + JSON.stringify(price));
-        records.push({ ...price, offer: price.tokens });
+        const tokenBalance = tokenBalances[price.owner];
+        console.log("  tokenBalance: " + ethers.utils.formatEther(tokenBalance));
+        const tokenApproval = tokenApprovals[price.owner][price.tokenAgent];
+        console.log("  tokenApproval: " + ethers.utils.formatEther(tokenApproval));
+        const tokens = 123;
+        records.push({ ...price, offer: price.tokens, tokens });
       }
       console.log("records: " + JSON.stringify(records, null, 2));
       // console.log("collator: " + JSON.stringify(collator, null, 2));

@@ -106,11 +106,18 @@ const TradeFungibles = {
                     {{ formatDecimals(data.item.tokens, settings.decimals) }}
                   </font>
                 </template>
-                <template #cell(expiry)="data">
+                <template #cell(expiry)="data1">
                   <font size="-1">
-                    <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
-                      {{ formatTimestamp(data.item.expiry) }}
-                    </b-link>
+                    <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
+                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
+                        {{ formatTimestamp(data1.item.expiry) }}
+                      </b-link>
+                    </span>
+                    <span v-else>
+                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'Expired. View log'" target="_blank">
+                        <strike>{{ formatTimestamp(data1.item.expiry) }}</strike>
+                      </b-link>
+                    </span>
                   </font>
                 </template>
               </b-table>
@@ -1809,29 +1816,28 @@ data: {{ data }}
               collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == o.tokenss.length) {
                 for (let i = 0; i < o.prices.length; i++) {
-                  prices.push({ offerIndex: o.index, nonce: o.nonce, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
+                  prices.push({ offerIndex: o.index, nonce: o.nonce, valid: d.nonce == o.nonce, priceIndex: i, price: o.prices[i], tokens: o.tokenss[i], expiry: o.expiry, tokensAvailable: null });
                 }
               }
             }
           }
-          // prices.sort((a, b) => {
-          //   const aP = ethers.BigNumber.from(a.price);
-          //   // TODO: handle null tokens
-          //   const aT = a.tokens != null && ethers.BigNumber.from(a.tokens) || null;
-          //   const bP = ethers.BigNumber.from(b.price);
-          //   const bT = b.tokens != null && ethers.BigNumber.from(b.tokens) || null;
-          //   if (aP.eq(bP)) {
-          //     if (aT == null) {
-          //       return 1;
-          //     } else if (bT == null) {
-          //       return -1;
-          //     } else {
-          //       return aT.lt(bT) ? 1 : -1;
-          //     }
-          //   } else {
-          //     return aP.lt(bP) ? -1 : 1;
-          //   }
-          // });
+          prices.sort((a, b) => {
+            const aP = ethers.BigNumber.from(a.price);
+            const aT = ethers.BigNumber.from(a.tokens);
+            const bP = ethers.BigNumber.from(b.price);
+            const bT = ethers.BigNumber.from(b.tokens);
+            if (aP.eq(bP)) {
+              if (aT == null) {
+                return 1;
+              } else if (bT == null) {
+                return -1;
+              } else {
+                return aT.lt(bT) ? 1 : -1;
+              }
+            } else {
+              return aP.lt(bP) ? -1 : 1;
+            }
+          });
           collator[d.owner].tokenAgents[tokenAgent].prices = prices;
         }
       }
@@ -1851,7 +1857,7 @@ data: {{ data }}
             // console.log("  " + i1 + " " + JSON.stringify(e1));
             const o = d2.offers[e1.offerIndex];
             // console.log("  o: " + JSON.stringify(o));
-            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
+            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }

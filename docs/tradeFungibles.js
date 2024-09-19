@@ -115,14 +115,14 @@ const TradeFungibles = {
                 </template>
                 <template #cell(maker)="data">
                   <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent" target="_blank">
-                    <b-badge variant="link" class="m-0 mt-1">
+                    <b-badge variant="link" class="m-0 p-0 mt-1">
                       {{ data.item.indexByOwner }}
                     </b-badge>
                   </b-link>
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 mt-1">
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 p-0 mt-1">
                     {{ data.item.offerIndex }}
                   </b-badge>
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex" class="m-0 mt-1">
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex" class="m-0 p-0 mt-1">
                     {{ data.item.priceIndex }}
                   </b-badge>
                   <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="'Maker ' + data.item.owner" target="_blank">
@@ -270,7 +270,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(expiry)="data">
                   <font size="-1">
-                    <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
+                    <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View offer'" target="_blank">
                       {{ formatTimestamp(data.item.expiry) }}
                     </b-link>
                   </font>

@@ -87,7 +87,7 @@ const TradeFungibles = {
             </font>
             <b-row class="m-0 mt-0 p-0">
               <b-col class="m-0 p-0">
-                <b-card sub-title="One" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="One" class="m-0 mr-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
                     <b-form-group label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
@@ -96,7 +96,7 @@ const TradeFungibles = {
                 </b-card>
               </b-col>
               <b-col class="m-0 p-0">
-                <b-card sub-title="Two" class="m-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="Two" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
                     Two
                   </b-card-text>

@@ -83,6 +83,31 @@ const TradeFungibles = {
             <font size="-1">
               <!-- <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1"> -->
               <b-table ref="addSellOfferTable" small fixed striped responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
+                <template #cell(price)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.price, 18) }}
+                  </font>
+                </template>
+                <template #cell(offer)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.offer, settings.decimals) }}
+                  </font>
+                </template>
+                <template #head(tokens)="data">
+                  {{ settings.symbol }}
+                </template>
+                <template #cell(tokens)="data">
+                  <font size="-1">
+                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
+                  </font>
+                </template>
+                <template #cell(expiry)="data">
+                  <font size="-1">
+                    <b-link :href="explorer + 'tx/' + data.item.txHash + '#eventlog#' + data.item.logIndex" v-b-popover.hover.ds500="'View order'" target="_blank">
+                      {{ formatTimestamp(data.item.expiry) }}
+                    </b-link>
+                  </font>
+                </template>
               </b-table>
             </font>
             <b-row class="m-0 mt-0 p-0">
@@ -175,7 +200,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(offer)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.offer, 18) }}
+                    {{ formatDecimals(data.item.offer, settings.decimals) }}
                   </font>
                 </template>
                 <template #head(tokens)="data">
@@ -183,7 +208,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(tokens)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.tokens, 18) }}
+                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
                   </font>
                 </template>
                 <template #head(totalTokens)="data">
@@ -191,7 +216,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(totalTokens)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.totalTokens, 18) }}
+                    {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
                   </font>
                 </template>
                 <template #head(wethAmount)="data">
@@ -1773,7 +1798,6 @@ data: {{ data }}
             if (include && (!this.settings.addSellOffer.includeExpired && o.expiry != 0 && o.expiry < this.data.timestamp)) {
               include = false;
             }
-
             if (include) {
               collator[d.owner].tokenAgents[tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == o.tokenss.length) {
@@ -1817,7 +1841,9 @@ data: {{ data }}
           // console.log(owner + "/" + tokenAgent + " => " + JSON.stringify(d2));
           for (const [i1, e1] of d2.prices.entries()) {
             console.log("  " + i1 + " " + JSON.stringify(e1));
-            records.push({ tokenAgent, offerIndex: e1.offerIndex, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
+            const o = d2.offers[e1.offerIndex];
+            console.log("  o: " + JSON.stringify(o));
+            records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }

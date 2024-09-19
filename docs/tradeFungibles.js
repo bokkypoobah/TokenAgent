@@ -104,6 +104,15 @@ const TradeFungibles = {
                 <template #cell(tokens)="data">
                   {{ formatDecimals(data.item.tokens, settings.decimals) }}
                 </template>
+                <template #cell(totalTokens)="data">
+                  {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
+                </template>
+                <template #cell(wethAmount)="data">
+                  {{ formatDecimals(data.item.wethAmount, 18) }}
+                </template>
+                <template #cell(totalWeth)="data">
+                  {{ formatDecimals(data.item.totalWeth, 18) }}
+                </template>
                 <template #cell(expiry)="data1">
                   <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
                     <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
@@ -1784,6 +1793,7 @@ data: {{ data }}
     addSellOffer() {
       // TODO: Show expired and invalidated orders
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
+      const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const collator = {};
       const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
@@ -1852,31 +1862,36 @@ data: {{ data }}
       const tokenBalances = {};
       const tokenApprovals = {};
       for (const [owner, d1] of Object.entries(collator)) {
-        tokenBalances[owner] = d1.tokenBalance;
+        tokenBalances[owner] = { tokens: d1.tokenBalance, originalTokens: d1.tokenBalance };
         tokenApprovals[owner] = {};
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
           // console.log(tokenAgent + " => " + JSON.stringify(d2));
-          tokenApprovals[owner][tokenAgent] = d2.tokenApproval;
+          tokenApprovals[owner][tokenAgent] = { tokens: d2.tokenApproval, originalTokens: d2.tokenApproval };
           for (const [i1, e1] of d2.prices.entries()) {
             const o = d2.offers[e1.offerIndex];
             // records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, nonce: e1.nonce, currentNonce: d2.nonce, valid: e1.valid, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }
-      // // TODO: Testing
-      // tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"] = "16660000000000000000";
+      // TODO: Testing
+      // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenBalances) {
+      //   tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"].tokens = "16660000000000000000";
+      // }
       // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenApprovals) {
-      //   tokenApprovals["0x000001f568875F378Bf6d170B790967FE429C81A"]["0x9cb5B0C7839B2b770335f592966fFDA2BbFB7E8D"] = "13330000000000000000";
+      //   tokenApprovals["0x000001f568875F378Bf6d170B790967FE429C81A"]["0x9cb5B0C7839B2b770335f592966fFDA2BbFB7E8D"].tokens = "13330000000000000000";
       // }
       // console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
       // console.log("tokenApprovals: " + JSON.stringify(tokenApprovals, null, 2));
+      let totalTokens = ethers.BigNumber.from(0);
+      let totalWeth = ethers.BigNumber.from(0);
       for (const [i, price] of prices.entries()) {
         const ignoreApproval = price.owner == this.coinbase && this.settings.addSellOffer.ignoreMyApprovals;
-        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] || 0);
-        const tokenApproval = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent] || 0);
+        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
+        const tokenApproval = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
         let tokens = ethers.BigNumber.from(price.tokens);
+        let wethAmount = null;
         if (price.valid) {
-          console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner]) + ", ignoreApproval: " + ignoreApproval);
+          console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0) + ", ignoreApproval: " + ignoreApproval);
           if (tokens.gt(tokenBalance)) {
             tokens = tokenBalance;
           }
@@ -1884,16 +1899,19 @@ data: {{ data }}
             tokens = tokenApproval;
           }
           if (tokens.gt(0)) {
-            tokenBalances[price.owner] = ethers.BigNumber.from(tokenBalances[price.owner]).sub(tokens).toString();
+            wethAmount = tokens.mul(ethers.BigNumber.from(price.price)).div(TENPOW18);
+            totalTokens = ethers.BigNumber.from(totalTokens).add(tokens).toString();
+            totalWeth = ethers.BigNumber.from(totalWeth).add(wethAmount).toString();
+            tokenBalances[price.owner].tokens = ethers.BigNumber.from(tokenBalances[price.owner].tokens).sub(tokens).toString();
             if (!ignoreApproval) {
-              tokenApprovals[price.owner][price.tokenAgent] = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent]).sub(tokens).toString();
+              tokenApprovals[price.owner][price.tokenAgent].tokens = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent].tokens).sub(tokens).toString();
             }
           }
-          console.log("  tokens AFTER: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner]));
+          console.log("  tokens AFTER: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0));
         }
-        records.push({ ...price, offer: price.tokens, tokens: tokens.toString() });
+        records.push({ ...price, offer: price.tokens, tokens: tokens.toString(), totalTokens: totalTokens.toString(), wethAmount: wethAmount != null && wethAmount.toString() || null, totalWeth: totalWeth.toString() });
       }
-      // console.log("records: " + JSON.stringify(records, null, 2));
+      console.log("records: " + JSON.stringify(records, null, 2));
       // console.log("collator: " + JSON.stringify(collator, null, 2));
       return { tokenBalances, tokenApprovals, records, collator };
     },

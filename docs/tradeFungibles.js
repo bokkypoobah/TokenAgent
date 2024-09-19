@@ -60,6 +60,11 @@ const TradeFungibles = {
                   Invalidated
                 </b-form-checkbox>
               </div>
+              <div class="mt-1 pr-1">
+                <b-form-checkbox size="sm" v-model="settings.addSellOffer.applyMyApprovals" @input="saveSettings" v-b-popover.hover.ds500="'Apply approvals for my offers?'">
+                  Apply My Approvals
+                </b-form-checkbox>
+              </div>
               <div class="mt-0 flex-grow-1">
               </div>
               <div class="mt-0 pr-1">
@@ -965,6 +970,7 @@ data: {{ data }}
           mineOnly: true,
           includeExpired: false,
           includeInvalidated: false,
+          applyMyApprovals: true,
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
@@ -989,7 +995,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 12,
+        version: 13,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1777,6 +1783,7 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
+        if (!this.settings.addSellOffer.mineOnly || d.owner == this.coinbase) {
           if (!(d.owner in collator)) {
             collator[d.owner] = {
               tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
@@ -1826,6 +1833,7 @@ data: {{ data }}
           //   }
           // });
           collator[d.owner].tokenAgents[tokenAgent].prices = prices;
+        }
       }
       const records = [];
       const tokenBalances = {};
@@ -1840,14 +1848,14 @@ data: {{ data }}
           tokenApprovals[owner][tokenAgent] = d2.tokenApproval;
           // console.log(owner + "/" + tokenAgent + " => " + JSON.stringify(d2));
           for (const [i1, e1] of d2.prices.entries()) {
-            console.log("  " + i1 + " " + JSON.stringify(e1));
+            // console.log("  " + i1 + " " + JSON.stringify(e1));
             const o = d2.offers[e1.offerIndex];
-            console.log("  o: " + JSON.stringify(o));
+            // console.log("  o: " + JSON.stringify(o));
             records.push({ tokenAgent, txHash: o.txHash, logIndex: o.logIndex, offerIndex: e1.offerIndex, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }
-      // console.log("records: " + JSON.stringify(records, null, 2));
+      console.log("records: " + JSON.stringify(records, null, 2));
       return { tokenBalances, tokenApprovals, records, collator };
     },
 

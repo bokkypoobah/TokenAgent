@@ -86,7 +86,7 @@ const TradeFungibles = {
               </div>
             </div>
             <font size="-1">
-              <b-table ref="addSellOfferTable" small fixed striped responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
+              <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
                 <template #cell(price)="data">
                   {{ formatDecimals(data.item.price, 18) }}
                 </template>
@@ -112,6 +112,15 @@ const TradeFungibles = {
                 </template>
                 <template #cell(totalWeth)="data">
                   {{ formatDecimals(data.item.totalWeth, 18) }}
+                </template>
+                <template #cell(ownerTokenAgentNumber)="data">
+                  {{ data.item.owner.substring(0, 10) + '[' + data.item.indexByOwner + ']' }}
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex + ', tokenAgent: ' + data.item.indexByOwner + '.' + data.item.tokenAgent"class="m-0 mt-1">
+                    {{ data.item.offerIndex }}
+                  </b-badge>
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex"class="m-0 mt-1">
+                    {{ data.item.priceIndex }}
+                  </b-badge>
                 </template>
                 <template #cell(expiry)="data1">
                   <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
@@ -1114,11 +1123,12 @@ data: {{ data }}
       addSellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalWeth', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'ownerTokenAgentNumber', label: 'Owner[#]', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },

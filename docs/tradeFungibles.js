@@ -102,19 +102,30 @@ const TradeFungibles = {
                   {{ settings.symbol }}
                 </template>
                 <template #cell(tokens)="data">
-                  {{ formatDecimals(data.item.tokens, settings.decimals) }}
+                  <span v-if="data.item.nonce == data.item.currentNonce">
+                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
+                  </span>
+                  <span v-else v-b-popover.hover.ds500="'Invalid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
+                    <strike>{{ formatDecimals(data.item.tokens, settings.decimals) }}</strike>
+                  </span>
                 </template>
                 <template #cell(totalTokens)="data">
-                  {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
+                  <span v-if="data.item.nonce == data.item.currentNonce">
+                    {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
+                  </span>
                 </template>
                 <template #cell(wethAmount)="data">
-                  {{ formatDecimals(data.item.wethAmount, 18) }}
+                  <span v-if="data.item.nonce == data.item.currentNonce">
+                    {{ formatDecimals(data.item.wethAmount, 18) }}
+                  </span>
                 </template>
                 <template #cell(totalWeth)="data">
-                  {{ formatDecimals(data.item.totalWeth, 18) }}
+                  <span v-if="data.item.nonce == data.item.currentNonce">
+                    {{ formatDecimals(data.item.totalWeth, 18) }}
+                  </span>
                 </template>
                 <template #cell(maker)="data">
-                  <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent" target="_blank">
+                  <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent + ', nonce: ' + data.item.currentNonce" target="_blank">
                     <b-badge variant="link" class="m-0 p-0 mt-1">
                       {{ data.item.indexByOwner }}
                     </b-badge>
@@ -122,6 +133,16 @@ const TradeFungibles = {
                   <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 p-0 mt-1">
                     {{ data.item.offerIndex }}
                   </b-badge>
+                  <span v-if="data.item.nonce == data.item.currentNonce">
+                    <b-badge variant="light" v-b-popover.hover.ds500="'Valid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
+                      {{ data.item.nonce }}
+                    </b-badge>
+                  </span>
+                  <span v-else>
+                    <b-badge variant="light" v-b-popover.hover.ds500="'Invalidated - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
+                      <strike>{{ data.item.nonce }}</strike>
+                    </b-badge>
+                  </span>
                   <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex" class="m-0 p-0 mt-1">
                     {{ data.item.priceIndex }}
                   </b-badge>
@@ -154,7 +175,7 @@ const TradeFungibles = {
                 </b-card>
               </b-col>
               <b-col class="m-0 p-0">
-                <b-card sub-title="Two" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="Simulate Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
                     Two
                   </b-card-text>

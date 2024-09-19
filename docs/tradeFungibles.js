@@ -128,21 +128,21 @@ const TradeFungibles = {
                   <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="'Maker ' + data.item.owner" target="_blank">
                     {{ data.item.owner.substring(0, 12) }}
                   </b-link>
-                  <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent + ', nonce: ' + data.item.currentNonce" target="_blank">
+                  <b-link v-if="data.item.indexByOwner != null" :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent + ', nonce: ' + data.item.currentNonce" target="_blank">
                     <b-badge variant="link" class="m-0 p-0 mt-1">
                       {{ data.item.indexByOwner }}
                     </b-badge>
                   </b-link>
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 p-0 mt-1">
+                  <b-badge v-if="data.item.offerIndex != null" variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 p-0 mt-1">
                     {{ data.item.offerIndex }}
                   </b-badge>
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    <b-badge variant="light" v-b-popover.hover.ds500="'Valid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
+                    <b-badge v-if="data.item.nonce != null" variant="light" v-b-popover.hover.ds500="'Valid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
                       {{ data.item.nonce }}
                     </b-badge>
                   </span>
                   <span v-else>
-                    <b-badge variant="light" v-b-popover.hover.ds500="'Invalidated - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
+                    <b-badge v-if="data.item.nonce != null" variant="light" v-b-popover.hover.ds500="'Invalidated - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce" class="m-0 p-0 mt-1">
                       <strike>{{ data.item.nonce }}</strike>
                     </b-badge>
                   </span>
@@ -151,15 +151,20 @@ const TradeFungibles = {
                   </b-badge>
                 </template>
                 <template #cell(expiry)="data1">
-                  <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
-                    <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
-                      {{ formatTimestamp(data1.item.expiry) }}
-                    </b-link>
+                  <span v-if="data1.item.simulated">
+                    Simulated
                   </span>
                   <span v-else>
-                    <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'Expired. View log'" target="_blank">
-                      <strike>{{ formatTimestamp(data1.item.expiry) }}</strike>
-                    </b-link>
+                    <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
+                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'View log'" target="_blank">
+                        {{ formatTimestamp(data1.item.expiry) }}
+                      </b-link>
+                    </span>
+                    <span v-else>
+                      <b-link :href="explorer + 'tx/' + data1.item.txHash + '#eventlog#' + data1.item.logIndex" v-b-popover.hover.ds500="'Expired. View log'" target="_blank">
+                        <strike>{{ formatTimestamp(data1.item.expiry) }}</strike>
+                      </b-link>
+                    </span>
                   </span>
                 </template>
               </b-table>

@@ -1804,20 +1804,25 @@ data: {{ data }}
           collator[d.owner].tokenAgents[tokenAgent].prices = prices;
       }
       const records = [];
+      const tokenBalances = {};
+      const tokenApprovals = {};
       for (const [owner, d1] of Object.entries(collator)) {
         // console.log(owner + " => " + JSON.stringify(d1));
-        console.log(owner + " => tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
+        // console.log(owner + " => tokenBalance: " + ethers.utils.formatEther(d1.tokenBalance));
+        tokenBalances[owner] = d1.tokenBalance;
+        tokenApprovals[owner] = {};
         for (const [tokenAgent, d2] of Object.entries(d1.tokenAgents)) {
-          console.log(owner + "/" + tokenAgent + " => tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          // console.log(owner + "/" + tokenAgent + " => tokenApproval: " + ethers.utils.formatEther(d2.tokenApproval));
+          tokenApprovals[owner][tokenAgent] = d2.tokenApproval;
           // console.log(owner + "/" + tokenAgent + " => " + JSON.stringify(d2));
           for (const [i1, e1] of d2.prices.entries()) {
             console.log("  " + i1 + " " + JSON.stringify(e1));
+            records.push({ tokenAgent, offerIndex: e1.offerIndex, priceIndex: e1.priceIndex, price: e1.price, offer: e1.tokens, tokens: e1.tokens, totalTokens: null, wethAmount: null, totalWeth: null, expiry: e1.expiry });
           }
         }
       }
-      records.push({ tokenAgent: "abc", orderIndex: 12, priceIndex: 2, price: 0.009, offer: 10, tokens: 10, totalTokens: 10, wethAmount: 0.09, totalWeth: 0.09, expiry: 'Blah' });
-      records.push({ tokenAgent: "bce", orderIndex: 23, priceIndex: 3, price: 0.01, offer: 10, tokens: 10, totalTokens: 20, wethAmount: 0.1, totalWeth: 0.19, expiry: 'Blah' });
-      return { records, collator };
+      // console.log("records: " + JSON.stringify(records, null, 2));
+      return { tokenBalances, tokenApprovals, records, collator };
     },
 
     eventsList() {
@@ -2574,7 +2579,7 @@ data: {{ data }}
       return false;
     },
     saveSettings() {
-      console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      // console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {

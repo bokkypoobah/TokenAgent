@@ -177,10 +177,8 @@ const TradeFungibles = {
               <b-col class="m-0 p-0">
                 <b-card sub-title="Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <!-- <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;"> -->
                     <b-form-group label="Points:" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
                       <font size="-1">
-                        <!-- <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="200px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;"> -->
                         <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
                           <template #cell(price)="data">
                             <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" style="float: right;" ></b-form-input>
@@ -207,6 +205,10 @@ const TradeFungibles = {
                           </template>
                         </b-table>
                       </font>
+                    </b-form-group>
+                    <b-form-group label="Simulate:" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-checkbox size="sm" v-model="settings.addSellOffer.simulate" @input="saveSettings" v-b-popover.hover.ds500="'Simulate in offers table above?'" class="mt-1">
+                      </b-form-checkbox>
                     </b-form-group>
                     <!-- <font size="-2">
                       <pre>
@@ -1055,10 +1057,8 @@ data: {{ data }}
           includeExpired: false,
           includeInvalidated: false,
           ignoreMyApprovals: false,
-          points: [
-            // { price: "0.008", tokens: "12.34" },
-            // { price: "0.012", tokens: "23.45" },
-          ],
+          points: [],
+          simulate: true,
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
@@ -1083,7 +1083,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 15,
+        version: 16,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1206,12 +1206,10 @@ data: {{ data }}
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
       ],
       addSellOfferPointsFields: [
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
-        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
-        <!-- { key: 'totalTokens', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
-        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left m-0 p-0' },
-        <!-- { key: 'totalWeth', label: 'Tokens', sortable: false, thStyle: 'width: 50%;', thClass: 'text-right', tdClass: 'text-right' }, -->
-        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right m-0 p-0' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -1900,6 +1898,10 @@ data: {{ data }}
       // TODO: Show expired and invalidated orders
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
+      const points = this.settings.addSellOffer.points;
+      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - points: " + JSON.stringify(points) + ", pointsFeedback: " + this.pointsFeedback);
+      const simulate = this.settings.addSellOffer.simulate && this.pointsFeedback == null;
+      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - simulate: " + simulate);
       const collator = {};
       const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {

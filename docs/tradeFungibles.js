@@ -2012,7 +2012,7 @@ data: {{ data }}
       let totalWeth = ethers.BigNumber.from(0);
       for (const [i, price] of prices.entries()) {
         const ignoreApproval = price.owner == this.coinbase && this.settings.addSellOffer.ignoreMyApprovals;
-        const tokenBalance = ethers.BigNumber.from(!price.simulated && tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
+        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
         const tokenApproval = ethers.BigNumber.from(!price.simulated && tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
         let tokens = ethers.BigNumber.from(price.tokens);
         let wethAmount = null;
@@ -2022,7 +2022,7 @@ data: {{ data }}
           if (tokens.gt(tokenBalance)) {
             tokens = tokenBalance;
           }
-          if (!ignoreApproval && tokens.gt(tokenApproval)) {
+          if (!ignoreApproval && !price.simulated && tokens.gt(tokenApproval)) {
             tokens = tokenApproval;
           }
           if (tokens.gt(0)) {
@@ -2030,7 +2030,7 @@ data: {{ data }}
             totalTokens = ethers.BigNumber.from(totalTokens).add(tokens).toString();
             totalWeth = ethers.BigNumber.from(totalWeth).add(wethAmount).toString();
             tokenBalances[price.owner].tokens = ethers.BigNumber.from(tokenBalances[price.owner].tokens).sub(tokens).toString();
-            if (!ignoreApproval) {
+            if (!ignoreApproval && !price.simulated) {
               tokenApprovals[price.owner][price.tokenAgent].tokens = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent].tokens).sub(tokens).toString();
             }
           }

@@ -182,7 +182,7 @@ const TradeFungibles = {
               <b-col class="m-0 p-0">
                 <b-card sub-title="Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <b-form-group label="Points:" label-size="sm" label-cols-sm="3" label-align-sm="right" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
+                    <b-form-group label="" label-size="sm" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
                       <font size="-1">
                         <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
                           <template #cell(price)="data">
@@ -199,6 +199,9 @@ const TradeFungibles = {
                           </template>
                           <template #bottom-row="data">
                             <b-td>
+                              <b-form-checkbox size="sm" v-model="settings.addSellOffer.simulate" @input="saveSettings" v-b-popover.hover.ds500="'Simulate in offers table above?'" class="ml-1 mt-1">
+                                Simulate
+                              </b-form-checkbox>
                             </b-td>
                             <b-td>
                             </b-td>
@@ -211,10 +214,10 @@ const TradeFungibles = {
                         </b-table>
                       </font>
                     </b-form-group>
-                    <b-form-group label="Simulate:" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <!-- <b-form-group label="Simulate:" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-checkbox size="sm" v-model="settings.addSellOffer.simulate" @input="saveSettings" v-b-popover.hover.ds500="'Simulate in offers table above?'" class="mt-1">
                       </b-form-checkbox>
-                    </b-form-group>
+                    </b-form-group> -->
                     <!-- <font size="-2">
                       <pre>
 {{ settings.addSellOffer.points }}
@@ -1891,7 +1894,6 @@ data: {{ data }}
     },
 
     addSellOffer() {
-      // TODO: Show expired and invalidated orders
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const points = this.settings.addSellOffer.points;

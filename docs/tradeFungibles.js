@@ -3,9 +3,10 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl">
+        <!-- <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl"> -->
+        <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" size="xl">
           <template #modal-title>Add Sell Offer - Fungibles</template>
-          <div class="m-0 p-1">
+          <div class="m-0 p-1 bg-light">
             <div class="d-flex flex-wrap m-0 p-0">
               <div class="mt-0 pl-1 pr-0">
                 <font size="-1">
@@ -41,7 +42,45 @@ const TradeFungibles = {
                 <!-- {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }} -->
               </div>
             </div>
-            <b-row class="m-0 mt-1 p-0">
+          </div>
+          <div class="m-0 p-0">
+            <div class="d-flex flex-wrap m-0 mt-1 p-0 px-1">
+              <div class="mt-0 pr-1">
+                <b-form-checkbox size="sm" v-model="settings.addSellOffer.mineOnly" @input="saveSettings" v-b-popover.hover.ds500="'Show offers only from my Token Agents'">
+                  Mine Only
+                </b-form-checkbox>
+              </div>
+              <div class="mt-0 pr-1">
+                <b-form-checkbox size="sm" v-model="settings.addSellOffer.includeExpired" @input="saveSettings" v-b-popover.hover.ds500="'Show expired offers?'">
+                  Expired
+                </b-form-checkbox>
+              </div>
+              <div class="mt-0 pr-1">
+                <b-form-checkbox size="sm" v-model="settings.addSellOffer.includeInvalidated" @input="saveSettings" v-b-popover.hover.ds500="'Show invalidated offers?'">
+                  Invalidated
+                </b-form-checkbox>
+              </div>
+              <div class="mt-0 flex-grow-1">
+              </div>
+              <div class="mt-0 pr-1">
+                <!-- <b-button size="sm" :disabled="!networkSupported" @click="viewAddSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> -->
+              </div>
+              <div class="mt-0 flex-grow-1">
+              </div>
+              <div class="mt-0 pr-1">
+                <b-form-select size="sm" v-model="settings.addSellOffer.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
+              </div>
+              <div class="mt-0 pr-1">
+                <!-- <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedSellOffers.length + '/' + sellOffers.length }}</font> -->
+              </div>
+              <div class="mt-0 pr-1">
+                <!-- <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedSellOffers.length" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination> -->
+              </div>
+              <div class="mt-0 pl-1">
+                <b-form-select size="sm" v-model="settings.addSellOffer.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
+              </div>
+            </div>
+            <b-row class="m-0 mt-0 p-0">
               <b-col class="m-0 p-0">
                 <b-card sub-title="One" class="m-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
@@ -893,6 +932,12 @@ data: {{ data }}
 
         addSellOffer: {
           tokenAgent: null,
+          mineOnly: true,
+          includeExpired: false,
+          includeInvalidated: false,
+          currentPage: 1,
+          pageSize: 10,
+          sortOption: 'txorderdsc',
         },
 
         tokenAgentAddress: null,
@@ -914,7 +959,7 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 10,
+        version: 12,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1681,17 +1726,17 @@ data: {{ data }}
     },
 
     addSellOffer() {
+      // TODO: Show expired and invalidated orders
       console.log(now() + " INFO TradeFungibles:computed.addSellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
-        if (d.owner == this.coinbase) {
-          // if (!(d.owner in collator)) {
-          //   collator[d.owner] = {
-          //     tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
-          //     tokenAgents: {},
-          //   };
-          // }
-          collator[tokenAgent] = {
+          if (!(d.owner in collator)) {
+            collator[d.owner] = {
+              tokenBalance: this.balances[this.data.token] && this.balances[this.data.token][d.owner] && this.balances[this.data.token][d.owner].tokens || 0,
+              tokenAgents: {},
+            };
+          }
+          collator[d.owner][tokenAgent] = {
             tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
             offers: {},
             prices: [],
@@ -1699,7 +1744,7 @@ data: {{ data }}
           const prices = [];
           for (const [offerIndex, o] of Object.entries(d.offers)) {
             if (d.nonce == o.nonce && (o.expiry == 0 || o.expiry > this.data.timestamp) && o.buySell == 1) {
-              collator[tokenAgent].offers[offerIndex] = o;
+              collator[d.owner][tokenAgent].offers[offerIndex] = o;
               if (o.prices.length == 1 && o.tokenss.length == 0) {
                 prices.push({ offerIndex: o.index, priceIndex: 0, price: o.prices[0], tokens: null });
               } else if (o.prices.length == o.tokenss.length) {
@@ -1727,10 +1772,12 @@ data: {{ data }}
               return aP.lt(bP) ? -1 : 1;
             }
           });
-          collator[tokenAgent].prices = prices;
-        }
+          collator[d.owner][tokenAgent].prices = prices;
       }
-      return { collator };
+      const records = [];
+      records.push({ price: 0.009, tokens: 10, sumTokens: 10, wethAmount: 0.09, sumWethAmount: 0.09, expiry: 'Blah' });
+      records.push({ price: 0.01, tokens: 10, sumTokens: 20, wethAmount: 0.1, sumWethAmount: 0.19, expiry: 'Blah' });
+      return { records, collator };
     },
 
     eventsList() {
@@ -2487,7 +2534,7 @@ data: {{ data }}
       return false;
     },
     saveSettings() {
-      // console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {

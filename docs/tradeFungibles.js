@@ -1208,7 +1208,7 @@ data: {{ data }}
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },

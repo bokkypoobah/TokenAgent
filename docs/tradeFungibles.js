@@ -82,7 +82,7 @@ const TradeFungibles = {
             </div>
             <font size="-1">
               <!-- <b-table ref="eventsTable" small fixed striped responsive hover :fields="eventsFields" :items="pagedFilteredSortedEvents" show-empty head-variant="light" class="m-0 mt-1"> -->
-              <b-table ref="addSellOfferTable" small fixed striped responsive hover :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
+              <b-table ref="addSellOfferTable" small fixed striped responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1">
               </b-table>
             </font>
             <b-row class="m-0 mt-0 p-0">
@@ -1068,6 +1068,23 @@ data: {{ data }}
         { value: 'Approval', text: 'Approvals' },
         { value: 'Other', text: 'Others' },
       ],
+      addSellOfferFields: [
+        // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'offer', label: 'Offered', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalWeth', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+        // { key: 'tokenType', label: 'Type', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'buySell', label: 'B/S', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },
+      ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -1780,8 +1797,8 @@ data: {{ data }}
           collator[d.owner][tokenAgent].prices = prices;
       }
       const records = [];
-      records.push({ price: 0.009, tokens: 10, sumTokens: 10, wethAmount: 0.09, sumWethAmount: 0.09, expiry: 'Blah' });
-      records.push({ price: 0.01, tokens: 10, sumTokens: 20, wethAmount: 0.1, sumWethAmount: 0.19, expiry: 'Blah' });
+      records.push({ price: 0.009, offer: 10, tokens: 10, totalTokens: 10, wethAmount: 0.09, totalWeth: 0.09, expiry: 'Blah' });
+      records.push({ price: 0.01, offer: 10, tokens: 10, totalTokens: 20, wethAmount: 0.1, totalWeth: 0.19, expiry: 'Blah' });
       return { records, collator };
     },
 

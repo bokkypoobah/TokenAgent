@@ -113,14 +113,21 @@ const TradeFungibles = {
                 <template #cell(totalWeth)="data">
                   {{ formatDecimals(data.item.totalWeth, 18) }}
                 </template>
-                <template #cell(ownerTokenAgentNumber)="data">
-                  {{ data.item.owner.substring(0, 10) + '[' + data.item.indexByOwner + ']' }}
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex + ', tokenAgent: ' + data.item.indexByOwner + '.' + data.item.tokenAgent"class="m-0 mt-1">
+                <template #cell(maker)="data">
+                  <b-link :href="explorer + 'address/' + data.item.tokenAgent" v-b-popover.hover.ds500="'Makers Token Agent #' + data.item.indexByOwner + ' ' + data.item.tokenAgent" target="_blank">
+                    <b-badge variant="link" class="m-0 mt-1">
+                      {{ data.item.indexByOwner }}
+                    </b-badge>
+                  </b-link>
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Offer index: ' + data.item.offerIndex" class="m-0 mt-1">
                     {{ data.item.offerIndex }}
                   </b-badge>
-                  <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex"class="m-0 mt-1">
+                  <b-badge variant="light" v-b-popover.hover.ds500="'Price index: ' + data.item.priceIndex" class="m-0 mt-1">
                     {{ data.item.priceIndex }}
                   </b-badge>
+                  <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="'Maker ' + data.item.owner" target="_blank">
+                    {{ data.item.owner.substring(0, 12) }}
+                  </b-link>
                 </template>
                 <template #cell(expiry)="data1">
                   <span v-if="data1.item.expiry == 0 || data1.item.expiry >= data.timestamp">
@@ -1128,7 +1135,7 @@ data: {{ data }}
         { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'wethAmount', label: '[W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'totalWeth', label: '∑ [W]ETH', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'ownerTokenAgentNumber', label: 'Owner[#]', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
         // { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },

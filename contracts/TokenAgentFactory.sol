@@ -498,6 +498,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     // Cannot update token and buySell
     function updateOffers(UpdateOffer[] calldata inputs) external onlyOwner {
+        require(inputs.length > 0, InvalidInputData("No inputs"));
         for (uint i = 0; i < inputs.length; i++) {
             UpdateOffer memory input = inputs[i];
             uint index = Index.unwrap(input.index);
@@ -560,6 +561,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     // ERC-1155
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant notOwner {
+        require(inputs.length > 0, InvalidInputData("No inputs"));
         uint totalEth = msg.value;
         if (totalEth > 0) {
             emit InternalTransfer(msg.sender, address(this), totalEth, Unixtime.wrap(uint40(block.timestamp)));

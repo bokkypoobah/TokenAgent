@@ -306,6 +306,15 @@ const TradeFungibles = {
                     <b-form-group v-if="myTokenAgentOptions.length > 1" label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
                     </b-form-group>
+                    <b-form-group label="Expiry Date:" label-for="modaladdselloffer-expirydate" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <!-- <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select> -->
+                      <!-- <b-form-timepicker id="timepicker-buttons" now-button reset-button></b-form-timepicker> -->
+                      <b-form-datepicker size="sm" id="modaladdselloffer-expirydate" v-model="settings.addSellOffer.expiryDate" @change="saveSettings"></b-form-datepicker>
+
+                    </b-form-group>
+                    <b-form-group label="Expiry Date:" label-for="modaladdselloffer-expirytime" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-timepicker size="sm" id="modaladdselloffer-expirytime" v-model="settings.addSellOffer.expiryTime" @change="saveSettings" now-button reset-button></b-form-timepicker>
+                    </b-form-group>
                   </b-card-text>
                 </b-card>
               </b-col>
@@ -1159,6 +1168,8 @@ data: {{ data }}
           includeInvalidated: false,
           ignoreMyApprovals: false,
           selectedItem: null,
+          expiryDate: null,
+          expiryTime: null,
           points: [],
           simulate: true,
           currentPage: 1,
@@ -1191,7 +1202,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 18,
+        version: 19,
       },
 
       tokenAgentFactoryEvents: [],

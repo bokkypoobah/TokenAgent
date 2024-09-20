@@ -192,7 +192,7 @@ const TradeFungibles = {
                 </template>
               </b-table>
             </font>
-            <b-row class="m-0 mt-0 p-0">
+            <b-row class="m-0 mt-0 mb-1 p-0">
               <b-col class="m-0 p-0">
                 <b-card sub-title="View Sell Offer" class="m-0 mr-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
@@ -306,14 +306,11 @@ const TradeFungibles = {
                     <b-form-group v-if="myTokenAgentOptions.length > 1" label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                       <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
                     </b-form-group>
-                    <b-form-group label="Expiry Date:" label-for="modaladdselloffer-expirydate" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <!-- <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select> -->
-                      <!-- <b-form-timepicker id="timepicker-buttons" now-button reset-button></b-form-timepicker> -->
-                      <b-form-datepicker size="sm" id="modaladdselloffer-expirydate" v-model="settings.addSellOffer.expiryDate" @change="saveSettings"></b-form-datepicker>
-
+                    <b-form-group label="Expiry:" label-for="modaladdselloffer-expirytime" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-datepicker size="sm" id="modaladdselloffer-expirydate" v-model="expiryDate" :date-format-options="{ year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' }" reset-button today-button close-button label-reset-button="No Expiry" label-no-date-selected="No Expiry" class="w-75"></b-form-datepicker>
                     </b-form-group>
-                    <b-form-group label="Expiry Date:" label-for="modaladdselloffer-expirytime" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-timepicker size="sm" id="modaladdselloffer-expirytime" v-model="settings.addSellOffer.expiryTime" @change="saveSettings" now-button reset-button></b-form-timepicker>
+                    <b-form-group v-if="expiryDate" label="" label-for="modaladdselloffer-expirytime" label-size="sm" label-cols-sm="4" label-align-sm="right" :description="formatTimestampUTC(settings.addSellOffer.expiry)" class="mx-0 my-1 p-0">
+                      <b-form-timepicker size="sm" id="modaladdselloffer-expirytime" v-model="expiryTime" minutes-step="15" now-button label-no-time-selected="Select" class="w-50"></b-form-timepicker>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
@@ -1483,6 +1480,38 @@ data: {{ data }}
     registry() {
       return store.getters['data/registry'];
     },
+    expiryDate: {
+      get: function () {
+        return this.settings.addSellOffer.expiryDate;
+      },
+      set: function (d) {
+        this.settings.addSellOffer.expiryDate = d;
+        if (this.settings.addSellOffer.expiryDate == null || this.settings.addSellOffer.expiryDate == '') {
+          this.settings.addSellOffer.expiry = null;
+        } else if (this.settings.addSellOffer.expiryTime == null || this.settings.addSellOffer.expiryTime == '') {
+          this.settings.addSellOffer.expiry = moment(this.settings.addSellOffer.expiryDate + 'T00:00:00');
+        } else {
+          this.settings.addSellOffer.expiry = moment(this.settings.addSellOffer.expiryDate + 'T' + this.settings.addSellOffer.expiryTime).unix();
+        }
+        this.saveSettings();
+      },
+    },
+    expiryTime: {
+      get: function () {
+        return this.settings.addSellOffer.expiryTime;
+      },
+      set: function (t) {
+        this.settings.addSellOffer.expiryTime = t;
+        if (this.settings.addSellOffer.expiryDate == null || this.settings.addSellOffer.expiryDate == '') {
+          this.settings.addSellOffer.expiry = null;
+        } else if (this.settings.addSellOffer.expiryTime == null || this.settings.addSellOffer.expiryTime == '') {
+          this.settings.addSellOffer.expiry = moment(this.settings.addSellOffer.expiryDate + 'T00:00:00').unix();
+        } else {
+          this.settings.addSellOffer.expiry = moment(this.settings.addSellOffer.expiryDate + 'T' + this.settings.addSellOffer.expiryTime).unix();
+        }
+        this.saveSettings();
+      },
+    },
 
     myTokenAgentOptions() {
       const results = [];
@@ -2088,12 +2117,12 @@ data: {{ data }}
     },
 
     addSellOffer() {
-      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const points = this.settings.addSellOffer.points;
-      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - points: " + JSON.stringify(points) + ", pointsFeedback: " + this.pointsFeedback);
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - points: " + JSON.stringify(points) + ", pointsFeedback: " + this.pointsFeedback);
       const simulate = this.settings.addSellOffer.simulate && this.pointsFeedback == null;
-      console.log(now() + " INFO TradeFungibles:computed.addSellOffer - simulate: " + simulate);
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - simulate: " + simulate);
       const collator = {};
       const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
@@ -2159,7 +2188,7 @@ data: {{ data }}
           });
         }
       }
-      console.log("prices: " + JSON.stringify(prices, null, 2));
+      // console.log("prices: " + JSON.stringify(prices, null, 2));
       prices.sort((a, b) => {
         if (a.valid && !b.valid) {
           return -1;
@@ -2206,7 +2235,7 @@ data: {{ data }}
       // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenApprovals) {
       //   tokenApprovals["0x000001f568875F378Bf6d170B790967FE429C81A"]["0x9cb5B0C7839B2b770335f592966fFDA2BbFB7E8D"].tokens = "13330000000000000000";
       // }
-      console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
+      // console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
       // console.log("tokenApprovals: " + JSON.stringify(tokenApprovals, null, 2));
       let totalTokens = ethers.BigNumber.from(0);
       let totalWeth = ethers.BigNumber.from(0);
@@ -2218,7 +2247,7 @@ data: {{ data }}
         let wethAmount = null;
         // console.log("  price: " + JSON.stringify(price));
         if (price.valid) {
-          console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0) + ", ignoreApproval: " + ignoreApproval);
+          // console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0) + ", ignoreApproval: " + ignoreApproval);
           if (tokens.gt(tokenBalance)) {
             tokens = tokenBalance;
           }
@@ -2234,7 +2263,7 @@ data: {{ data }}
               tokenApprovals[price.owner][price.tokenAgent].tokens = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent].tokens).sub(tokens).toString();
             }
           }
-          console.log("  tokens AFTER: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0));
+          // console.log("  tokens AFTER: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0));
         }
         records.push({ ...price, offer: price.tokens, tokens: tokens.toString(), totalTokens: totalTokens.toString(), wethAmount: wethAmount != null && wethAmount.toString() || null, totalWeth: totalWeth.toString() });
       }
@@ -3020,6 +3049,16 @@ data: {{ data }}
         //   return moment.unix(ts).utc().format("YYYY-MM-DD HH:mm:ss");
         // } else {
           return moment.unix(ts).format("YYYY-MM-DD HH:mm:ss");
+        // }
+      }
+      return null;
+    },
+    formatTimestampUTC(ts) {
+      if (ts != null) {
+        // if (this.settings.reportingDateTime == 1) {
+        //   return moment.unix(ts).utc().format("YYYY-MM-DD HH:mm:ss");
+        // } else {
+          return moment.unix(ts).utc().toString(); // format("YYYY-MM-DD HH:mm:ss");
         // }
       }
       return null;

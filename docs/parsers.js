@@ -1,3 +1,10 @@
+const EVENTTYPE_TRANSFER = 0;       // ERC-20/721 - NewTokenAgent
+const EVENTTYPE_DEPOSIT = 1;        // WETH
+const EVENTTYPE_WITHDRAWAL = 2;     // WETH
+const EVENTTYPE_APPROVAL = 3;       // ERC-20
+const EVENTTYPE_APPROVALFORALL = 3; // ERC-721
+const EVENTTYPE_NEWTOKENAGENT = 4;  // TokenAgentFactory - NewTokenAgent
+
 function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
   // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const erc20Interface = new ethers.utils.Interface(ERC20ABI);
@@ -81,7 +88,7 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
         // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
         const [tokenAgent, owner, index, indexByOwner, timestamp] = logData.args;
         eventRecord = {
-          eventType: "NewTokenAgent", tokenAgent, owner, index, indexByOwner,
+          eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, indexByOwner,
           timestamp,
         };
       } else {

@@ -101,7 +101,9 @@ const TradeFungibles = {
             <font size="-1">
               <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
                 <template #cell(price)="data">
-                  {{ formatPrice(data.item.price) }}
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.price, 18)">
+                    {{ formatPrice(data.item.price) }}
+                  </span>
                 </template>
                 <template #cell(offer)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
@@ -115,25 +117,25 @@ const TradeFungibles = {
                   {{ settings.symbol }}
                 </template>
                 <template #cell(tokens)="data">
-                  <span v-if="data.item.nonce == data.item.currentNonce">
+                  <span v-if="data.item.nonce == data.item.currentNonce" v-b-popover.hover.ds500="formatDecimals(data.item.tokens, settings.decimals)">
                     {{ formatTokens(data.item.tokens) }}
                   </span>
-                  <span v-else v-b-popover.hover.ds500="'Invalid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
+                  <span v-else v-b-popover.hover.ds500="formatDecimals(data.item.tokens, settings.decimals) + ', invalid order - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
                     <strike>{{ formatTokens(data.item.tokens) }}</strike>
                   </span>
                 </template>
                 <template #cell(totalTokens)="data">
-                  <span v-if="data.item.nonce == data.item.currentNonce">
+                  <span v-if="data.item.nonce == data.item.currentNonce" v-b-popover.hover.ds500="formatDecimals(data.item.totalTokens, settings.decimals)">
                     {{ formatTokens(data.item.totalTokens) }}
                   </span>
                 </template>
                 <template #cell(wethAmount)="data">
-                  <span v-if="data.item.nonce == data.item.currentNonce">
+                  <span v-if="data.item.nonce == data.item.currentNonce" v-b-popover.hover.ds500="formatDecimals(data.item.wethAmount, 18)">
                     {{ formatWeth(data.item.wethAmount) }}
                   </span>
                 </template>
                 <template #cell(totalWeth)="data">
-                  <span v-if="data.item.nonce == data.item.currentNonce">
+                  <span v-if="data.item.nonce == data.item.currentNonce" v-b-popover.hover.ds500="formatDecimals(data.item.totalWeth, 18)">
                     {{ formatWeth(data.item.totalWeth) }}
                   </span>
                 </template>

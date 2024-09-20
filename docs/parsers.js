@@ -140,7 +140,7 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
 // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
 // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
 
-function parseTokenAgentEventLogs(logs, chainId, tokenAgentAddress, tokenAgentAbi, latestBlockNumber) {
+function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi, latestBlockNumber) {
   // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentAbi);
   const records = [];

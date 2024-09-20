@@ -227,9 +227,8 @@ const dataModule = {
       }
     },
     updateTokenAgentNonce(state, info) {
-      console.log(now() + " INFO dataModule:mutations.updateTokenAgentNonce - info: " + JSON.stringify(info));
+      // console.log(now() + " INFO dataModule:mutations.updateTokenAgentNonce - info: " + JSON.stringify(info));
       if (state.tokenAgents[info.chainId] && state.tokenAgents[info.chainId][info.contract]) {
-        console.log("Found: " + state.tokenAgents[info.chainId][info.contract]);
         Vue.set(state.tokenAgents[info.chainId][info.contract], 'nonce', info.newNonce);
         Vue.set(state.tokenAgents[info.chainId][info.contract], 'nonceBlockNumber', info.blockNumber);
         Vue.set(state.tokenAgents[info.chainId][info.contract], 'nonceTimestamp', info.timestamp);

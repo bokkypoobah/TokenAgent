@@ -162,11 +162,12 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata084a",
+      name: "tokenagentdata084b",
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+        tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
 
         announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
         registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
@@ -980,6 +981,9 @@ const dataModule = {
       if (options.token) {
         await context.dispatch('collateTokenAgentGeneralEvents', parameter);
       }
+      if (options.token) {
+        await context.dispatch('syncTokenSetTokenAgentEvents', parameter);
+      }
 
       // console.log("context.state.addressToIndex AFTER: " + JSON.stringify(context.state.addressToIndex));
       // console.log("context.state.indexToAddress AFTER: " + JSON.stringify(context.state.indexToAddress));
@@ -1278,6 +1282,138 @@ const dataModule = {
       await context.dispatch('saveData', ['tokenAgents']);
       console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents END");
     },
+
+    async syncTokenSetTokenAgentEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN: " + JSON.stringify(parameter));
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        let total = 0;
+        async function getLogs(fromBlock, toBlock) {
+          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.getLogs: " + fromBlock + " - " + toBlock);
+          let split = false;
+          const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
+          if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
+            try {
+              const filter = {
+                address: null, fromBlock, toBlock,
+                topics: [[
+                  // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+                  ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint24,uint128[],uint256[],uint128[],uint40)"),
+
+                  // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+                  // Traded (uint32 index, index_topic_1 address token, uint8 tokenType, index_topic_2 address maker, index_topic_3 address taker, uint8 makerBuySell, uint256[] prices, uint256[] tokenIds, uint256[] tokenss, uint128[] remainingTokenss, uint128 price, uint40 timestamp)
+                  ethers.utils.id("Traded(uint32,address,uint8,address,address,uint8,uint256[],uint256[],uint256[],uint128[],uint128,uint40)"),
+
+                  // type Account is address;  // 2^160
+                  // type Index is uint32;     // 2^32  = 4,294,967,296
+                  // type Nonce is uint24;     // 2^24  = 16,777,216
+                  // type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+                  // type Token is address;    // 2^160
+                  // type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
+                  // type TokenId16 is uint16; // 2^16 = 65,536
+                  // type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
+                  // type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
+                  // enum BuySell { BUY, SELL }
+                  // enum Execution { FILL, FILLORKILL }
+                  // enum TokenIdType { TOKENID256, TOKENID16 }
+                  // enum PaymentType { WETH, ETH }
+                  // enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
+                  // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+                  // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+                  // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
+                  // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
+                  // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+                  ],
+                  [ '0x000000000000000000000000' + parameter.token.substring(2, 42).toLowerCase() ],
+                ],
+              };
+              const eventLogs = await provider.getLogs(filter);
+              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi, parameter.blockNumber);
+              // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.getLogs - records: " + JSON.stringify(records, null, 2));
+              const newRecords = [];
+              for (const record of records) {
+                const contractIndex = context.state.addressToIndex[record.contract];
+                if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
+                  console.log(JSON.stringify(record));
+                  if (!(record.txHash in context.state.txHashToIndex)) {
+                    context.commit('addTxHashIndex', record.txHash);
+                  }
+                  let addresses = [];
+                  if (record.eventType == EVENTTYPE_OFFERED) {
+                    addresses = [record.contract, record.token, record.maker];
+                  } else if (record.eventType == EVENTTYPE_TRADED) {
+                    addresses = [record.contract, record.token, record.maker, record.taker];
+                  }
+                  for (const address of addresses) {
+                    if (!(address in context.state.addressToIndex)) {
+                      context.commit('addAddressIndex', address);
+                    }
+                  }
+                  let newRecord = {};
+                  if (record.eventType == EVENTTYPE_OFFERED) {
+                    addresses = [record.contract, record.token, record.maker];
+                    newRecord = {
+                      tokenSet: parameter.tokenIndex,
+                      ...record,
+                      txHash: context.state.txHashToIndex[record.txHash],
+                      contract: context.state.addressToIndex[record.contract],
+                      token: context.state.addressToIndex[record.token],
+                      maker: context.state.addressToIndex[record.maker],
+                    };
+                  } else if (record.eventType == EVENTTYPE_TRADED) {
+                    addresses = [record.contract, record.token, record.maker, record.taker];
+                    newRecord = {
+                      tokenSet: parameter.tokenIndex,
+                      ...record,
+                      txHash: context.state.txHashToIndex[record.txHash],
+                      contract: context.state.addressToIndex[record.contract],
+                      token: context.state.addressToIndex[record.token],
+                      maker: context.state.addressToIndex[record.maker],
+                      taker: context.state.addressToIndex[record.taker],
+                    };
+                  }
+                  newRecords.push(newRecord);
+                }
+              }
+              if (newRecords.length) {
+                context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
+                console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
+                await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
+                  console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+                }).catch(Dexie.BulkError, function(e) {
+                  // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
+                });
+              }
+            } catch (e) {
+              split = true;
+            }
+          } else {
+            split = true;
+          }
+          if (split) {
+            const mid = parseInt((fromBlock + toBlock) / 2);
+            await getLogs(fromBlock, mid);
+            await getLogs(parseInt(mid) + 1, toBlock);
+          }
+        }
+        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN");
+        context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
+        const deleteCall = await db.tokenSetTokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
+        const latest = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.token, Dexie.minKey, Dexie.minKey],[parameter.token, Dexie.maxKey, Dexie.maxKey]).last();
+        const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
+        // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - startBlock: " + startBlock);
+        await getLogs(startBlock, parameter.blockNumber);
+      }
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END");
+    },
+
+
+
+
+
 
     async syncTokenAgentsEvents(context, parameter) {
       console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents BEGIN: " + JSON.stringify(parameter));

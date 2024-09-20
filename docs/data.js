@@ -1197,19 +1197,19 @@ const dataModule = {
                 topics: [[
                   // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
                   ethers.utils.id("OffersInvalidated(uint24,uint40)"),
+                  // // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+                  // ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
                   ],
                 ],
               };
               const eventLogs = await provider.getLogs(filter);
               const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi, parameter.blockNumber);
-              // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs - records: " + JSON.stringify(records, null, 2));
+              console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs - records: " + JSON.stringify(records, null, 2));
               const newRecords = [];
               for (const record of records) {
-                // console.log(JSON.stringify(record));
                 const contractIndex = context.state.addressToIndex[record.contract];
-                // console.log("contractIndex: " + contractIndex);
-                if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
-                  // console.log("context.state.tokenAgents[parameter.chainId][contractIndex]: " + JSON.stringify(context.state.tokenAgents[parameter.chainId][contractIndex]));
+                if (record.eventType == EVENTTYPE_OFFERSINVALIDATED && (contractIndex in (context.state.tokenAgents[parameter.chainId] || {}))) {
+                  console.log("INVALIDATING context.state.tokenAgents[parameter.chainId][contractIndex]: " + JSON.stringify(context.state.tokenAgents[parameter.chainId][contractIndex]));
                   if (!(record.txHash in context.state.txHashToIndex)) {
                     context.commit('addTxHashIndex', record.txHash);
                   }
@@ -1252,7 +1252,7 @@ const dataModule = {
         const deleteCall = await db.tokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
         const latest = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
         const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock);
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock);
         await getLogs(startBlock, parameter.blockNumber);
       }
       console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END");

@@ -1096,7 +1096,7 @@ const dataModule = {
               }
               if (newRecords.length) {
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
-                console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
+                // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenAgentFactoryEvents.bulkAdd(newRecords).then(function(lastKey) {
                   console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {

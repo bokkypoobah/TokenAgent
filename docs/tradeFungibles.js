@@ -2503,7 +2503,7 @@ data: {{ data }}
             null,
           ]};
         const tokenAgentOffersInvalidatedEventLogs = await provider.getLogs(tokenAgentOffersInvalidatedEventsfilter);
-        const tokenAgentOffersInvalidated = parseTokenAgentEventLogs(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const tokenAgentOffersInvalidated = parseTokenAgentEventLogsOld(tokenAgentOffersInvalidatedEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
         const validTokenAgentOffersInvalidatedEvents = [];
         for (const record of tokenAgentOffersInvalidated) {
           if (record.contract in tokenAgents) {
@@ -2554,7 +2554,7 @@ data: {{ data }}
             null,
           ]};
         const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
-        const tokenAgentEvents = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const tokenAgentEvents = parseTokenAgentEventLogsOld(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
         for (const e of tokenAgentEvents) {
           if (e.contract in tokenAgents) {
@@ -2606,7 +2606,7 @@ data: {{ data }}
             null,
           ]};
         const internalTransferFromEventsEventLogs = await provider.getLogs(internalTransferFromEventsfilter);
-        const internalTransferFromEvents = parseTokenAgentEventLogs(internalTransferFromEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const internalTransferFromEvents = parseTokenAgentEventLogsOld(internalTransferFromEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferFromEvents: " + JSON.stringify(internalTransferFromEvents));
         const validInternalTransferFromEvents = [];
         for (const record of internalTransferFromEvents) {
@@ -2627,7 +2627,7 @@ data: {{ data }}
             null,
           ]};
         const internalTransferToEventsEventLogs = await provider.getLogs(internalTransferToEventsfilter);
-        const internalTransferToEvents = parseTokenAgentEventLogs(internalTransferToEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+        const internalTransferToEvents = parseTokenAgentEventLogsOld(internalTransferToEventsEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - internalTransferToEvents: " + JSON.stringify(internalTransferToEvents));
         const validInternalTransferToEvents = [];
         for (const record of internalTransferToEvents) {

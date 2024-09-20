@@ -51,8 +51,13 @@ const TradeFungibles = {
                   </b-badge>
                 </b-link>
               </div>
-              <div class="mt-0 pr-0">
-                <!-- {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }} -->
+              <!-- <div class="mt-0 pr-0">
+                {{ formatDecimals(balances[data.token] && balances[data.token][coinbase] && balances[data.token][coinbase].tokens || 0, settings.decimals) }}
+              </div> -->
+              <div class="mt-0 flex-grow-1">
+              </div>
+              <div class="mt-0 pl-1">
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
               </div>
             </div>
           </div>
@@ -84,9 +89,6 @@ const TradeFungibles = {
                 <!-- <b-button size="sm" :disabled="!networkSupported" @click="viewAddSellOffer" variant="link" v-b-popover.hover.ds500="'Add Sell Offer'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button> -->
               </div>
               <div class="mt-0 flex-grow-1">
-              </div>
-              <div class="mt-0 pr-2">
-                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
               </div>
               <div class="mt-0 pl-1">
                 <b-form-select size="sm" v-model="settings.addSellOffer.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
@@ -305,8 +307,10 @@ const TradeFungibles = {
                   {{ sellOffer.nonce }}
                 </b-badge>
               </div>
-              <div class="mt-0 pl-3">
-                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+              <div class="mt-0 flex-grow-1">
+              </div>
+              <div class="mt-0 pl-1">
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="+2" font-scale="0.9"></b-icon-tools></b-button>
               </div>
             </div>
 

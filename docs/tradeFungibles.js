@@ -57,7 +57,10 @@ const TradeFungibles = {
               <div class="mt-0 flex-grow-1">
               </div>
               <div class="mt-0 pl-1">
-                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+              </div>
+              <div class="mt-0 pl-1">
+                <b-button size="sm" :disabled="!networkSupported || sync.completed != null" @click="loadData(settings.tokenContractAddress);" variant="link"><b-icon-arrow-repeat shift-v="-1" font-scale="1.2"></b-icon-arrow-repeat></b-button>
               </div>
             </div>
           </div>
@@ -104,7 +107,7 @@ const TradeFungibles = {
               </div>
             </div>
             <font size="-1">
-              <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
+              <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" selectable select-mode="single" @row-selected='addSellOfferRowSelected' responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
                 <template #cell(price)="data">
                   <span v-b-popover.hover.ds500="formatDecimals(data.item.price, 18)">
                     {{ formatPrice(data.item.price) }}
@@ -191,28 +194,91 @@ const TradeFungibles = {
             </font>
             <b-row class="m-0 mt-0 p-0">
               <b-col class="m-0 p-0">
-                <b-card sub-title="One" class="m-0 mr-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="View Sell Offer" class="m-0 mr-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <b-form-group label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
-                    </b-form-group>
+                    <div v-if="!settings.addSellOffer.selectedItem || !settings.addSellOffer.selectedItem.owner">
+                      <p class="text-center">Select offer above</p>
+                    </div>
+                    <div v-if="settings.addSellOffer.selectedItem">
+                      <b-form-group label="Maker:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-link :href="explorer + 'address/' + settings.addSellOffer.selectedItem.owner" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                          <font size="-1">
+                            <p class="m-0 mt-1 p-0">
+                              {{ settings.addSellOffer.selectedItem.owner }}
+                            </p>
+                          </font>
+                        </b-link>
+                      </b-form-group>
+                      <b-form-group label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Makers Token Agent #: ' + settings.addSellOffer.selectedItem.indexByOwner + ', nonce: ' + settings.addSellOffer.selectedItem.currentNonce" class="mx-0 my-1 p-0">
+                        <b-link :href="explorer + 'address/' + settings.addSellOffer.selectedItem.tokenAgent" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                          <font size="-1">
+                            <p class="m-0 mt-1 p-0">
+                              {{ settings.addSellOffer.selectedItem.tokenAgent }}
+                            </p>
+                          </font>
+                        </b-link>
+                      </b-form-group>
+                      <b-form-group label="Offer Index:" label-for="modaladdselloffer-offerindex" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="(settings.addSellOffer.selectedItem.nonce == settings.addSellOffer.selectedItem.currentNonce ? ' Offer nonce: ' : 'INVALIDATED offer nonce: ') + settings.addSellOffer.selectedItem.nonce" class="mx-0 my-1 p-0">
+                        <b-link :href="explorer + 'tx/' + settings.addSellOffer.selectedItem.txHash + '#eventlog#' + settings.addSellOffer.selectedItem.logIndex" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                          <font size="-1">
+                            <p class="m-0 mt-1 p-0">
+                              {{ settings.addSellOffer.selectedItem.offerIndex }}
+                            </p>
+                          </font>
+                        </b-link>
+                      </b-form-group>
+                      <b-form-group label="Expiry:" label-for="modaladdselloffer-expiry" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <font size="-1">
+                          <p class="m-0 mt-1 p-0">
+                            {{ formatTimestamp(settings.addSellOffer.selectedItem.expiry) }}
+                          </p>
+                        </font>
+                      </b-form-group>
+
+                      <b-form-group label="" label-for="modaladdselloffer-points" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <font size="-1">
+                          <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferViewPointsFields" :items="addSellOfferSelectedPoints" show-empty head-variant="light" class="m-0 mt-1">
+                            <template #empty="scope">
+                              Click [+] below to add a new row
+                            </template>
+                            <template #cell(price)="data">
+                              {{ formatPrice(data.item.price) }}
+                            </template>
+                            <template #cell(tokens)="data">
+                              {{ formatTokens(data.item.tokens) }}
+                            </template>
+                            <template #cell(wethAmount)="data">
+                              {{ formatWeth(data.item.wethAmount) }}
+                            </template>
+                          </b-table>
+                        </font>
+                      </b-form-group>
+                    </div>
+                    <!-- <font size="-2">
+                      <pre>
+{{ settings.addSellOffer.selectedItem }}
+                      </pre>
+                    </font> -->
                   </b-card-text>
                 </b-card>
               </b-col>
               <b-col class="m-0 p-0">
-                <b-card sub-title="Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
+                <b-card sub-title="Add Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
                     <b-form-group label="" label-size="sm" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
                       <font size="-1">
                         <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
+                          <template #empty="scope">
+                            Click [+] below to add a new row
+                          </template>
                           <template #cell(price)="data">
-                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" debounce="600" style="float: right;" ></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" debounce="600" class="text-right"></b-form-input>
                           </template>
                           <template #cell(tokens)="data">
-                            <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" debounce="600" style="float: right;"></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" debounce="600" class="text-right"></b-form-input>
                           </template>
                           <template #cell(wethAmount)="data">
-                            <b-form-input size="sm" readonly :value="formatNumber(bigNumberMultiply(data.item.price, data.item.tokens))" style="float: right;"></b-form-input>
+                            <b-form-input size="sm" readonly :value="formatNumber(bigNumberMultiply(data.item.price, data.item.tokens))" class="text-right"></b-form-input>
                           </template>
                           <template #cell(option)="data">
                             <b-button size="sm" @click="settings.addSellOffer.points.splice(data.index, 1); saveSettings();" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-dash shift-v="+1" font-scale="1.2"></b-icon-dash></b-button>
@@ -234,24 +300,21 @@ const TradeFungibles = {
                         </b-table>
                       </font>
                     </b-form-group>
-                    <!-- <b-form-group label="Simulate:" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-form-checkbox size="sm" v-model="settings.addSellOffer.simulate" @input="saveSettings" v-b-popover.hover.ds500="'Simulate in offers table above?'" class="mt-1">
-                      </b-form-checkbox>
-                    </b-form-group> -->
-                    <!-- <font size="-2">
-                      <pre>
-{{ settings.addSellOffer.points }}
-                      </pre>
-                    </font> -->
+                    <b-form-group v-if="myTokenAgentOptions.length == 1" label="Deploy Token Agent:" label-size="sm" label-cols-sm="4" label-align-sm="right" description="Refresh after deployment" class="mx-0 my-1 p-0">
+                      <b-button size="sm" @click="deployNewTokenAgent" variant="warning">Deploy</b-button>
+                    </b-form-group>
+                    <b-form-group v-if="myTokenAgentOptions.length > 1" label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-form-select size="sm" v-model="settings.addSellOffer.tokenAgent" @change="saveSettings" :options="myTokenAgentOptions""></b-form-select>
+                    </b-form-group>
                   </b-card-text>
                 </b-card>
               </b-col>
             </b-row>
-            <font size="-2">
+            <!-- <font size="-2">
               <pre>
 {{ addSellOffer }}
               </pre>
-            </font>
+            </font> -->
           </div>
         </b-modal>
 
@@ -721,7 +784,7 @@ modalBuyOffer: {{ modalBuyOffer }}
               </font>
             </b-col>
           </b-row>
-          <b-row class="m-0 mt-2 p-0">
+          <!-- <b-row class="m-0 mt-2 p-0">
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
@@ -736,7 +799,7 @@ buyOffers: {{ buyOffers }}
                 </pre>
               </font>
             </b-col>
-          </b-row>
+          </b-row> -->
         </b-card>
 
         <b-card v-if="settings.tabIndex == 1" class="m-0 p-0 border-0" body-class="m-0 p-0">
@@ -1095,6 +1158,7 @@ data: {{ data }}
           includeExpired: false,
           includeInvalidated: false,
           ignoreMyApprovals: false,
+          selectedItem: null,
           points: [],
           simulate: true,
           currentPage: 1,
@@ -1127,7 +1191,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 17,
+        version: 18,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1292,6 +1356,11 @@ data: {{ data }}
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 15%;', thClass: 'text-left', tdClass: 'text-left' },
       ],
+      addSellOfferViewPointsFields: [
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 35%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+      ],
       addSellOfferPointsFields: [
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
@@ -1409,7 +1478,7 @@ data: {{ data }}
       results.push({ value: null, text: '(Select Token Agent)' });
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         if (d.owner == this.coinbase) {
-          results.push({ value: tokenAgent, text: d.indexByOwner + '. ' + tokenAgent.substring(0, 10) + '...' + tokenAgent.slice(-8) });
+          results.push({ value: tokenAgent, text: '#' + d.indexByOwner + ' ' + tokenAgent.substring(0, 12) + '...' + tokenAgent.slice(-10) });
         }
       }
       // console.log(now() + " INFO TradeFungibles:computed.myTokenAgentOptions - results: " + JSON.stringify(results, null, 2));
@@ -1513,6 +1582,32 @@ data: {{ data }}
         return "ERC-721/1155 not supported yet";
       }
       return null;
+    },
+
+    addSellOfferSelectedPoints() {
+      console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - this.settings.addSellOffer.selectedItem: " + JSON.stringify(this.settings.addSellOffer.selectedItem, null, 2));
+      const results = [];
+      if (this.settings.addSellOffer.selectedItem) {
+        const tokenAgent = this.data.tokenAgents[this.settings.addSellOffer.selectedItem.tokenAgent];
+        // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
+        const offer = tokenAgent.offers[this.settings.addSellOffer.selectedItem.offerIndex];
+        // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - offer: " + JSON.stringify(offer, null, 2));
+        const prices = tokenAgent.offers[this.settings.addSellOffer.selectedItem.offerIndex].prices;
+        const tokenss = tokenAgent.offers[this.settings.addSellOffer.selectedItem.offerIndex].tokenss;
+        console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - prices: " + JSON.stringify(prices, null, 2));
+        console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - tokenss: " + JSON.stringify(tokenss, null, 2));
+        if (prices.length == tokenss.length) {
+          for (const [i, price] of prices.entries()) {
+            const bPrice = ethers.BigNumber.from(price);
+            const bTokens = ethers.BigNumber.from(tokenss[i]);
+            const wethAmount = bPrice.mul(bTokens).div(ethers.BigNumber.from("1000000000000000000"));
+            // console.log(i + " " + price + " " + bTokens + " " + wethAmount);
+            results.push({ price: bPrice.toString(), tokens: bTokens.toString(), wethAmount: wethAmount.toString() });
+          }
+        }
+      }
+      console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - results: " + JSON.stringify(results, null, 2));
+      return results;
     },
 
     nonce() {
@@ -2110,7 +2205,7 @@ data: {{ data }}
         const tokenApproval = ethers.BigNumber.from(!price.simulated && tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
         let tokens = ethers.BigNumber.from(price.tokens);
         let wethAmount = null;
-        console.log("  price: " + JSON.stringify(price));
+        // console.log("  price: " + JSON.stringify(price));
         if (price.valid) {
           console.log("  tokens BEFORE: " + ethers.utils.formatEther(tokens) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0) + ", ignoreApproval: " + ignoreApproval);
           if (tokens.gt(tokenBalance)) {
@@ -2132,7 +2227,7 @@ data: {{ data }}
         }
         records.push({ ...price, offer: price.tokens, tokens: tokens.toString(), totalTokens: totalTokens.toString(), wethAmount: wethAmount != null && wethAmount.toString() || null, totalWeth: totalWeth.toString() });
       }
-      console.log("records: " + JSON.stringify(records, null, 2));
+      // console.log("records: " + JSON.stringify(records, null, 2));
       // console.log("collator: " + JSON.stringify(collator, null, 2));
       return { tokenBalances, tokenApprovals, records, collator };
     },
@@ -2732,6 +2827,21 @@ data: {{ data }}
       console.log(now() + " INFO Addresses:methods.addBuyOffer TODO");
     },
 
+    addSellOfferRowSelected(item) {
+      console.log(now() + " INFO Addresses:methods.addSellOfferRowSelected BEGIN: " + JSON.stringify(item, null, 2));
+      if (item && item.length > 0) {
+        if (!item[0].simulated) {
+          if (this.settings.addSellOffer.selectedItem != null && this.settings.addSellOffer.selectedItem.txHash == item[0].txHash) {
+            this.settings.addSellOffer.selectedItem = null;
+          } else {
+            this.settings.addSellOffer.selectedItem = item[0];
+          }
+        }
+        this.$refs.addSellOfferTable.clearSelected();
+        this.saveSettings();
+      }
+    },
+
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
@@ -2786,6 +2896,45 @@ data: {{ data }}
         };
         this.$refs.modalbuyoffer.show();
         this.$refs.buyOffersTable.clearSelected();
+      }
+    },
+
+    async deployNewTokenAgent() {
+      console.log(now() + " INFO TradeFungibles:methods.deployNewTokenAgent");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        const contract = new ethers.Contract(network.tokenAgentFactory.address, network.tokenAgentFactory.abi, provider);
+        const contractWithSigner = contract.connect(provider.getSigner());
+        try {
+          const tx = await contractWithSigner.newTokenAgent();
+          // const tx = { hash: "blah" };
+          console.log(now() + " INFO TradeFungibles:methods.deployNewTokenAgent - tx: " + JSON.stringify(tx));
+          const h = this.$createElement;
+          const vNodesMsg = h(
+            'p',
+            { class: ['text-left', 'mb-0'] },
+            [
+              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+              h('br'),
+              h('br'),
+              'Resync after this tx has been included',
+            ]
+          );
+          this.$bvToast.toast([vNodesMsg], {
+            title: 'Transaction submitted',
+            autoHideDelay: 5000,
+          });
+          this.$refs['modalnewtokenagent'].hide();
+          this.settings.newTokenAgent.show = false;
+          this.saveSettings();
+        } catch (e) {
+          console.log(now() + " ERROR TradeFungibles:methods.deployNewTokenAgent: " + JSON.stringify(e));
+          this.$bvToast.toast(`${e.message}`, {
+            title: 'Error!',
+            autoHideDelay: 5000,
+          });
+        }
       }
     },
 

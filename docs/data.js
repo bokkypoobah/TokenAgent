@@ -673,7 +673,7 @@ const dataModule = {
       }
     },
     setSyncSection(state, info) {
-      console.log(now() + " INFO dataModule:mutations.setSyncSection info: " + JSON.stringify(info));
+      // console.log(now() + " INFO dataModule:mutations.setSyncSection info: " + JSON.stringify(info));
       state.sync.section = info.section;
       state.sync.total = info.total;
     },
@@ -1166,7 +1166,7 @@ const dataModule = {
     },
 
     async collateTokenAgentFactoryEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       // console.log("tokenAgents BEFORE: " + JSON.stringify(context.state.tokenAgents, null, 2));
@@ -1174,7 +1174,7 @@ const dataModule = {
       let done = false;
       do {
         let data = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-        console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        // console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
           if (!(parameter.chainId in context.state.tokenAgents) || !(item.tokenAgent in context.state.tokenAgents[parameter.chainId])) {
             context.commit('addTokenAgent', item);
@@ -1189,7 +1189,7 @@ const dataModule = {
     },
 
     async syncTokenAgentGeneralEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents BEGIN: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1197,7 +1197,7 @@ const dataModule = {
       if (network.tokenAgentFactory) {
         let total = 0;
         async function getLogs(fromBlock, toBlock) {
-          console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs: " + fromBlock + " - " + toBlock);
+          // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs: " + fromBlock + " - " + toBlock);
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
@@ -1214,7 +1214,7 @@ const dataModule = {
               };
               const eventLogs = await provider.getLogs(filter);
               const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi, parameter.blockNumber);
-              console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs - records: " + JSON.stringify(records, null, 2));
+              // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs - records: " + JSON.stringify(records, null, 2));
               const newRecords = [];
               for (const record of records) {
                 const contractIndex = context.state.addressToIndex[record.contract];
@@ -1269,7 +1269,7 @@ const dataModule = {
     },
 
     async collateTokenAgentGeneralEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       // console.log("tokenAgents BEFORE: " + JSON.stringify(context.statetokenAgents, null, 2));
@@ -1277,7 +1277,7 @@ const dataModule = {
       let done = false;
       do {
         let data = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-        console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        // console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
           context.commit('updateTokenAgentNonce', item);
         }
@@ -1290,7 +1290,7 @@ const dataModule = {
     },
 
     async syncTokenSetTokenAgentEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1421,7 +1421,7 @@ const dataModule = {
 
 
     async syncTokenAgentsEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents BEGIN: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1517,7 +1517,7 @@ const dataModule = {
 
 
     async syncStealthTransfers(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.syncStealthTransfers BEGIN: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.syncStealthTransfers BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);

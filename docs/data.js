@@ -131,6 +131,11 @@ const dataModule = {
   state: {
     DB_PROCESSING_BATCH_SIZE: 12345,
 
+    addressToIndex: {},
+    indexToAddress: [],
+    txHashToIndex: {},
+    indexToTxHash: [],
+
     addresses: {},
     tokenAgents: {},
     tokenContracts: {},
@@ -199,6 +204,15 @@ const dataModule = {
     setState(state, info) {
       // console.log(now() + " INFO dataModule:mutations.setState - info: " + JSON.stringify(info, null, 2));
       Vue.set(state, info.name, info.data);
+    },
+
+    addAddressIndex(state, address) {
+      // console.log(now() + " INFO dataModule:mutations.addAddressIndex - address: " + address);
+      if (!(address in state.addressToIndex)) {
+        const newIndex = state.indexToAddress.length;
+        Vue.set(state.addressToIndex, address, newIndex);
+        Vue.set(state.indexToAddress, newIndex, address);
+      }
     },
 
     addTokenContract(state, info) {
@@ -635,11 +649,24 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['tokenContracts', 'tokenAgents', 'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers']) {
+        for (let type of ['indexToAddress', 'indexToTxHash', 'tokenContracts', 'tokenAgents', /*'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers'*/]) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // console.log(now() + " INFO dataModule:actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
             context.commit('setState', { name: type, data: data[0].object });
+            if (type == 'indexToAddress') {
+              const addressToIndex = {};
+              for (const [index, address] of context.state.indexToAddress.entries()) {
+                addressToIndex[address] = index;
+              }
+              context.commit('setState', { name: 'addressToIndex', data: addressToIndex });
+            } else if (type == 'indexToTxHash') {
+              const txHashToIndex = {};
+              for (const [index, address] of context.state.indexToTxHash.entries()) {
+                txHashToIndex[address] = index;
+              }
+              context.commit('setState', { name: 'txHashToIndex', data: txHashToIndex });
+            }
           }
         }
       }
@@ -895,21 +922,47 @@ const dataModule = {
       const cryptoCompareAPIKey = store.getters['config/settings'].cryptoCompareAPIKey && store.getters['config/settings'].cryptoCompareAPIKey.length > 0 && store.getters['config/settings'].cryptoCompareAPIKey || null;
       const chainId = store.getters['connection/chainId'];
       const coinbase = store.getters['connection/coinbase'];
-      if (!(coinbase in context.state.addresses) && Object.keys(context.state.addresses).length == 0) {
-        context.commit('addNewAddress', { action: "addCoinbase", check: ["ethers", "tokens"] });
+      // if (!(coinbase in context.state.addresses) && Object.keys(context.state.addresses).length == 0) {
+      //   context.commit('addNewAddress', { action: "addCoinbase", check: ["ethers", "tokens"] });
+      // }
+
+      console.log("context.state.addressToIndex BEFORE: " + JSON.stringify(context.state.addressToIndex));
+      console.log("context.state.indexToAddress BEFORE: " + JSON.stringify(context.state.indexToAddress));
+
+      if (options.tokenContractAddress) {
+        try {
+          options.token = ethers.utils.getAddress(options.tokenContractAddress);
+          console.log(now() + " INFO dataModule:actions.syncIt - options.token: " + options.token);
+          if (!(options.token in context.state.addressToIndex)) {
+            context.commit('addAddressIndex', options.token);
+          }
+          options.tokenIndex = context.state.addressToIndex[options.token];
+        } catch (e) {
+          console.log(now() + " ERROR dataModule:actions.syncIt - tokenContractAddress: " + options.tokenContractAddress);
+          options.token = null;
+        }
       }
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options };
 
-      if (options.tokenAgentFactory && !options.devThing) {
+      if (options.token) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
       }
-      if (options.tokenAgentFactory && !options.devThing) {
-        await context.dispatch('collateTokenAgentFactoryEvents', parameter);
-      }
-      if (options.tokenAgents && !options.devThing) {
-        await context.dispatch('syncTokenAgentsEvents', parameter);
-      }
+
+      console.log("context.state.addressToIndex AFTER: " + JSON.stringify(context.state.addressToIndex));
+      console.log("context.state.indexToAddress AFTER: " + JSON.stringify(context.state.indexToAddress));
+      context.dispatch('saveData', ['indexToAddress']);
+
+
+      // if (options.tokenAgentFactory && !options.devThing) {
+      //   await context.dispatch('syncTokenAgentFactoryEvents', parameter);
+      // }
+      // if (options.tokenAgentFactory && !options.devThing) {
+      //   await context.dispatch('collateTokenAgentFactoryEvents', parameter);
+      // }
+      // if (options.tokenAgents && !options.devThing) {
+      //   await context.dispatch('syncTokenAgentsEvents', parameter);
+      // }
 
       // if (options.stealthTransfers && !options.devThing) {
       //   await context.dispatch('syncStealthTransfers', parameter);
@@ -979,6 +1032,7 @@ const dataModule = {
 
     async syncTokenAgentFactoryEvents(context, parameter) {
       console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN: " + JSON.stringify(parameter));
+      return;
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1048,7 +1102,10 @@ const dataModule = {
                 ]
               };
               const eventLogs = await provider.getLogs(filter);
-              await processLogs(fromBlock, toBlock, eventLogs);
+              console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs - eventLogs: " + JSON.stringify(eventLogs, null, 2));
+              const records = parseTokenAgentFactoryEventLogs(eventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, parameter.blockNumber);
+              console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs - records: " + JSON.stringify(records, null, 2));
+              // await processLogs(fromBlock, toBlock, eventLogs);
             } catch (e) {
               split = true;
             }

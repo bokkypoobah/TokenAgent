@@ -625,8 +625,12 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </b-badge> -->
                 </font>
               </div>
+
               <div class="mt-0 pr-5">
                 <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+              </div>
+              <div class="mt-0 pr-1">
+                <b-button size="sm" :disabled="!networkSupported || sync.completed != null || !validAddress(settings.tokenContractAddress)" @click="syncNow" variant="link"><b-icon-arrow-repeat shift-v="-1" font-scale="1.2"></b-icon-arrow-repeat></b-button>
               </div>
             </div>
           </template>
@@ -1548,7 +1552,7 @@ data: {{ data }}
     },
 
     pointsFeedback() {
-      console.log(now() + " INFO TradeFungibles:computed.pointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
+      // console.log(now() + " INFO TradeFungibles:computed.pointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
       for (const [i, point] of this.settings.addSellOffer.points.entries()) {
         // console.log(i + " => " + JSON.stringify(point));
         if (point.price == null || point.price == "") {
@@ -1568,7 +1572,7 @@ data: {{ data }}
     },
 
     tradeFeedback() {
-      console.log(now() + " INFO TradeFungibles:computed.tradeFeedback");
+      // console.log(now() + " INFO TradeFungibles:computed.tradeFeedback");
       // if (this.coinbase == this.sellOffer.maker) {
       //   return "Cannot self trade";
       // }
@@ -1627,7 +1631,7 @@ data: {{ data }}
     },
 
     addSellOfferSelectedPoints() {
-      console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - this.settings.addSellOffer.selectedItem: " + JSON.stringify(this.settings.addSellOffer.selectedItem, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - this.settings.addSellOffer.selectedItem: " + JSON.stringify(this.settings.addSellOffer.selectedItem, null, 2));
       const results = [];
       if (this.settings.addSellOffer.selectedItem) {
         const tokenAgent = this.data.tokenAgents[this.settings.addSellOffer.selectedItem.tokenAgent];
@@ -1636,8 +1640,8 @@ data: {{ data }}
         // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - offer: " + JSON.stringify(offer, null, 2));
         const prices = tokenAgent.offers[this.settings.addSellOffer.selectedItem.offerIndex].prices;
         const tokenss = tokenAgent.offers[this.settings.addSellOffer.selectedItem.offerIndex].tokenss;
-        console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - prices: " + JSON.stringify(prices, null, 2));
-        console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - tokenss: " + JSON.stringify(tokenss, null, 2));
+        // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - prices: " + JSON.stringify(prices, null, 2));
+        // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - tokenss: " + JSON.stringify(tokenss, null, 2));
         if (prices.length == tokenss.length) {
           for (const [i, price] of prices.entries()) {
             const bPrice = ethers.BigNumber.from(price);
@@ -1648,7 +1652,7 @@ data: {{ data }}
           }
         }
       }
-      console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - results: " + JSON.stringify(results, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOfferSelectedPoints - results: " + JSON.stringify(results, null, 2));
       return results;
     },
 
@@ -1662,7 +1666,7 @@ data: {{ data }}
 
     sellOffers() {
       const results = [];
-      console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         if (!(d.owner in collator)) {
@@ -1710,16 +1714,16 @@ data: {{ data }}
         const tokenBalance = ethers.BigNumber.from(collator[d.owner].tokenBalance);
         const tokenApproval = ethers.BigNumber.from(collator[d.owner].tokenAgents[tokenAgent].tokenApproval);
         let tokensRemaining = tokenBalance.lte(tokenApproval) ? tokenBalance: tokenApproval;
-        console.log(now() + " INFO TradeFungibles:computed.sellOffers - maker: " + d.owner.substring(0, 10) + ", tokenAgent: " + tokenAgent.substring(0, 10) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalance) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval) + ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
+        // console.log(now() + " INFO TradeFungibles:computed.sellOffers - maker: " + d.owner.substring(0, 10) + ", tokenAgent: " + tokenAgent.substring(0, 10) + ", tokenBalance: " + ethers.utils.formatEther(tokenBalance) + ", tokenApproval: " + ethers.utils.formatEther(tokenApproval) + ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining));
         for (const [i, e] of prices.entries()) {
           const tokens = ethers.BigNumber.from(e.tokens);
           const tokensAvailable = tokens.lte(tokensRemaining) ? tokens : tokensRemaining;
           tokensRemaining = tokensRemaining.sub(tokensAvailable);
-          console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex + ", price: " + ethers.utils.formatEther(e.price) +
-            ", tokens: " + ethers.utils.formatEther(tokens) +
-            ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) +
-            ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
-          );
+          // console.log("    offerIndex: " + e.offerIndex + ", priceIndex: " + e.priceIndex + ", price: " + ethers.utils.formatEther(e.price) +
+          //   ", tokens: " + ethers.utils.formatEther(tokens) +
+          //   ", tokensAvailable: " + ethers.utils.formatEther(tokensAvailable) +
+          //   ", tokensRemaining: " + ethers.utils.formatEther(tokensRemaining)
+          // );
           prices[i].tokensAvailable = tokensAvailable.toString();
           // if (tokensAvailable.gt(0)) {
             const o = d.offers[e.offerIndex];
@@ -1870,7 +1874,7 @@ data: {{ data }}
     },
 
     sellOffer() {
-      console.log(now() + " INFO TradeFungibles:computed.sellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffer - amount: " + this.modalSellOffer.amount + ", amountType: " + this.modalSellOffer.amountType);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       // TODO: handle decimals
       let maxTokens = this.modalSellOffer.amount != null && this.modalSellOffer.amount.trim().length != 0 && this.modalSellOffer.amountType == 'receiveTokens' ? ethers.utils.parseEther(this.modalSellOffer.amount) : null;
@@ -2033,14 +2037,14 @@ data: {{ data }}
 
     buyOffer() {
       const result = {};
-      console.log(now() + " INFO TradeFungibles:computed.buyOffer");
+      // console.log(now() + " INFO TradeFungibles:computed.buyOffer");
       return result;
     },
 
     buyOffers() {
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const results = [];
-      console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.buyOffers - this.buyByMakers: " + JSON.stringify(this.buyByMakers, null, 2));
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.data.tokenAgents)) {
         if (!(d.owner in collator)) {
@@ -2089,7 +2093,7 @@ data: {{ data }}
         // const wethBalance = ethers.BigNumber.from("100000000000000003");
         const wethApproval = ethers.BigNumber.from(collator[d.owner].tokenAgents[tokenAgent].wethApproval);
         let wethRemaining = wethBalance.lte(wethApproval) ? wethBalance: wethApproval;
-        console.log(now() + " INFO TradeFungibles:computed.buyOffers - maker: " + d.owner.substring(0, 10) + ", tokenAgent: " + tokenAgent.substring(0, 10) + ", wethBalance: " + ethers.utils.formatEther(wethBalance) + ", wethApproval: " + ethers.utils.formatEther(wethApproval) + ", wethRemaining: " + ethers.utils.formatEther(wethRemaining));
+        // console.log(now() + " INFO TradeFungibles:computed.buyOffers - maker: " + d.owner.substring(0, 10) + ", tokenAgent: " + tokenAgent.substring(0, 10) + ", wethBalance: " + ethers.utils.formatEther(wethBalance) + ", wethApproval: " + ethers.utils.formatEther(wethApproval) + ", wethRemaining: " + ethers.utils.formatEther(wethRemaining));
         for (const [i, e] of prices.entries()) {
           const tokens = ethers.BigNumber.from(e.tokens);
           const tokensRemaining = wethRemaining.mul(TENPOW18).div(e.price);
@@ -2385,6 +2389,12 @@ data: {{ data }}
 
   },
   methods: {
+    syncNow() {
+      console.log(now() + " INFO TradeFungibles:methods.syncNow - this.settings.tokenContractAddress: " + this.settings.tokenContractAddress);
+      store.dispatch('data/syncIt', {
+        tokenContractAddress: this.settings.tokenContractAddress,
+      });
+    },
     async trade() {
       console.log(now() + " INFO TradeFungibles:methods.trade - trades: " + JSON.stringify(this.sellOffer.trades));
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -2744,8 +2754,7 @@ data: {{ data }}
     },
 
     computeState() {
-      console.log(now() + " INFO TradeFungibles:methods.computeState");
-
+      // console.log(now() + " INFO TradeFungibles:methods.computeState");
       const events = {};
       const allEvents = [...this.data.tokenAgentEvents, ...this.data.tokenTransfers, ...this.data.tokenApprovals, ...this.data.wethTransfers, ...this.data.wethApprovals];
       // console.log("allEvents: " + JSON.stringify(allEvents, null, 2));

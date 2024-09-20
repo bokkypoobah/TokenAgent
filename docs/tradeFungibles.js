@@ -105,10 +105,10 @@ const TradeFungibles = {
                 </template>
                 <template #cell(offer)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    {{ formatDecimals(data.item.offer, settings.decimals) }}
+                    {{ formatTokens(data.item.offer) }}
                   </span>
                   <span v-else v-b-popover.hover.ds500="'Invalid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
-                    <strike>{{ formatDecimals(data.item.offer, settings.decimals) }}</strike>
+                    <strike>{{ formatTokens(data.item.offer) }}</strike>
                   </span>
                 </template>
                 <template #head(tokens)="data">
@@ -116,25 +116,25 @@ const TradeFungibles = {
                 </template>
                 <template #cell(tokens)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
+                    {{ formatTokens(data.item.tokens) }}
                   </span>
                   <span v-else v-b-popover.hover.ds500="'Invalid - nonce: ' + data.item.nonce + ', currentNonce: ' + data.item.currentNonce">
-                    <strike>{{ formatDecimals(data.item.tokens, settings.decimals) }}</strike>
+                    <strike>{{ formatTokens(data.item.tokens) }}</strike>
                   </span>
                 </template>
                 <template #cell(totalTokens)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
+                    {{ formatTokens(data.item.totalTokens) }}
                   </span>
                 </template>
                 <template #cell(wethAmount)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    {{ formatDecimals(data.item.wethAmount, 18) }}
+                    {{ formatWeth(data.item.wethAmount) }}
                   </span>
                 </template>
                 <template #cell(totalWeth)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
-                    {{ formatDecimals(data.item.totalWeth, 18) }}
+                    {{ formatWeth(data.item.totalWeth) }}
                   </span>
                 </template>
                 <template #cell(maker)="data">
@@ -312,7 +312,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(offer)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.offer, settings.decimals) }}
+                    {{ formatTokens(data.item.offer) }}
                   </font>
                 </template>
                 <template #head(tokens)="data">
@@ -320,7 +320,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(tokens)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.tokens, settings.decimals) }}
+                    {{ formatTokens(data.item.tokens) }}
                   </font>
                 </template>
                 <template #head(totalTokens)="data">
@@ -328,7 +328,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(totalTokens)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.totalTokens, settings.decimals) }}
+                    {{ formatTokens(data.item.totalTokens) }}
                   </font>
                 </template>
                 <template #head(wethAmount)="data">
@@ -336,7 +336,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(wethAmount)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.wethAmount, 18) }}
+                    {{ formatWeth(data.item.wethAmount) }}
                   </font>
                 </template>
                 <template #head(totalWeth)="data">
@@ -344,7 +344,7 @@ const TradeFungibles = {
                 </template>
                 <template #cell(totalWeth)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.totalWeth, 18) }}
+                    {{ formatWeth(data.item.totalWeth) }}
                   </font>
                 </template>
                 <template #cell(expiry)="data">
@@ -628,7 +628,8 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </template>
                   <template #cell(tokens)="data">
                     <font size="-1">
-                      {{ formatDecimals(data.item.tokensAvailable, 18) }}
+                      <!-- {{ formatDecimals(data.item.tokensAvailable, 18) }} -->
+                      {{ formatTokens(data.item.tokensAvailable) }}
                     </font>
                   </template>
                   <template #cell(price)="data">
@@ -2867,10 +2868,32 @@ data: {{ data }}
       // }
     },
     formatTokens(e) {
-      return e ? ethers.utils.formatUnits(e, this.settings.decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
+      if (e) {
+        let p = ethers.FixedNumber.from(ethers.utils.formatUnits(e, this.settings.decimals)).round(this.settings.config.tokenDisplayDecimals).toString();
+        const dotPosition = p.indexOf('.');
+        if (dotPosition >= 0) {
+          const decimals = p.length - dotPosition - 1;
+          for (let i = 0; i < (this.settings.config.tokenDisplayDecimals - decimals); i++) {
+            p = p + "0";
+          }
+        }
+        return p;
+      }
+      return null;
     },
     formatWeth(e) {
-      return e ? ethers.utils.formatUnits(e, 18).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
+      if (e) {
+        let p = ethers.FixedNumber.from(ethers.utils.formatUnits(e, 18)).round(this.settings.config.wethDisplayDecimals).toString();
+        const dotPosition = p.indexOf('.');
+        if (dotPosition >= 0) {
+          const decimals = p.length - dotPosition - 1;
+          for (let i = 0; i < (this.settings.config.wethDisplayDecimals - decimals); i++) {
+            p = p + "0";
+          }
+        }
+        return p;
+      }
+      return null;
     },
     formatDecimals(e, decimals = 18) {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;

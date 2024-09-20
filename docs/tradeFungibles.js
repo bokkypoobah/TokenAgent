@@ -3,6 +3,19 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
+        <b-modal id="config" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" visible body-bg-variant="light" size="md">
+          <template #modal-title>Config</template>
+          <b-form-group label="Price display decimals:" label-for="config-pricedisplaydecimals" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-select size="sm" id="config-pricedisplaydecimals" v-model="settings.config.priceDisplayDecimals" @change="saveSettings" :options="decimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
+          </b-form-group>
+          <b-form-group label="Token display decimals:" label-for="config-tokendisplaydecimals" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-select size="sm" id="config-tokendisplaydecimals" v-model="settings.config.tokenDisplayDecimals" @change="saveSettings" :options="decimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
+          </b-form-group>
+          <b-form-group label="WETH display decimals:" label-for="config-wethisplaydecimals" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
+            <b-form-select size="sm" id="config-wethisplaydecimals" v-model="settings.config.wethDisplayDecimals" @change="saveSettings" :options="decimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
+          </b-form-group>
+        </b-modal>
+
         <!-- <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="xl"> -->
         <b-modal ref="modaladdselloffer" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" size="xl">
           <template #modal-title>Add Sell Offer - Fungibles</template>
@@ -527,6 +540,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                     {{ formatDecimals(contract.totalSupply, contract.decimals) }}
                   </b-badge> -->
                 </font>
+              </div>
+              <div class="mt-0 pr-5">
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
               </div>
             </div>
           </template>
@@ -1091,7 +1107,13 @@ data: {{ data }}
           tokenss: [],
         },
 
-        version: 16,
+        config: {
+          priceDisplayDecimals: 6,
+          tokenDisplayDecimals: 9,
+          wethDisplayDecimals: 9,
+        },
+
+        version: 17,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1171,6 +1193,37 @@ data: {{ data }}
         { value: 0, text: 'Single price without limit' },
         { value: 1, text: 'Single price with limit' },
         { value: 1, text: 'Multiple prices and limits', disabled: true },
+      ],
+      decimalsOptions: [
+        {
+          label: "Common",
+          options: [
+            { value: 0, text: '9,999' },
+            { value: 3, text: '9,999.999' },
+            { value: 6, text: '9,999.999999' },
+            { value: 9, text: '9,999.999999999' },
+            { value: 18, text: '9,999.999999999999999999' },
+          ],
+        },
+        // { value: 0, text: '9,999' },
+        { value: 1, text: '9,999.9' },
+        { value: 2, text: '9,999.99' },
+        // { value: 3, text: '9,999.999' },
+        { value: 4, text: '9,999.9999' },
+        { value: 5, text: '9,999.99999' },
+        // { value: 6, text: '9,999.999999' },
+        { value: 7, text: '9,999.9999999' },
+        { value: 8, text: '9,999.99999999' },
+        // { value: 9, text: '9,999.999999999' },
+        { value: 10, text: '9,999.9999999999' },
+        { value: 11, text: '9,999.99999999999' },
+        { value: 12, text: '9,999.999999999999' },
+        { value: 13, text: '9,999.9999999999999' },
+        { value: 14, text: '9,999.99999999999999' },
+        { value: 15, text: '9,999.999999999999999' },
+        { value: 16, text: '9,999.9999999999999999' },
+        { value: 17, text: '9,999.99999999999999999' },
+        // { value: 18, text: '9,999.999999999999999999' },
       ],
       paymentsInEthOptions: [
         { text: 'WETH', value: false },
@@ -1999,6 +2052,12 @@ data: {{ data }}
           }
         }
       }
+      if (!(this.coinbase in tokenBalances)) {
+        tokenBalances[this.coinbase] = {
+          tokens: this.balances[this.data.token] && this.balances[this.data.token][this.coinbase] && this.balances[this.data.token][this.coinbase].tokens || "0",
+          originalTokens: this.balances[this.data.token] && this.balances[this.data.token][this.coinbase] && this.balances[this.data.token][this.coinbase].tokens || "0",
+        };
+      }
       // TODO: Testing
       // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenBalances) {
       //   tokenBalances["0x000001f568875F378Bf6d170B790967FE429C81A"].tokens = "16660000000000000000";
@@ -2006,7 +2065,7 @@ data: {{ data }}
       // if ("0x000001f568875F378Bf6d170B790967FE429C81A" in tokenApprovals) {
       //   tokenApprovals["0x000001f568875F378Bf6d170B790967FE429C81A"]["0x9cb5B0C7839B2b770335f592966fFDA2BbFB7E8D"].tokens = "13330000000000000000";
       // }
-      // console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
+      console.log("tokenBalances: " + JSON.stringify(tokenBalances, null, 2));
       // console.log("tokenApprovals: " + JSON.stringify(tokenApprovals, null, 2));
       let totalTokens = ethers.BigNumber.from(0);
       let totalWeth = ethers.BigNumber.from(0);

@@ -20,7 +20,7 @@ const Agent = {
                   <b-dropdown-item v-if="tokenAgentsDropdownOptions.length == 0" disabled>No Token Agents contracts on this network</b-dropdown-item>
                   <div v-for="(item, index) of tokenAgentsDropdownOptions" v-bind:key="index">
                     <!-- <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; saveSettings(); loadData(settings.contract);">{{ index }}. {{ 'ERC-' + item.type }} {{ item.contract.substring(0, 8) + '...' + item.contract.slice(-6) + ' ' + item.name }}</b-dropdown-item> -->
-                    <b-dropdown-item @click="settings.tokenAgentAddress = item.tokenAgent; settings.tokenAgentOwner = item.owner; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ item.tokenAgent.substring(0, 8) + '...' + item.tokenAgent.slice(-6) + ' ' + item.owner.substring(0, 8) + '...' + item.owner.slice(-6) }}</b-dropdown-item>
+                    <b-dropdown-item @click="settings.tokenAgentAddress = indexToAddress[item.tokenAgent]; settings.tokenAgentOwner = indexToAddress[item.owner]; saveSettings(); loadData(settings.tokenAgentAddress);">{{ index }}. {{ indexToAddress[item.tokenAgent].substring(0, 8) + '...' + indexToAddress[item.tokenAgent].slice(-6) + ' ' + indexToAddress[item.owner].substring(0, 8) + '...' + indexToAddress[item.owner].slice(-6) }}</b-dropdown-item>
                   </div>
                 </b-dropdown>
               </div>
@@ -512,7 +512,7 @@ const Agent = {
         pageSize: 10,
         sortOption: 'ownertokenagentasc',
 
-        version: 8,
+        version: 9,
       },
 
       events: [],
@@ -588,11 +588,17 @@ const Agent = {
     explorer() {
       return store.getters['connection/explorer'];
     },
-    addresses() {
-      return store.getters['data/addresses'];
+    addressToIndex() {
+      return store.getters['data/addressToIndex'];
+    },
+    indexToAddress() {
+      return store.getters['data/indexToAddress'];
     },
     tokenAgents() {
       return store.getters['data/tokenAgents'];
+    },
+    addresses() {
+      return store.getters['data/addresses'];
     },
     tokenContracts() {
       return store.getters['data/tokenContracts'];

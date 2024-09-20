@@ -227,6 +227,27 @@ const dataModule = {
         Vue.set(state.indexToTxHash, newIndex, txHash);
       }
     },
+    addTokenAgent(state, info) {
+      // console.log(now() + " INFO dataModule:mutations.addTokenAgent - info: " + JSON.stringify(info));
+      if (!(info.chainId in state.tokenAgents)) {
+        Vue.set(state.tokenAgents, info.chainId, {});
+      }
+      if (!(info.tokenAgent in state.tokenAgents[info.chainId])) {
+        Vue.set(state.tokenAgents[info.chainId], info.tokenAgent, {
+            blockNumber: info.blockNumber,
+            logIndex: info.logIndex,
+            txIndex: info.txIndex,
+            txHash: info.txHash,
+            timestamp: info.timestamp,
+            owner: info.owner,
+            index: info.index,
+            indexByOwner: info.indexByOwner,
+            nonce: 0,
+            nonceBlockNumber: null,
+            nonceTimestamp: null,
+        });
+      }
+    },
     updateTokenAgentNonce(state, info) {
       // console.log(now() + " INFO dataModule:mutations.updateTokenAgentNonce - info: " + JSON.stringify(info));
       if (state.tokenAgents[info.chainId] && state.tokenAgents[info.chainId][info.contract]) {
@@ -1148,36 +1169,21 @@ const dataModule = {
       console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents: " + JSON.stringify(parameter));
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      const tokenAgents = context.state.tokenAgents;
-      if (!(parameter.chainId in tokenAgents)) {
-        tokenAgents[parameter.chainId] = {};
-      }
-      // console.log("tokenAgents BEFORE: " + JSON.stringify(tokenAgents, null, 2));
+      // console.log("tokenAgents BEFORE: " + JSON.stringify(context.state.tokenAgents, null, 2));
       let rows = 0;
       let done = false;
       do {
         let data = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
-          tokenAgents[parameter.chainId][item.tokenAgent] = {
-            blockNumber: item.blockNumber,
-            logIndex: item.logIndex,
-            txIndex: item.txIndex,
-            txHash: item.txHash,
-            timestamp: item.timestamp,
-            owner: item.owner,
-            index: item.index,
-            indexByOwner: item.indexByOwner,
-            nonce: 0,
-            nonceBlockNumber: null,
-            nonceTimestamp: null,
-          };
+          if (!(parameter.chainId in context.state.tokenAgents) || !(item.tokenAgent in context.state.tokenAgents[parameter.chainId])) {
+            context.commit('addTokenAgent', item);
+          }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      // console.log("tokenAgents AFTER: " + JSON.stringify(tokenAgents, null, 2));
-      context.commit('setState', { name: 'tokenAgents', data: tokenAgents });
+      // console.log("tokenAgents AFTER: " + JSON.stringify(context.state.tokenAgents, null, 2));
       await context.dispatch('saveData', ['tokenAgents']);
       console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents END");
     },
@@ -1337,7 +1343,6 @@ const dataModule = {
               for (const record of records) {
                 const contractIndex = context.state.addressToIndex[record.contract];
                 if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
-                  console.log(JSON.stringify(record));
                   if (!(record.txHash in context.state.txHashToIndex)) {
                     context.commit('addTxHashIndex', record.txHash);
                   }
@@ -1380,7 +1385,7 @@ const dataModule = {
               }
               if (newRecords.length) {
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
-                console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
+                // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
                   console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
@@ -1400,7 +1405,7 @@ const dataModule = {
           }
         }
         console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN");
-        context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
+        context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const deleteCall = await db.tokenSetTokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
         const latest = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.token, Dexie.minKey, Dexie.minKey],[parameter.token, Dexie.maxKey, Dexie.maxKey]).last();
         const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;

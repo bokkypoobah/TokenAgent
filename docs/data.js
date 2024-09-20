@@ -178,6 +178,11 @@ const dataModule = {
     },
   },
   getters: {
+    addressToIndex: state => state.addressToIndex,
+    indexToAddress: state => state.indexToAddress,
+    txHashToIndex: state => state.txHashToIndex,
+    indexToTxHash: state => state.indexToTxHash,
+
     addresses: state => state.addresses,
     tokenAgents: state => state.tokenAgents,
     tokenContracts: state => state.tokenContracts,

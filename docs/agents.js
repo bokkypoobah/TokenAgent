@@ -73,12 +73,12 @@ const Agents = {
           </template>
           <template #cell(tokenAgent)="data">
             <b-link :href="explorer + 'address/' + data.item.tokenAgent + '#code'" v-b-popover.hover.ds500="data.item.tokenAgent" target="_blank">
-              {{ names[data.item.tokenAgent] || data.item.tokenAgent }}
+              {{ indexToAddress[data.item.tokenAgent] || data.item.tokenAgent }}
             </b-link>
           </template>
           <template #cell(owner)="data">
             <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="data.item.owner" target="_blank">
-              {{ names[data.item.owner] || data.item.owner }}
+              {{ indexToAddress[data.item.owner] || data.item.owner }}
             </b-link>
           </template>
           <!-- <template #cell(transfer)="data">
@@ -133,11 +133,17 @@ const Agents = {
     explorer() {
       return store.getters['connection/explorer'];
     },
-    addresses() {
-      return store.getters['data/addresses'];
+    addressToIndex() {
+      return store.getters['data/addressToIndex'];
+    },
+    indexToAddress() {
+      return store.getters['data/indexToAddress'];
     },
     tokenAgents() {
       return store.getters['data/tokenAgents'];
+    },
+    addresses() {
+      return store.getters['data/addresses'];
     },
     names() {
       return store.getters['data/names'];

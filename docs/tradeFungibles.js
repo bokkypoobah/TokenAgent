@@ -85,6 +85,9 @@ const TradeFungibles = {
               </div>
               <div class="mt-0 flex-grow-1">
               </div>
+              <div class="mt-0 pr-2">
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+              </div>
               <div class="mt-0 pl-1">
                 <b-form-select size="sm" v-model="settings.addSellOffer.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
               </div>
@@ -302,52 +305,55 @@ const TradeFungibles = {
                   {{ sellOffer.nonce }}
                 </b-badge>
               </div>
+              <div class="mt-0 pl-3">
+                <b-button size="sm" v-b-modal.config variant="link" v-b-popover.hover.ds500="'Config'" class="m-0 ml-2 mr-2 p-0"><b-icon-tools shift-v="-1" font-scale="0.9"></b-icon-tools></b-button>
+              </div>
             </div>
 
             <font size="-1">
               <!-- <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1"> -->
               <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
                 <template #cell(price)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.price, 18)">
                     {{ formatPrice(data.item.price) }}
-                  </font>
+                  </span>
                 </template>
                 <template #cell(offer)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.offer, settings.decimals)">
                     {{ formatTokens(data.item.offer) }}
-                  </font>
+                  </span>
                 </template>
                 <template #head(tokens)="data">
                   {{ settings.symbol }}
                 </template>
                 <template #cell(tokens)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.tokens, settings.decimals)">
                     {{ formatTokens(data.item.tokens) }}
-                  </font>
+                  </span>
                 </template>
                 <template #head(totalTokens)="data">
                   {{ '∑ ' + settings.symbol }}
                 </template>
                 <template #cell(totalTokens)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.totalTokens, settings.decimals)">
                     {{ formatTokens(data.item.totalTokens) }}
-                  </font>
+                  </span>
                 </template>
                 <template #head(wethAmount)="data">
                   {{ modalSellOffer.paymentsInEth ? 'ETH' : 'WETH' }}
                 </template>
                 <template #cell(wethAmount)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.wethAmount, 18)">
                     {{ formatWeth(data.item.wethAmount) }}
-                  </font>
+                  </span>
                 </template>
                 <template #head(totalWeth)="data">
                   {{ modalSellOffer.paymentsInEth ? '∑ ETH' : '∑ WETH' }}
                 </template>
                 <template #cell(totalWeth)="data">
-                  <font size="-1">
+                  <span v-b-popover.hover.ds500="formatDecimals(data.item.totalWeth, 18)">
                     {{ formatWeth(data.item.totalWeth) }}
-                  </font>
+                  </span>
                 </template>
                 <template #cell(expiry)="data">
                   <font size="-1">

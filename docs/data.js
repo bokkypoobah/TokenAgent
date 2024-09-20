@@ -1090,7 +1090,7 @@ const dataModule = {
     },
 
     async syncTokenAgentFactoryEvents(context, parameter) {
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN: " + JSON.stringify(parameter));
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -1098,7 +1098,7 @@ const dataModule = {
       if (network.tokenAgentFactory) {
         let total = 0;
         async function getLogs(fromBlock, toBlock) {
-          console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
+          // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
@@ -1154,7 +1154,7 @@ const dataModule = {
             await getLogs(parseInt(mid) + 1, toBlock);
           }
         }
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenAgentFactory events', total: null });
         const deleteCall = await db.tokenAgentFactoryEvents.where("confirmations").below(parameter.confirmations).delete();
         const latest = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
@@ -1185,7 +1185,7 @@ const dataModule = {
       } while (!done);
       // console.log("tokenAgents AFTER: " + JSON.stringify(context.state.tokenAgents, null, 2));
       await context.dispatch('saveData', ['tokenAgents']);
-      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents END");
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentFactoryEvents END - rows: " + rows);
     },
 
     async syncTokenAgentGeneralEvents(context, parameter) {
@@ -1257,7 +1257,7 @@ const dataModule = {
             await getLogs(parseInt(mid) + 1, toBlock);
           }
         }
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents BEGIN");
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
         const deleteCall = await db.tokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
         const latest = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
@@ -1286,7 +1286,7 @@ const dataModule = {
       } while (!done);
       // console.log("tokenAgents AFTER: " + JSON.stringify(context.state.tokenAgents, null, 2));
       await context.dispatch('saveData', ['tokenAgents']);
-      console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents END");
+      console.log(now() + " INFO dataModule:actions.collateTokenAgentGeneralEvents END - rows: " + rows);
     },
 
     async syncTokenSetTokenAgentEvents(context, parameter) {
@@ -1298,7 +1298,7 @@ const dataModule = {
       if (network.tokenAgentFactory) {
         let total = 0;
         async function getLogs(fromBlock, toBlock) {
-          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.getLogs: " + fromBlock + " - " + toBlock);
+          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.getLogs: " + fromBlock + " - " + toBlock);
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
@@ -1404,7 +1404,7 @@ const dataModule = {
             await getLogs(parseInt(mid) + 1, toBlock);
           }
         }
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN");
+        // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const deleteCall = await db.tokenSetTokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
         const latest = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.token, Dexie.minKey, Dexie.minKey],[parameter.token, Dexie.maxKey, Dexie.maxKey]).last();

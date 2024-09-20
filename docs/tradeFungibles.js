@@ -293,7 +293,7 @@ const TradeFungibles = {
                             </b-td>
                             <b-td>
                             </b-td>
-                            <b-td>
+                            <b-td class="text-right">
                               <b-button size="sm" @click="settings.addSellOffer.points.push({ price: null, tokens: null }); saveSettings();" variant="link" v-b-popover.hover.ds500="'Add new row'"><b-icon-plus shift-v="+1" font-scale="1.2"></b-icon-plus></b-button>
                             </b-td>
                           </template>
@@ -311,6 +311,9 @@ const TradeFungibles = {
                     </b-form-group>
                     <b-form-group v-if="expiryDate" label="" label-for="modaladdselloffer-expirytime" label-size="sm" label-cols-sm="4" label-align-sm="right" :description="formatTimestampUTC(settings.addSellOffer.expiry)" class="mx-0 my-1 p-0">
                       <b-form-timepicker size="sm" id="modaladdselloffer-expirytime" v-model="expiryTime" minutes-step="15" now-button label-no-time-selected="Select" class="w-50"></b-form-timepicker>
+                    </b-form-group>
+                    <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                      <b-button size="sm" :disabled="myTokenAgentOptions.length == 1 || !settings.addSellOffer.tokenAgent || settings.addSellOffer.points.length == 0 || !!pointsFeedback" @click="execAddSellOffer" variant="warning">Add Sell Offer</b-button>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
@@ -1370,10 +1373,10 @@ data: {{ data }}
         { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
       addSellOfferPointsFields: [
-        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-left', tdClass: 'text-left' },
-        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 30%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'option', label: '', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
       sellOfferFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
@@ -2970,6 +2973,68 @@ data: {{ data }}
           this.saveSettings();
         } catch (e) {
           console.log(now() + " ERROR TradeFungibles:methods.deployNewTokenAgent: " + JSON.stringify(e));
+          this.$bvToast.toast(`${e.message}`, {
+            title: 'Error!',
+            autoHideDelay: 5000,
+          });
+        }
+      }
+    },
+
+    async execAddSellOffer() {
+      console.log(now() + " INFO TradeFungibles:methods.execAddSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = this.chainId && NETWORKS[this.chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        const contract = new ethers.Contract(this.settings.addSellOffer.tokenAgent, network.tokenAgent.abi, provider);
+        const contractWithSigner = contract.connect(provider.getSigner());
+        const prices = [ "1" ];
+        const tokenss = [ "1" ];
+        try {
+          // const payload = [];
+          const payload = [
+            [
+              this.settings.tokenContractAddress,
+              1, // SELL
+              this.settings.addSellOffer.expiry,
+              prices,
+              [],
+              tokenss,
+            ],
+          ];
+          // struct AddOffer {
+          //     Token token;             // 160 bits
+          //     BuySell buySell;         // 8 bits
+          //     Unixtime expiry;         // 40 bits
+          //     Price[] prices;          // token/WETH 18dp
+          //     TokenId[] tokenIds;      // ERC-721/1155
+          //     Tokens[] tokenss;        // ERC-20/721/1155
+          // }
+          // function addOffers(AddOffer[] calldata inputs) external onlyOwner {
+
+          const tx = await contractWithSigner.addOffers(payload);
+          // const tx = { hash: "blah" };
+          console.log(now() + " INFO TradeFungibles:methods.execAddSellOffer - tx: " + JSON.stringify(tx));
+          const h = this.$createElement;
+          const vNodesMsg = h(
+            'p',
+            { class: ['text-left', 'mb-0'] },
+            [
+              h('a', { attrs: { href: this.explorer + 'tx/' + tx.hash, target: '_blank' } }, tx.hash.substring(0, 20) + '...' + tx.hash.slice(-18)),
+              h('br'),
+              h('br'),
+              'Resync after this tx has been included',
+            ]
+          );
+          this.$bvToast.toast([vNodesMsg], {
+            title: 'Transaction submitted',
+            autoHideDelay: 5000,
+          });
+          this.$refs['modalnewtokenagent'].hide();
+          this.settings.newTokenAgent.show = false;
+          this.saveSettings();
+        } catch (e) {
+          console.log(now() + " ERROR TradeFungibles:methods.execAddSellOffer: " + JSON.stringify(e));
           this.$bvToast.toast(`${e.message}`, {
             title: 'Error!',
             autoHideDelay: 5000,

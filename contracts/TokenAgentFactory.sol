@@ -422,6 +422,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
     //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     function addOffers(AddOffer[] calldata inputs) external onlyOwner {
+        require(inputs.length > 0, InvalidInputData("No inputs"));
         for (uint i = 0; i < inputs.length; i++) {
             AddOffer memory input = inputs[i];
             require(Token.unwrap(input.token) != address(weth), CannotOfferWETH());

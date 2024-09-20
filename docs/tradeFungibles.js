@@ -100,7 +100,7 @@ const TradeFungibles = {
                 <font size="-2" v-b-popover.hover.ds500="'# filtered entries'">{{ addSellOffer.records.length }}</font>
               </div>
               <!-- <div class="mt-0 pl-1">
-                <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="filteredSortedSellOffers.length" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination>
+                <b-pagination size="sm" v-model="settings.sellOffers.currentPage" @input="saveSettings" :total-rows="addSellOffer.records" :per-page="settings.sellOffers.pageSize" style="height: 0;"></b-pagination>
               </div> -->
               <div class="mt-0 pl-1">
                 <b-form-select size="sm" v-model="settings.addSellOffer.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
@@ -1549,9 +1549,8 @@ data: {{ data }}
 
     pointsFeedback() {
       console.log(now() + " INFO TradeFungibles:computed.pointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
-
       for (const [i, point] of this.settings.addSellOffer.points.entries()) {
-        console.log(i + " => " + JSON.stringify(point));
+        // console.log(i + " => " + JSON.stringify(point));
         if (point.price == null || point.price == "") {
           return "Invalid price";
         }
@@ -2988,15 +2987,19 @@ data: {{ data }}
       if (network.tokenAgentFactory) {
         const contract = new ethers.Contract(this.settings.addSellOffer.tokenAgent, network.tokenAgent.abi, provider);
         const contractWithSigner = contract.connect(provider.getSigner());
-        const prices = [ "1" ];
-        const tokenss = [ "1" ];
+        const prices = [];
+        const tokenss = [];
+        for (const [i, point] of this.settings.addSellOffer.points.entries()) {
+          prices.push(ethers.utils.parseEther(point.price).toString());
+          tokenss.push(ethers.utils.parseUnits(point.tokens, this.settings.decimals).toString());
+        }
+
         try {
-          // const payload = [];
           const payload = [
             [
               this.settings.tokenContractAddress,
               1, // SELL
-              this.settings.addSellOffer.expiry,
+              this.settings.addSellOffer.expiry || 0,
               prices,
               [],
               tokenss,
@@ -3011,7 +3014,7 @@ data: {{ data }}
           //     Tokens[] tokenss;        // ERC-20/721/1155
           // }
           // function addOffers(AddOffer[] calldata inputs) external onlyOwner {
-
+          console.log(now() + " INFO TradeFungibles:methods.execAddSellOffer - payload: " + JSON.stringify(payload));
           const tx = await contractWithSigner.addOffers(payload);
           // const tx = { hash: "blah" };
           console.log(now() + " INFO TradeFungibles:methods.execAddSellOffer - tx: " + JSON.stringify(tx));
@@ -3030,9 +3033,9 @@ data: {{ data }}
             title: 'Transaction submitted',
             autoHideDelay: 5000,
           });
-          this.$refs['modalnewtokenagent'].hide();
-          this.settings.newTokenAgent.show = false;
-          this.saveSettings();
+          // this.$refs['modalnewtokenagent'].hide();
+          // this.settings.newTokenAgent.show = false;
+          // this.saveSettings();
         } catch (e) {
           console.log(now() + " ERROR TradeFungibles:methods.execAddSellOffer: " + JSON.stringify(e));
           this.$bvToast.toast(`${e.message}`, {

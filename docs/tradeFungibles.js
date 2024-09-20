@@ -3,10 +3,10 @@ const TradeFungibles = {
     <div class="m-0 p-0">
       <b-card no-body no-header class="border-0">
 
-        <b-modal id="config" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" visible body-bg-variant="light" size="md">
+        <b-modal id="config" hide-footer header-class="m-0 px-3 py-2" body-class="m-0 p-0" body-bg-variant="light" size="md">
           <template #modal-title>Config</template>
           <b-form-group label="Price display decimals:" label-for="config-pricedisplaydecimals" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
-            <b-form-select size="sm" id="config-pricedisplaydecimals" v-model="settings.config.priceDisplayDecimals" @change="saveSettings" :options="decimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
+            <b-form-select size="sm" id="config-pricedisplaydecimals" v-model="settings.config.priceDisplayDecimals" @change="saveSettings" :options="priceDecimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
           </b-form-group>
           <b-form-group label="Token display decimals:" label-for="config-tokendisplaydecimals" label-size="sm" label-cols-sm="5" label-align-sm="right" class="mx-0 my-1 p-0">
             <b-form-select size="sm" id="config-tokendisplaydecimals" v-model="settings.config.tokenDisplayDecimals" @change="saveSettings" :options="decimalsOptions" v-b-popover.hover.ds500="'Number of decimals to display for prices'"></b-form-select>
@@ -101,7 +101,7 @@ const TradeFungibles = {
             <font size="-1">
               <b-table ref="addSellOfferTable" small fixed striped sticky-header="400px" responsive hover :fields="addSellOfferFields" :items="addSellOffer.records" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 200px;">
                 <template #cell(price)="data">
-                  {{ formatDecimals(data.item.price, 18) }}
+                  {{ formatPrice(data.item.price) }}
                 </template>
                 <template #cell(offer)="data">
                   <span v-if="data.item.nonce == data.item.currentNonce">
@@ -307,7 +307,7 @@ const TradeFungibles = {
               <b-table ref="sellOfferTable" small fixed striped responsive hover sticky-header="400px" :fields="sellOfferFields" :items="sellOffer.prices" show-empty head-variant="light" class="m-0 mt-1">
                 <template #cell(price)="data">
                   <font size="-1">
-                    {{ formatDecimals(data.item.price, 18) }}
+                    {{ formatPrice(data.item.price) }}
                   </font>
                 </template>
                 <template #cell(offer)="data">
@@ -633,7 +633,8 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </template>
                   <template #cell(price)="data">
                     <font size="-1">
-                      {{ formatDecimals(data.item.price, 18) }}
+                      <!-- {{ formatDecimals(data.item.price, 18) }} -->
+                      {{ formatPrice(data.item.price) }}
                     </font>
                   </template>
                 </b-table>
@@ -1193,6 +1194,27 @@ data: {{ data }}
         { value: 0, text: 'Single price without limit' },
         { value: 1, text: 'Single price with limit' },
         { value: 1, text: 'Multiple prices and limits', disabled: true },
+      ],
+      priceDecimalsOptions: [
+        {
+          label: "Common",
+          options: [
+            { value: 0, text: '9,999' },
+            { value: 3, text: '9,999.999' },
+            { value: 6, text: '9,999.999999' },
+            { value: 9, text: '9,999.999999999' },
+          ],
+        },
+        // { value: 0, text: '9,999' },
+        { value: 1, text: '9,999.9' },
+        { value: 2, text: '9,999.99' },
+        // { value: 3, text: '9,999.999' },
+        { value: 4, text: '9,999.9999' },
+        { value: 5, text: '9,999.99999' },
+        // { value: 6, text: '9,999.999999' },
+        { value: 7, text: '9,999.9999999' },
+        { value: 8, text: '9,999.99999999' },
+        // { value: 9, text: '9,999.999999999' },
       ],
       decimalsOptions: [
         {
@@ -2828,6 +2850,27 @@ data: {{ data }}
         // }
       }
       return null;
+    },
+    formatPrice(e) {
+      // console.log("formatPrice: " + e + ", this.settings.config.priceDisplayDecimals: " + this.settings.config.priceDisplayDecimals);
+      // if (this.settings.config.priceDisplayDecimals <= 9) {
+      return e ? parseFloat(ethers.utils.formatUnits(e, 18).toString()).toFixed(this.settings.config.priceDisplayDecimals) : null;
+      // } else {
+      //   e = "10123456789012345";
+      //   const p = ethers.utils.formatUnits(e, 18);
+      //   console.log("p: " + p.toString());
+      //   if (this.settings.config.priceDisplayDecimals != 18) {
+      //     const p1 = ethers.utils.parseUnits(p, this.settings.config.priceDisplayDecimals);
+      //     console.log("p1: " + p1.toString());
+      //   }
+      //   return e ? 'y' + ethers.utils.formatUnits(e, 18) : null;
+      // }
+    },
+    formatTokens(e) {
+      return e ? ethers.utils.formatUnits(e, this.settings.decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
+    },
+    formatWeth(e) {
+      return e ? ethers.utils.formatUnits(e, 18).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;
     },
     formatDecimals(e, decimals = 18) {
       return e ? ethers.utils.formatUnits(e, decimals).replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",") : null;

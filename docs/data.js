@@ -954,7 +954,7 @@ const dataModule = {
     //   }
     // },
     async syncIt(context, options) {
-      console.log(now() + " INFO dataModule:actions.syncIt - options: " + JSON.stringify(options));
+      console.log(now() + " INFO dataModule:actions.syncIt - options.tokenContractAddress: " + options.tokenContractAddress);
       // const db = new Dexie(context.state.db.name);
       // db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);

@@ -2390,7 +2390,7 @@ data: {{ data }}
   },
   methods: {
     syncNow() {
-      console.log(now() + " INFO TradeFungibles:methods.syncNow - this.settings.tokenContractAddress: " + this.settings.tokenContractAddress);
+      console.log(now() + " INFO TradeFungibles:methods.syncNow - settings.tokenContractAddress: " + this.settings.tokenContractAddress);
       store.dispatch('data/syncIt', {
         tokenContractAddress: this.settings.tokenContractAddress,
       });

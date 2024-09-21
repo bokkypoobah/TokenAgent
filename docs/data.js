@@ -1160,11 +1160,9 @@ const dataModule = {
         context.commit('setSyncSection', { section: 'TokenAgentFactory events', total: null });
         const data = await db.cache.where("objectName").equals('tokenAgentFactory.' + parameter.chainId).toArray();
         const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber);
         const deleteCount = await db.tokenAgentFactoryEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - deleteCount: " + JSON.stringify(deleteCount));
         const addCount = await getLogs(startBlock, parameter.blockNumber);
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - addCount: " + addCount);
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
         await db.cache.put({ objectName: 'tokenAgentFactory.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
@@ -1227,7 +1225,7 @@ const dataModule = {
               for (const record of records) {
                 const contractIndex = context.state.addressToIndex[record.contract];
                 if (record.eventType == EVENTTYPE_OFFERSINVALIDATED && (contractIndex in (context.state.tokenAgents[parameter.chainId] || {}))) {
-                  console.log("INVALIDATING context.state.tokenAgents[parameter.chainId][contractIndex]: " + JSON.stringify(context.state.tokenAgents[parameter.chainId][contractIndex]));
+                  // console.log("INVALIDATING context.state.tokenAgents[parameter.chainId][contractIndex]: " + JSON.stringify(context.state.tokenAgents[parameter.chainId][contractIndex]));
                   if (!(record.txHash in context.state.txHashToIndex)) {
                     context.commit('addTxHashIndex', record.txHash);
                   }
@@ -1245,10 +1243,11 @@ const dataModule = {
                 }
               }
               if (newRecords.length) {
+                total += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
                 // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
-                  console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
+                  // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
@@ -1264,14 +1263,20 @@ const dataModule = {
             await getLogs(fromBlock, mid);
             await getLogs(parseInt(mid) + 1, toBlock);
           }
+          return total;
         }
         // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
-        const deleteCall = await db.tokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
-        const latest = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-        const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock);
-        await getLogs(startBlock, parameter.blockNumber);
+        const data = await db.cache.where("objectName").equals('tokenAgentGeneral.' + parameter.chainId).toArray();
+        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber);
+        const deleteCount = await db.tokenAgentEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
+        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+        await db.cache.put({ objectName: 'tokenAgentGeneral.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
+        }).catch(function(error) {
+          console.log("error: " + error);
+        });
       }
       console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END");
     },

@@ -990,7 +990,7 @@ const dataModule = {
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = false;
+      const devMode = true;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1006,6 +1006,9 @@ const dataModule = {
       }
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentEvents', parameter);
+      }
+      if (options.token) {
+        await context.dispatch('collateTokenSetTokenAgentEvents', parameter);
       }
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentInternalEvents', parameter);
@@ -1418,6 +1421,28 @@ const dataModule = {
         });
       }
       console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+    },
+
+    async collateTokenSetTokenAgentEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents BEGIN - token: " + parameter.token);
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      // console.log("tokenAgents BEFORE: " + JSON.stringify(context.statetokenAgents, null, 2));
+      let rows = 0;
+      let done = false;
+      do {
+        let data = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        // console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
+        for (const item of data) {
+          console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - item: " + JSON.stringify(item));
+          // context.commit('updateTokenAgentNonce', item);
+        }
+        rows = parseInt(rows) + data.length;
+        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+      } while (!done);
+      // console.log("tokenAgents AFTER: " + JSON.stringify(context.state.tokenAgents, null, 2));
+      await context.dispatch('saveData', ['tokenAgents']);
+      console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents END - rows: " + rows);
     },
 
     async syncTokenSetTokenAgentInternalEvents(context, parameter) {

@@ -213,7 +213,7 @@ const dataModule = {
     },
     addAddressIndex(state, address) {
       // console.log(now() + " INFO dataModule:mutations.addAddressIndex - address: " + address);
-      if (!(address in state.addressToIndex)) {
+      if (address && !(address in state.addressToIndex)) {
         const newIndex = state.indexToAddress.length;
         Vue.set(state.addressToIndex, address, newIndex);
         Vue.set(state.indexToAddress, newIndex, address);
@@ -1223,7 +1223,7 @@ const dataModule = {
                   if (!(record.txHash in context.state.txHashToIndex)) {
                     context.commit('addTxHashIndex', record.txHash);
                   }
-                  for (const address of [record.contract, record.tokenAgent, record.owner]) {
+                  for (const address of [record.contract]) {
                     if (!(address in context.state.addressToIndex)) {
                       context.commit('addAddressIndex', address);
                     }

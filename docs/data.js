@@ -1431,7 +1431,7 @@ const dataModule = {
       let rows = 0;
       let done = false;
       do {
-        let data = await db.tokenAgentEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         // console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - data.length: " + data.length + ", first[0..9]: " + JSON.stringify(data.slice(0, 10).map(e => e.blockNumber + '.' + e.logIndex )));
         for (const item of data) {
           console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - item: " + JSON.stringify(item));

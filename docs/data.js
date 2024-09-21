@@ -1095,8 +1095,8 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      let [startBlock, total, deleteAcount, addCount] = [0, 0, 0, 0];
       if (network.tokenAgentFactory) {
-        let total = 0;
         async function getLogs(fromBlock, toBlock) {
           // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.getLogs: " + fromBlock + " - " + toBlock);
           let split = false;
@@ -1141,7 +1141,6 @@ const dataModule = {
                   // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
               }
-
             } catch (e) {
               split = true;
             }
@@ -1157,15 +1156,15 @@ const dataModule = {
         }
         context.commit('setSyncSection', { section: 'TokenAgentFactory events', total: null });
         const data = await db.cache.where("objectName").equals('tokenAgentFactory.' + parameter.chainId).toArray();
-        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        const deleteCount = await db.tokenAgentFactoryEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
-        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        deleteCount = await db.tokenAgentFactoryEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
+        addCount = await getLogs(startBlock, parameter.blockNumber);
         await db.cache.put({ objectName: 'tokenAgentFactory.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
     },
 
     async collateTokenAgentFactoryEvents(context, parameter) {
@@ -1197,6 +1196,7 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      let [startBlock, total, deleteAcount, addCount] = [0, 0, 0, 0];
       if (network.tokenAgentFactory) {
         let total = 0;
         async function getLogs(fromBlock, toBlock) {
@@ -1259,15 +1259,15 @@ const dataModule = {
         }
         context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
         const data = await db.cache.where("objectName").equals('tokenAgentGeneral.' + parameter.chainId).toArray();
-        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        const deleteCount = await db.tokenAgentEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
-        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        deleteCount = await db.tokenAgentEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
+        addCount = await getLogs(startBlock, parameter.blockNumber);
         await db.cache.put({ objectName: 'tokenAgentGeneral.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
+      console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
     },
 
     async collateTokenAgentGeneralEvents(context, parameter) {
@@ -1297,6 +1297,7 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      let [startBlock, total, deleteAcount, addCount] = [0, 0, 0, 0];
       if (network.tokenAgentFactory) {
         let total = 0;
         async function getLogs(fromBlock, toBlock) {
@@ -1387,7 +1388,6 @@ const dataModule = {
               if (newRecords.length) {
                 total += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
-                // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
@@ -1409,15 +1409,15 @@ const dataModule = {
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const data = await db.cache.where("objectName").equals('tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
-        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        const deleteCount = await db.tokenSetTokenAgentEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
-        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        deleteCount = await db.tokenSetTokenAgentEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
+        addCount = await getLogs(startBlock, parameter.blockNumber);
         await db.cache.put({ objectName: 'tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
     },
 
 

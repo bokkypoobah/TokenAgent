@@ -166,8 +166,8 @@ const dataModule = {
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
-        tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
-        tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+        tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
+        tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
 
         announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
         registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
@@ -1162,13 +1162,13 @@ const dataModule = {
         const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
         const deleteCount = await db.tokenAgentFactoryEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
         const addCount = await getLogs(startBlock, parameter.blockNumber);
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
         await db.cache.put({ objectName: 'tokenAgentFactory.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END");
     },
 
     async collateTokenAgentFactoryEvents(context, parameter) {
@@ -1219,7 +1219,7 @@ const dataModule = {
                 ],
               };
               const eventLogs = await provider.getLogs(filter);
-              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi, parameter.blockNumber);
+              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
               // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.getLogs - records: " + JSON.stringify(records, null, 2));
               const newRecords = [];
               for (const record of records) {
@@ -1269,16 +1269,15 @@ const dataModule = {
         context.commit('setSyncSection', { section: 'TokenAgent general events', total: null });
         const data = await db.cache.where("objectName").equals('tokenAgentGeneral.' + parameter.chainId).toArray();
         const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber);
         const deleteCount = await db.tokenAgentEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
         const addCount = await getLogs(startBlock, parameter.blockNumber);
-        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+        // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
         await db.cache.put({ objectName: 'tokenAgentGeneral.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
-      console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents END");
     },
 
     async collateTokenAgentGeneralEvents(context, parameter) {
@@ -1350,7 +1349,7 @@ const dataModule = {
                 ],
               };
               const eventLogs = await provider.getLogs(filter);
-              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi, parameter.blockNumber);
+              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
               // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.getLogs - records: " + JSON.stringify(records, null, 2));
               const newRecords = [];
               for (const record of records) {
@@ -1397,10 +1396,11 @@ const dataModule = {
                 }
               }
               if (newRecords.length) {
+                total += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
                 // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
-                  console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
+                  // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
@@ -1416,16 +1416,21 @@ const dataModule = {
             await getLogs(fromBlock, mid);
             await getLogs(parseInt(mid) + 1, toBlock);
           }
+          return total;
         }
         // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
-        const deleteCall = await db.tokenSetTokenAgentEvents.where("confirmations").below(parameter.confirmations).delete();
-        const latest = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.token, Dexie.minKey, Dexie.minKey],[parameter.token, Dexie.maxKey, Dexie.maxKey]).last();
-        const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - startBlock: " + startBlock);
-        await getLogs(startBlock, parameter.blockNumber);
+        const data = await db.cache.where("objectName").equals('tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
+        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        const deleteCount = await db.tokenSetTokenAgentEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
+        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+        await db.cache.put({ objectName: 'tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
+        }).catch(function(error) {
+          console.log("error: " + error);
+        });
+        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
       }
-      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents END");
     },
 
 

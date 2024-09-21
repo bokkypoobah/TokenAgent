@@ -11,7 +11,7 @@ const EVENTTYPE_OFFERSINVALIDATED = 9; // TokenAgent - OffersInvalidated
 const EVENTTYPE_TRADED = 10;           // TokenAgent - Traded
 
 function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
-  // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
+  // console.log(now() + " INFO functions:parseTokenEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const erc20Interface = new ethers.utils.Interface(ERC20ABI);
   const erc721Interface = new ethers.utils.Interface(ERC721ABI);
   const records = [];
@@ -175,7 +175,7 @@ function parseTokenAgentFactoryEventLogsOld(logs, chainId, tokenAgentFactoryAddr
 // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
 // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
 
-function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi, latestBlockNumber) {
+function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi) {
   // console.log(now() + " INFO functions:parseTokenAgentEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentAbi);
   const records = [];
@@ -227,7 +227,6 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi, latestBlockNumbe
           txHash: log.transactionHash,
           contract,
           ...eventRecord,
-          confirmations: latestBlockNumber - log.blockNumber,
         });
       }
     }

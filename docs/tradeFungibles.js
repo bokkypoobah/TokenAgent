@@ -2484,7 +2484,7 @@ data: {{ data }}
           topics: [ [], null, null ],
         };
         const tokenAgentFactoryEventLogs = await provider.getLogs(tokenAgentFactoryEventsfilter);
-        this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogs(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
+        this.tokenAgentFactoryEvents = parseTokenAgentFactoryEventLogsOld(tokenAgentFactoryEventLogs, this.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, blockNumber);
         localStorage.tokenAgentTradeFungiblesTokenAgentFactoryEvents = JSON.stringify(this.tokenAgentFactoryEvents);
         const tokenAgents = {};
         for (const record of this.tokenAgentFactoryEvents) {

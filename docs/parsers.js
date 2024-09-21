@@ -80,7 +80,7 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
 
 // TokenAgentFactory
 // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
-function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress, tokenAgentFactoryAbi, latestBlockNumber) {
+function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress, tokenAgentFactoryAbi) {
   // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - logs: " + JSON.stringify(logs, null, 2));
   const interface = new ethers.utils.Interface(tokenAgentFactoryAbi);
   const records = [];
@@ -108,12 +108,47 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
           txHash: log.transactionHash,
           contract,
           ...eventRecord,
-          confirmations: latestBlockNumber - log.blockNumber,
         });
       }
     }
   }
   // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - records: " + JSON.stringify(records, null, 2));
+  return records;
+}
+function parseTokenAgentFactoryEventLogsOld(logs, chainId, tokenAgentFactoryAddress, tokenAgentFactoryAbi, latestBlockNumber) {
+  // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogsOld - logs: " + JSON.stringify(logs, null, 2));
+  const interface = new ethers.utils.Interface(tokenAgentFactoryAbi);
+  const records = [];
+  for (const log of logs) {
+    if (!log.removed) {
+      const logData = interface.parseLog(log);
+      const contract = log.address;
+      let eventRecord = null;
+      if (logData.eventFragment.name == "NewTokenAgent") {
+        // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
+        const [tokenAgent, owner, index, indexByOwner, timestamp] = logData.args;
+        eventRecord = {
+          eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, indexByOwner,
+          timestamp,
+        };
+      } else {
+        console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogsOld - UNHANDLED log: " + JSON.stringify(log));
+      }
+      if (eventRecord) {
+        records.push( {
+          chainId,
+          blockNumber: parseInt(log.blockNumber),
+          logIndex: parseInt(log.logIndex),
+          txIndex: parseInt(log.transactionIndex),
+          txHash: log.transactionHash,
+          contract,
+          ...eventRecord,
+          confirmations: latestBlockNumber - log.blockNumber,
+        });
+      }
+    }
+  }
+  // console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogsOld - records: " + JSON.stringify(records, null, 2));
   return records;
 }
 

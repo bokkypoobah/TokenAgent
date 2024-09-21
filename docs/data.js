@@ -162,10 +162,10 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata084b",
+      name: "tokenagentdata084c",
       version: 1,
       schemaDefinition: {
-        tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
+        tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
         tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
 
@@ -959,7 +959,7 @@ const dataModule = {
       // db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
-      const confirmations = 1234; // store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
+      const confirmations = 100000; // store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
       const blockNumber = block && block.number || null;
       const cryptoCompareAPIKey = null; // store.getters['config/settings'].cryptoCompareAPIKey && store.getters['config/settings'].cryptoCompareAPIKey.length > 0 && store.getters['config/settings'].cryptoCompareAPIKey || null;
       const chainId = store.getters['connection/chainId'];
@@ -1112,7 +1112,7 @@ const dataModule = {
                 ],
               };
               const eventLogs = await provider.getLogs(filter);
-              const records = parseTokenAgentFactoryEventLogs(eventLogs, parameter.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi, parameter.blockNumber);
+              const records = parseTokenAgentFactoryEventLogs(eventLogs, parameter.chainId, network.tokenAgentFactory.address, network.tokenAgentFactory.abi);
               const newRecords = [];
               for (const record of records) {
                 if (!(record.txHash in context.state.txHashToIndex)) {
@@ -1133,10 +1133,11 @@ const dataModule = {
                 newRecords.push(newRecord);
               }
               if (newRecords.length) {
+                total += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
                 // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenAgentFactoryEvents.bulkAdd(newRecords).then(function(lastKey) {
-                  console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+                  // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
@@ -1153,14 +1154,21 @@ const dataModule = {
             await getLogs(fromBlock, mid);
             await getLogs(parseInt(mid) + 1, toBlock);
           }
+          return total;
         }
         // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents BEGIN");
         context.commit('setSyncSection', { section: 'TokenAgentFactory events', total: null });
-        const deleteCall = await db.tokenAgentFactoryEvents.where("confirmations").below(parameter.confirmations).delete();
-        const latest = await db.tokenAgentFactoryEvents.where('[chainId+blockNumber+logIndex]').between([parameter.chainId, Dexie.minKey, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).last();
-        const startBlock = (parameter.incrementalSync && latest) ? parseInt(latest.blockNumber) + 1: 0;
-        // console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock);
-        await getLogs(startBlock, parameter.blockNumber);
+        const data = await db.cache.where("objectName").equals('tokenAgentFactory.' + parameter.chainId).toArray();
+        const startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber);
+        const deleteCount = await db.tokenAgentFactoryEvents.where("[chainId+blockNumber+logIndex]").between([parameter.chainId, startBlock, Dexie.minKey],[parameter.chainId, Dexie.maxKey, Dexie.maxKey]).delete();
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - deleteCount: " + JSON.stringify(deleteCount));
+        const addCount = await getLogs(startBlock, parameter.blockNumber);
+        console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents - addCount: " + addCount);
+        await db.cache.put({ objectName: 'tokenAgentFactory.' + parameter.chainId, object: parameter.blockNumber }).then(function() {
+        }).catch(function(error) {
+          console.log("error: " + error);
+        });
       }
       console.log(now() + " INFO dataModule:actions.syncTokenAgentFactoryEvents END");
     },
@@ -1240,7 +1248,7 @@ const dataModule = {
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
                 // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
-                  console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+                  console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenAgentGeneralEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
@@ -1387,7 +1395,7 @@ const dataModule = {
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
                 // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents - newRecords: " + JSON.stringify(newRecords, null, 2));
                 await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
-                  console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+                  console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
                 });
@@ -1469,7 +1477,7 @@ const dataModule = {
         }
         if (records.length) {
           await db.registrations.bulkAdd(records).then(function(lastKey) {
-            console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents bulkAdd lastKey: " + JSON.stringify(lastKey));
+            console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
             // console.log(now() + " INFO dataModule:actions.syncTokenAgentsEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
           });
@@ -1894,7 +1902,7 @@ const dataModule = {
         }
         if (records.length) {
           await db.registrations.bulkAdd(records).then(function(lastKey) {
-            console.log(now() + " INFO dataModule:actions.syncRegistrations bulkAdd lastKey: " + JSON.stringify(lastKey));
+            console.log(now() + " INFO dataModule:actions.syncRegistrations.bulkAdd - lastKey: " + JSON.stringify(lastKey));
           }).catch(Dexie.BulkError, function(e) {
             // console.log(now() + " INFO dataModule:actions.syncRegistrations bulkAdd error: " + JSON.stringify(e.failures, null, 2));
           });

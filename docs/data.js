@@ -1011,8 +1011,8 @@ const dataModule = {
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, timestamp: block.timestamp, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = true;
-      // const devMode = false;
+      // const devMode = true;
+      const devMode = false;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1038,7 +1038,7 @@ const dataModule = {
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenEvents', parameter);
       }
-      if (options.token && devMode) {
+      if (options.token && !devMode) {
         await context.dispatch('collateTokenSet', parameter);
       }
 
@@ -1456,7 +1456,7 @@ const dataModule = {
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         for (const e of data) {
-          console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - e: " + JSON.stringify(e));
+          // console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - e: " + JSON.stringify(e));
           if (!(e.contract in tokenSetAgents)) {
             tokenSetAgents[e.contract] = 1;
           }
@@ -1798,15 +1798,31 @@ const dataModule = {
       // if (!(parameter.coinbaseIndex in tokenSetOwners)) {
       //   tokenSetOwners[parameter.coinbaseIndex] = 1;
       // }
+      const tokenAgents = {};
       let rows = 0;
       let done = false;
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         for (const e of data) {
-          console.log(now() + " INFO dataModule:actions.collateTokenSet - e: " + JSON.stringify(e));
-          // if (!(e.contract in tokenSetAgents)) {
-          //   tokenSetAgents[e.contract] = 1;
-          // }
+          // console.log(now() + " INFO dataModule:actions.collateTokenSet - e: " + JSON.stringify(e));
+          if (!(e.contract in tokenAgents)) {
+            const ta = context.state.tokenAgents[parameter.chainId] && context.state.tokenAgents[parameter.chainId][e.contract];
+            tokenAgents[e.contract] = {
+              blockNumber: ta.blockNumber,
+              logIndex: ta.logIndex,
+              txIndex: ta.txIndex,
+              txHash: ta.txHash,
+              timestamp: ta.timestamp,
+              owner: ta.owner,
+              index: ta.index,
+              indexByOwner: ta.indexByOwner,
+              nonce: ta.nonce,
+              nonceBlockNumber: ta.nonceBlockNumber,
+              nonceTimestamp: ta.nonceTimestamp,
+              events: [],
+            };
+          }
+          tokenAgents[e.contract].events.push(e);
           // if (('maker' in e) && !(e.maker in tokenSetOwners)) {
           //   tokenSetOwners[e.maker] = 1;
           // }
@@ -1818,9 +1834,11 @@ const dataModule = {
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
 
+      tokenSet.tokenAgents = tokenAgents;
+
       context.commit('setState', { name: 'tokenSet', data: tokenSet });
       await context.dispatch('saveData', ['tokenSet']);
-      console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet));
+      console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet, null, 2));
     },
 
 

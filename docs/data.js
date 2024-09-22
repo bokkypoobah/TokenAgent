@@ -136,6 +136,9 @@ const dataModule = {
     txHashToIndex: {},
     indexToTxHash: [],
 
+    tokenSetAgents: {},
+    tokenSetOwners: {},
+
     addresses: {},
     tokenAgents: {},
     tokenContracts: {},
@@ -455,7 +458,7 @@ const dataModule = {
           });
         }
       }
-      // console.log(now() + " INFO dataModule:mutations.addNewAddress AFTER - state.accounts: " + JSON.stringify(state.accounts, null, 2));
+      console.log(now() + " INFO dataModule:mutations.addNewAddress AFTER - state.addresses: " + JSON.stringify(state.addresses, null, 2));
     },
     addNewStealthAddress(state, info) {
       // console.log(now() + " INFO dataModule:mutations.addNewStealthAddress: " + JSON.stringify(info, null, 2));
@@ -691,7 +694,7 @@ const dataModule = {
       if (Object.keys(context.state.addresses).length == 0) {
         const db0 = new Dexie(context.state.db.name);
         db0.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-        for (let type of ['indexToAddress', 'indexToTxHash', 'tokenContracts', 'tokenAgents', /*'names', 'ens', 'addresses', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers'*/]) {
+        for (let type of ['indexToAddress', 'indexToTxHash', 'tokenSetAgents', 'tokenSetOwners', 'tokenContracts', 'tokenAgents', 'addresses', /*'names', 'ens', 'expiries', 'timestamps', 'txs', 'tokens', 'balances', 'approvals', 'registry', 'stealthTransfers'*/]) {
           const data = await db0.cache.where("objectName").equals(type).toArray();
           if (data.length == 1) {
             // console.log(now() + " INFO dataModule:actions.restoreState " + type + " => " + JSON.stringify(data[0].object, null, 2));
@@ -990,7 +993,7 @@ const dataModule = {
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = true;
+      const devMode = false;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1007,10 +1010,10 @@ const dataModule = {
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentEvents', parameter);
       }
-      if (options.token) {
+      if (options.token && !devMode) {
         await context.dispatch('collateTokenSetTokenAgentEvents', parameter);
       }
-      if (options.token && !devMode) {
+      if (options.token && devMode) {
         await context.dispatch('syncTokenSetTokenAgentInternalEvents', parameter);
       }
 
@@ -1427,27 +1430,47 @@ const dataModule = {
       console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-      // console.log("tokenAgents BEFORE: " + JSON.stringify(context.statetokenAgents, null, 2));
+      const tokenSetAgents = {};
+      const tokenSetOwners = {};
+      for (const [address, d] of Object.entries(context.state.addresses)) {
+        if (!(address in context.state.addressToIndex)) {
+          context.commit('addAddressIndex', address);
+          context.dispatch('saveData', ['indexToAddress']);
+        }
+        const a = context.state.addressToIndex[address];
+        tokenSetOwners[a] = 1;
+      }
       let rows = 0;
       let done = false;
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
-        for (const item of data) {
-          if (item.eventType == EVENTTYPE_OFFERED) {
-            console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - OFFERED: " + JSON.stringify(item));
-          } else if (item.eventType == EVENTTYPE_TRADED) {
-            console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - TRADED: " + JSON.stringify(item));
-          } else {
-            console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - UNKNOWN: " + JSON.stringify(item));
+        for (const e of data) {
+          if (!(e.contract in tokenSetAgents)) {
+            tokenSetAgents[e.contract] = 1;
           }
-          // context.commit('updateTokenAgentNonce', item);
+          if (('maker' in e) && !(e.maker in tokenSetOwners)) {
+            tokenSetOwners[e.maker] = 1;
+          }
+          if (('taker' in e) && !(e.taker in tokenSetOwners)) {
+            tokenSetOwners[e.taker] = 1;
+          }
+          // if (e.eventType == EVENTTYPE_OFFERED) {
+          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - OFFERED: " + JSON.stringify(e));
+          // } else if (e.eventType == EVENTTYPE_TRADED) {
+          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - TRADED: " + JSON.stringify(e));
+          // } else {
+          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - UNKNOWN: " + JSON.stringify(e));
+          // }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      // console.log("tokenAgents AFTER: " + JSON.stringify(context.state.tokenAgents, null, 2));
-      await context.dispatch('saveData', ['tokenAgents']);
-      console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents END - rows: " + rows);
+      context.commit('setState', { name: 'tokenSetAgents', data: tokenSetAgents });
+      context.commit('setState', { name: 'tokenSetOwners', data: tokenSetOwners });
+      // console.log("tokenSetAgents: " + JSON.stringify(Object.keys(context.state.tokenSetAgents).map(e => context.state.indexToAddress[e])));
+      // console.log("tokenSetOwners: " + JSON.stringify(Object.keys(context.state.tokenSetOwners).map(e => context.state.indexToAddress[e])));
+      await context.dispatch('saveData', ['tokenSetAgents', 'tokenSetOwners']);
+      console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents END - tokenSetAgents: " + Object.keys(tokenSetAgents).length + ", tokenSetOwners: " + Object.keys(tokenSetOwners).length);
     },
 
     async syncTokenSetTokenAgentInternalEvents(context, parameter) {

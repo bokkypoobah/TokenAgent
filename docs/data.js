@@ -1009,7 +1009,8 @@ const dataModule = {
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = true; // TODO false;
+      const devMode = true; // TODO;
+      // const devMode = false;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1630,6 +1631,10 @@ const dataModule = {
                   topics: [[
                       // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
                       ethers.utils.id("Transfer(address,address,uint256)"),
+                      // WETH event  Deposit(address indexed dst, uint wad);
+                      ethers.utils.id("Deposit(address,uint256)"),
+                      // WETH event  Withdrawal(address indexed src, uint wad);
+                      ethers.utils.id("Withdrawal(address,uint256)"),
                     ],
                     tokenSetOwnerAddresses,
                     null,
@@ -1640,19 +1645,23 @@ const dataModule = {
                   topics: [[
                       // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
                       ethers.utils.id("Transfer(address,address,uint256)"),
+                      // WETH event  Deposit(address indexed dst, uint wad);
+                      ethers.utils.id("Deposit(address,uint256)"),
+                      // WETH event  Withdrawal(address indexed src, uint wad);
+                      ethers.utils.id("Withdrawal(address,uint256)"),
                     ],
                     null,
                     tokenSetOwnerAddresses,
                   ]};
               }
-              console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", filter: " + JSON.stringify(filter));
+              // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", filter: " + JSON.stringify(filter));
               const eventLogs = await provider.getLogs(filter);
-              console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - eventLogs: " + JSON.stringify(eventLogs));
-              // const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
+              // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - eventLogs: " + JSON.stringify(eventLogs));
+              const records = parseTokenEventLogs(eventLogs, parameter.chainId);
               // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - records: " + JSON.stringify(records));
               const newRecords = [];
-              // for (const record of records) {
-              //   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - record: " + JSON.stringify(record, null, 2));
+              for (const record of records) {
+                console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - record: " + JSON.stringify(record, null, 2));
               //   const contractIndex = context.state.addressToIndex[record.contract];
               //   if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
               //     if (!(record.txHash in context.state.txHashToIndex)) {
@@ -1673,7 +1682,7 @@ const dataModule = {
               //     };
               //     newRecords.push(newRecord);
               //   }
-              // }
+              }
               if (newRecords.length) {
                 addCount += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
@@ -1698,12 +1707,11 @@ const dataModule = {
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const data = await db.cache.where("objectName").equals('tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
         startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        startBlock = 0; // TODO
         deleteCount = await db.tokenSetTokenAgentInternalEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         for (let i = 0; i < 6; i++) {
           await getLogs(startBlock, parameter.blockNumber, i);
         }
-        // await getLogs(startBlock, parameter.blockNumber, 0);
-        // await getLogs(startBlock, parameter.blockNumber, 1);
         await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);

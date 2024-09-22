@@ -797,6 +797,22 @@ modalBuyOffer: {{ modalBuyOffer }}
               </font>
             </b-col>
           </b-row>
+          <b-row class="m-0 mt-2 p-0">
+            <b-col class="m-0 mr-1 p-0">
+              <font size="-2">
+                <pre>
+newSellOffers: {{ newSellOffers }}
+                </pre>
+              </font>
+            </b-col>
+            <b-col class="m-0 mr-1 p-0">
+              <font size="-2">
+                <pre>
+newBuyOffers: {{ newBuyOffers }}
+                </pre>
+              </font>
+            </b-col>
+          </b-row>
           <!-- <b-row class="m-0 mt-2 p-0">
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
@@ -1662,6 +1678,16 @@ data: {{ data }}
         return events[events.length - 1].newNonce;
       }
       return 0;
+    },
+
+    newSellOffers() {
+      console.log(now() + " INFO TradeFungibles:computed.newSellOffers");
+      return { records: [{ one: 1, two: 2 }]};
+    },
+
+    newBuyOffers() {
+      console.log(now() + " INFO TradeFungibles:computed.newBuyOffers");
+      return { records: [{ one: 1, two: 2 }]};
     },
 
     sellOffers() {

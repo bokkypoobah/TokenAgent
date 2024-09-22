@@ -1707,45 +1707,24 @@ const dataModule = {
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const data = await db.cache.where("objectName").equals('tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
-        // startBlock = data.length == 1 ? data[0].object.blockNumber - parameter.confirmations : 0;
         let [startBlock, lastAgentList, lastOwnerList] = [0, [], []];
         if (data.length == 1) {
           startBlock = data[0].object.blockNumber - parameter.confirmations;
           lastAgentList = data[0].object.agents || [];
           lastOwnerList = data[0].object.owners || [];
         }
-        // lastAgentList = [5];
+        // lastAgentList = [5, 6, 7];
         // lastOwnerList = [0];
         const lastAgents = {};
-        for (const a of lastAgentList) {
-          lastAgents[a] = 1;
-        }
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - lastAgents: " + JSON.stringify(lastAgents));
+        lastAgentList.forEach(e => { lastAgents[e] = 1; });
         const newAgents = {};
-        for (const a of Object.keys(context.state.tokenSetAgents)) {
-          if (!(a in lastAgents)) {
-            newAgents[a] = 1;
-          }
-        }
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - newAgents: " + JSON.stringify(newAgents));
-
+        Object.keys(context.state.tokenSetAgents).forEach(e => { if (!(e in lastAgents)) { newAgents[e] = 1; } });
         const lastOwners = {};
-        for (const a of lastOwnerList) {
-          lastOwners[a] = 1;
-        }
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - lastOwners: " + JSON.stringify(lastOwners));
+        lastOwnerList.forEach(e => { lastOwners[e] = 1; });
         const newOwners = {};
-        for (const a of Object.keys(context.state.tokenSetOwners)) {
-          if (!(a in lastOwners)) {
-            newOwners[a] = 1;
-          }
-        }
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - newOwners: " + JSON.stringify(newOwners));
+        Object.keys(context.state.tokenSetOwners).forEach(e => { if (!(e in lastOwners)) { newOwners[e] = 1; } });
+        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - startBlock: " + startBlock + ", lastAgents: " + JSON.stringify(Object.keys(lastAgents)) + ", newAgents: " + JSON.stringify(Object.keys(newAgents)) + ", lastOwners: " + JSON.stringify(Object.keys(lastOwners)) + ", newOwners: " + JSON.stringify(Object.keys(newOwners)));
 
-
-        const agents = Object.keys(context.state.tokenSetAgents).map(e => parseInt(e));
-        const owners = Object.keys(context.state.tokenSetOwners).map(e => parseInt(e));
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - startBlock: " + startBlock + ", lastAgentList: " + JSON.stringify(lastAgentList) + ", agents: " + JSON.stringify(agents) + ", lastOwnerList: " + JSON.stringify(lastOwnerList) + ", owners: " + JSON.stringify(owners));
         deleteCount = await db.tokenSetTokenEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         // TODO: Incremental sync of old addresses, and full sync for new addresses
         for (let i = 0; i < 6; i++) {

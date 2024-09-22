@@ -2650,7 +2650,7 @@ data: {{ data }}
               approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             ]};
           const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
-          const tokenApprovals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
+          const tokenApprovals = parseTokenEventLogsOld(tokenApprovalsEventLogs, this.chainId, blockNumber);
           Vue.set(this.data, 'tokenApprovals', tokenApprovals);
         }
 
@@ -2665,7 +2665,7 @@ data: {{ data }}
               approvalAddresses.map(e => '0x000000000000000000000000' + e.substring(2, 42).toLowerCase()),
             ]};
           const wethApprovalsEventLogs = await provider.getLogs(wethApprovalsfilter);
-          const wethApprovals = parseTokenEventLogs(wethApprovalsEventLogs, this.chainId, blockNumber);
+          const wethApprovals = parseTokenEventLogsOld(wethApprovalsEventLogs, this.chainId, blockNumber);
           Vue.set(this.data, 'wethApprovals', wethApprovals);
         }
 
@@ -2680,7 +2680,7 @@ data: {{ data }}
             null,
           ]};
         const tokenTransferToEventsEventLogs = await provider.getLogs(tokenTransferToEventsfilter);
-        const tokenTransferToEvents = parseTokenEventLogs(tokenTransferToEventsEventLogs, this.chainId, blockNumber);
+        const tokenTransferToEvents = parseTokenEventLogsOld(tokenTransferToEventsEventLogs, this.chainId, blockNumber);
 
         const tokenTransferFromEventsfilter = {
           address: this.settings.tokenContractAddress, fromBlock: 0, toBlock: blockNumber,
@@ -2693,7 +2693,7 @@ data: {{ data }}
             null,
           ]};
         const tokenTransferFromEventsEventLogs = await provider.getLogs(tokenTransferFromEventsfilter);
-        const tokenTransferFromEvents = parseTokenEventLogs(tokenTransferFromEventsEventLogs, this.chainId, blockNumber);
+        const tokenTransferFromEvents = parseTokenEventLogsOld(tokenTransferFromEventsEventLogs, this.chainId, blockNumber);
 
         const wethTransferToEventsfilter = {
           address: network.weth.address, fromBlock: 0, toBlock: blockNumber,
@@ -2706,7 +2706,7 @@ data: {{ data }}
             null,
           ]};
         const wethTransferToEventsEventLogs = await provider.getLogs(wethTransferToEventsfilter);
-        const wethTransferToEvents = parseTokenEventLogs(wethTransferToEventsEventLogs, this.chainId, blockNumber);
+        const wethTransferToEvents = parseTokenEventLogsOld(wethTransferToEventsEventLogs, this.chainId, blockNumber);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferToEvents: " + JSON.stringify(wethTransferToEvents));
 
         const wethTransferFromEventsfilter = {
@@ -2724,7 +2724,7 @@ data: {{ data }}
             null,
           ]};
         const wethTransferFromEventsEventLogs = await provider.getLogs(wethTransferFromEventsfilter);
-        const wethTransferFromEvents = parseTokenEventLogs(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
+        const wethTransferFromEvents = parseTokenEventLogsOld(wethTransferFromEventsEventLogs, this.chainId, blockNumber);
         // console.log(now() + " INFO TradeFungibles:methods.loadData - wethTransferFromEvents: " + JSON.stringify(wethTransferFromEvents));
 
         const tokenTransfers = [...tokenTransferToEvents, ...tokenTransferFromEvents];

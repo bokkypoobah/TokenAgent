@@ -861,7 +861,7 @@ const Agent = {
       console.log(now() + " INFO Agent:methods.loadData - tokenApprovalsfilter: " + JSON.stringify(tokenApprovalsfilter, null, 2));
       const tokenApprovalsEventLogs = await provider.getLogs(tokenApprovalsfilter);
       // console.log(now() + " INFO Agent:methods.loadData - tokenApprovalsEventLogs: " + JSON.stringify(tokenApprovalsEventLogs, null, 2));
-      this.approvals = parseTokenEventLogs(tokenApprovalsEventLogs, this.chainId, blockNumber);
+      this.approvals = parseTokenEventLogsOld(tokenApprovalsEventLogs, this.chainId, blockNumber);
       // console.log(now() + " INFO Agent:methods.loadData - this.approvals: " + JSON.stringify(this.approvals, null, 2));
       localStorage.tokenAgentAgentApprovals = JSON.stringify(this.approvals);
 
@@ -873,7 +873,7 @@ const Agent = {
       };
       const tokenAgentEventLogs = await provider.getLogs(tokenAgentEventsfilter);
       // console.log(now() + " INFO Agent:methods.loadData - tokenAgentEventLogs: " + JSON.stringify(tokenAgentEventLogs, null, 2));
-      this.events = parseTokenAgentEventLogs(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
+      this.events = parseTokenAgentEventLogsOld(tokenAgentEventLogs, this.chainId, this.settings.tokenAgentAddress, network.tokenAgent.abi, blockNumber);
 
       localStorage.tokenAgentAgentEvents = JSON.stringify(this.events);
       // store.dispatch('syncOptions/loadData');

@@ -78,6 +78,74 @@ function parseTokenEventLogs(logs, chainId, latestBlockNumber) {
   return records;
 }
 
+function parseTokenEventLogsOld(logs, chainId, latestBlockNumber) {
+  // console.log(now() + " INFO functions:parseTokenEventLogsOld - logs: " + JSON.stringify(logs, null, 2));
+  const erc20Interface = new ethers.utils.Interface(ERC20ABI);
+  const erc721Interface = new ethers.utils.Interface(ERC721ABI);
+  const records = [];
+  for (const log of logs) {
+    if (!log.removed) {
+      // const contract = log.address;
+      let eventRecord = null;
+      if (log.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef") {
+        // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+        // ERC-721 TODO
+        const logData = erc20Interface.parseLog(log);
+        const [from, to, tokens] = logData.args;
+        eventRecord = { eventType: "Transfer", from, to, tokens: tokens.toString() /*, contractType: 20*/ };
+
+      } else if (log.topics[0] == "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c") {
+        // WETH Deposit (index_topic_1 address dst, uint256 wad)
+        const to = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+        tokens = ethers.BigNumber.from(log.data).toString();
+        eventRecord = { eventType: "Deposit", from: ADDRESS0, to, tokens /*, contractType: 20*/ };
+
+      } else if (log.topics[0] == "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65") {
+        // WETH Withdrawal (index_topic_1 address src, uint256 wad)
+        const from = ethers.utils.getAddress('0x' + log.topics[1].substring(26));
+        tokens = ethers.BigNumber.from(log.data).toString();
+        eventRecord = { eventType: "Withdrawal", from, to: ADDRESS0, tokens /*, contractType: 20*/ };
+
+      } else if (log.topics[0] == "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925") {
+        // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+        // ERC-721 Approval (address indexed owner, address indexed approved, uint256 indexed tokenId)
+        if (log.topics.length == 4) {
+          const logData = erc721Interface.parseLog(log);
+          const [owner, approved, tokenId] = logData.args;
+          eventRecord = { eventType: "Approval", owner, approved, tokenId: tokenId.toString() /*, contractType: 721*/ };
+        } else {
+          const logData = erc20Interface.parseLog(log);
+          const [owner, spender, tokens] = logData.args;
+          eventRecord = { eventType: "Approval", owner, spender, tokens: tokens.toString() /*, contractType: 20*/ };
+        }
+      } else if (log.topics[0] == "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31") {
+        // ERC-721 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+        // ERC-1155 event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+        const logData = erc721Interface.parseLog(log);
+        const [owner, operator, approved] = logData.args;
+        // NOTE: Both 721 and 1155 fall into this category, but assigning all to 721
+        eventRecord = { eventType: "ApprovalForAll", owner, operator, approved /*, contractType: 721*/ };
+      } else {
+        console.log(now() + " INFO functions:parseTokenEventLogsOld - UNHANDLED log: " + JSON.stringify(log));
+      }
+      if (eventRecord) {
+        records.push( {
+          chainId,
+          blockNumber: parseInt(log.blockNumber),
+          logIndex: parseInt(log.logIndex),
+          txIndex: parseInt(log.transactionIndex),
+          txHash: log.transactionHash,
+          contract: log.address,
+          ...eventRecord,
+          confirmations: latestBlockNumber - log.blockNumber,
+        });
+      }
+    }
+  }
+  // console.log(now() + " INFO functions:parseTokenEventLogsOld - records: " + JSON.stringify(records, null, 2));
+  return records;
+}
+
 // TokenAgentFactory
 // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
 function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress, tokenAgentFactoryAbi) {

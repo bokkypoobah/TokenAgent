@@ -165,12 +165,13 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata084c",
+      name: "tokenagentdata084d",
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
+        tokenSetTokenAgentInternalEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
 
         announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
         registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
@@ -962,7 +963,7 @@ const dataModule = {
       // db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const block = await provider.getBlock();
-      const confirmations = 100000; // store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
+      const confirmations = 100; // store.getters['config/settings'].confirmations && parseInt(store.getters['config/settings'].confirmations) || 10;
       const blockNumber = block && block.number || null;
       const cryptoCompareAPIKey = null; // store.getters['config/settings'].cryptoCompareAPIKey && store.getters['config/settings'].cryptoCompareAPIKey.length > 0 && store.getters['config/settings'].cryptoCompareAPIKey || null;
       const chainId = store.getters['connection/chainId'];
@@ -1318,30 +1319,10 @@ const dataModule = {
                 topics: [[
                   // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
                   ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint24,uint128[],uint256[],uint128[],uint40)"),
-
                   // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
                   // Traded (uint32 index, index_topic_1 address token, uint8 tokenType, index_topic_2 address maker, index_topic_3 address taker, uint8 makerBuySell, uint256[] prices, uint256[] tokenIds, uint256[] tokenss, uint128[] remainingTokenss, uint128 price, uint40 timestamp)
                   ethers.utils.id("Traded(uint32,address,uint8,address,address,uint8,uint256[],uint256[],uint256[],uint128[],uint128,uint40)"),
-
-                  // type Account is address;  // 2^160
-                  // type Index is uint32;     // 2^32  = 4,294,967,296
-                  // type Nonce is uint24;     // 2^24  = 16,777,216
-                  // type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-                  // type Token is address;    // 2^160
-                  // type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
-                  // type TokenId16 is uint16; // 2^16 = 65,536
-                  // type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-                  // type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
-                  // enum BuySell { BUY, SELL }
-                  // enum Execution { FILL, FILLORKILL }
-                  // enum TokenIdType { TOKENID256, TOKENID16 }
-                  // enum PaymentType { WETH, ETH }
-                  // enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
-                  // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-                  // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-                  // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-                  // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-                  // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+                  // TODO event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
                   ],
                   [ '0x000000000000000000000000' + parameter.token.substring(2, 42).toLowerCase() ],
                 ],
@@ -1458,13 +1439,6 @@ const dataModule = {
           if (('taker' in e) && !(e.taker in tokenSetOwners)) {
             tokenSetOwners[e.taker] = 1;
           }
-          // if (e.eventType == EVENTTYPE_OFFERED) {
-          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - OFFERED: " + JSON.stringify(e));
-          // } else if (e.eventType == EVENTTYPE_TRADED) {
-          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - TRADED: " + JSON.stringify(e));
-          // } else {
-          //   console.log(now() + " INFO dataModule:actions.collateTokenSetTokenAgentEvents - UNKNOWN: " + JSON.stringify(e));
-          // }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
@@ -1487,6 +1461,11 @@ const dataModule = {
       if (network.tokenAgentFactory) {
         async function getLogs(fromBlock, toBlock, part) {
           // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents.getLogs: " + fromBlock + " - " + toBlock);
+          const tokenSetAgentAddresses = Object.keys(context.state.tokenSetAgents).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
+          const fromAddresses = part == 0 ? tokenSetAgentAddresses : null;
+          const toAddresses = part == 1 ? tokenSetAgentAddresses : null;
+          // TODO: Split up into batches of addresses
+          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents - part: " + part + ", fromAddresses: " + JSON.stringify(fromAddresses) + ", toAddresses: " + JSON.stringify(toAddresses));
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
@@ -1494,86 +1473,43 @@ const dataModule = {
               const filter = {
                 address: null, fromBlock, toBlock,
                 topics: [[
-                  // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-                  ethers.utils.id("Offered(uint32,address,uint8,address,uint8,uint40,uint24,uint128[],uint256[],uint128[],uint40)"),
-
-                  // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
-                  // Traded (uint32 index, index_topic_1 address token, uint8 tokenType, index_topic_2 address maker, index_topic_3 address taker, uint8 makerBuySell, uint256[] prices, uint256[] tokenIds, uint256[] tokenss, uint128[] remainingTokenss, uint128 price, uint40 timestamp)
-                  ethers.utils.id("Traded(uint32,address,uint8,address,address,uint8,uint256[],uint256[],uint256[],uint128[],uint128,uint40)"),
-
-                  // type Account is address;  // 2^160
-                  // type Index is uint32;     // 2^32  = 4,294,967,296
-                  // type Nonce is uint24;     // 2^24  = 16,777,216
-                  // type Price is uint128;    // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-                  // type Token is address;    // 2^160
-                  // type TokenId is uint;     // 2^256 = 115,792, 089,237,316,195,423,570, 985,008,687,907,853,269, 984,665,640,564,039,457, 584,007,913,129,639,936
-                  // type TokenId16 is uint16; // 2^16 = 65,536
-                  // type Tokens is uint128;   // 2^128 = 340, 282,366,920,938,463,463, 374,607,431,768,211,456
-                  // type Unixtime is uint40;  // 2^40  = 1,099,511,627,776. For Unixtime, 1,099,511,627,776 seconds = 34865.285000507356672 years
-                  // enum BuySell { BUY, SELL }
-                  // enum Execution { FILL, FILLORKILL }
-                  // enum TokenIdType { TOKENID256, TOKENID16 }
-                  // enum PaymentType { WETH, ETH }
-                  // enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
-                  // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-                  // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-                  // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
-                  // event OffersInvalidated(Nonce newNonce, Unixtime timestamp);
-                  // event Traded(Index index, Token indexed token, TokenType tokenType, Account indexed maker, Account indexed taker, BuySell makerBuySell, uint[] prices, uint[] tokenIds, uint[] tokenss, Tokens[] remainingTokenss, Price price, Unixtime timestamp);
+                    // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+                    ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
                   ],
-                  [ '0x000000000000000000000000' + parameter.token.substring(2, 42).toLowerCase() ],
+                  fromAddresses,
+                  toAddresses,
                 ],
               };
               const eventLogs = await provider.getLogs(filter);
               const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
               const newRecords = [];
               for (const record of records) {
+                // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents - record: " + JSON.stringify(record, null, 2));
                 const contractIndex = context.state.addressToIndex[record.contract];
                 if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
                   if (!(record.txHash in context.state.txHashToIndex)) {
                     context.commit('addTxHashIndex', record.txHash);
                   }
-                  let addresses = [];
-                  if (record.eventType == EVENTTYPE_OFFERED) {
-                    addresses = [record.contract, record.token, record.maker];
-                  } else if (record.eventType == EVENTTYPE_TRADED) {
-                    addresses = [record.contract, record.token, record.maker, record.taker];
-                  }
-                  for (const address of addresses) {
+                  for (const address of [record.from, record.to]) {
                     if (!(address in context.state.addressToIndex)) {
                       context.commit('addAddressIndex', address);
                     }
                   }
-                  let newRecord = {};
-                  if (record.eventType == EVENTTYPE_OFFERED) {
-                    addresses = [record.contract, record.token, record.maker];
-                    newRecord = {
-                      tokenSet: parameter.tokenIndex,
-                      ...record,
-                      txHash: context.state.txHashToIndex[record.txHash],
-                      contract: context.state.addressToIndex[record.contract],
-                      token: context.state.addressToIndex[record.token],
-                      maker: context.state.addressToIndex[record.maker],
-                    };
-                  } else if (record.eventType == EVENTTYPE_TRADED) {
-                    addresses = [record.contract, record.token, record.maker, record.taker];
-                    newRecord = {
-                      tokenSet: parameter.tokenIndex,
-                      ...record,
-                      txHash: context.state.txHashToIndex[record.txHash],
-                      contract: context.state.addressToIndex[record.contract],
-                      token: context.state.addressToIndex[record.token],
-                      maker: context.state.addressToIndex[record.maker],
-                      taker: context.state.addressToIndex[record.taker],
-                    };
-                  }
+                  newRecord = {
+                    tokenSet: parameter.tokenIndex,
+                    ...record,
+                    txHash: context.state.txHashToIndex[record.txHash],
+                    contract: context.state.addressToIndex[record.contract],
+                    from: context.state.addressToIndex[record.from],
+                    to: context.state.addressToIndex[record.to],
+                  };
                   newRecords.push(newRecord);
                 }
               }
               if (newRecords.length) {
                 addCount += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
-                await db.tokenSetTokenAgentEvents.bulkAdd(newRecords).then(function(lastKey) {
+                await db.tokenSetTokenAgentInternalEvents.bulkAdd(newRecords).then(function(lastKey) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
                 }).catch(Dexie.BulkError, function(e) {
                   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
@@ -1594,7 +1530,7 @@ const dataModule = {
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const data = await db.cache.where("objectName").equals('tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
         startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
-        deleteCount = await db.tokenSetTokenAgentEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
+        deleteCount = await db.tokenSetTokenAgentInternalEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         await getLogs(startBlock, parameter.blockNumber, 0);
         await getLogs(startBlock, parameter.blockNumber, 1);
         await db.cache.put({ objectName: 'tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {

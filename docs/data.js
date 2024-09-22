@@ -995,11 +995,21 @@ const dataModule = {
           options.token = null;
         }
       }
+      const network = chainId && NETWORKS[chainId.toString()] || {};
+      if (network.tokenAgentFactory) {
+        options.weth = network.weth.address;
+        if (!(options.weth in context.state.addressToIndex)) {
+          context.commit('addAddressIndex', options.weth);
+        }
+        options.wethIndex = context.state.addressToIndex[options.weth];
+      }
+      // console.log(now() + " INFO dataModule:actions.syncIt - options: " + JSON.stringify(options));
+
       context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = false;
+      const devMode = true; // TODO false;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1022,7 +1032,7 @@ const dataModule = {
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentInternalEvents', parameter);
       }
-      if (options.token && !devMode) {
+      if (options.token && devMode) {
         await context.dispatch('syncTokenSetTokenEvents', parameter);
       }
 
@@ -1558,55 +1568,112 @@ const dataModule = {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
       let [startBlock, deleteAcount, addCount] = [0, 0, 0];
-      return;
       if (network.tokenAgentFactory) {
         async function getLogs(fromBlock, toBlock, part) {
           // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.getLogs: " + fromBlock + " - " + toBlock);
           const tokenSetAgentAddresses = Object.keys(context.state.tokenSetAgents).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
-          const fromAddresses = part == 0 ? tokenSetAgentAddresses : null;
-          const toAddresses = part == 1 ? tokenSetAgentAddresses : null;
+          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", tokenSetAgentAddresses: " + JSON.stringify(tokenSetAgentAddresses));
+          const tokenSetOwnerAddresses = Object.keys(context.state.tokenSetOwners).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
+          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", tokenSetOwnerAddresses: " + JSON.stringify(tokenSetOwnerAddresses));
+          // const fromAddresses = part == 0 ? tokenSetAgentAddresses : null;
+          // const toAddresses = part == 1 ? tokenSetAgentAddresses : null;
           // TODO: Split up into batches of addresses
-          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", fromAddresses: " + JSON.stringify(fromAddresses) + ", toAddresses: " + JSON.stringify(toAddresses));
+          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", fromAddresses: " + JSON.stringify(fromAddresses) + ", toAddresses: " + JSON.stringify(toAddresses));
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
             try {
-              const filter = {
-                address: null, fromBlock, toBlock,
-                topics: [[
-                    // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
-                    ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
-                  ],
-                  fromAddresses,
-                  toAddresses,
-                ],
-              };
-              const eventLogs = await provider.getLogs(filter);
-              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
-              const newRecords = [];
-              for (const record of records) {
-                // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - record: " + JSON.stringify(record, null, 2));
-                const contractIndex = context.state.addressToIndex[record.contract];
-                if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
-                  if (!(record.txHash in context.state.txHashToIndex)) {
-                    context.commit('addTxHashIndex', record.txHash);
-                  }
-                  for (const address of [record.from, record.to]) {
-                    if (!(address in context.state.addressToIndex)) {
-                      context.commit('addAddressIndex', address);
-                    }
-                  }
-                  newRecord = {
-                    tokenSet: parameter.tokenIndex,
-                    ...record,
-                    txHash: context.state.txHashToIndex[record.txHash],
-                    contract: context.state.addressToIndex[record.contract],
-                    from: context.state.addressToIndex[record.from],
-                    to: context.state.addressToIndex[record.to],
-                  };
-                  newRecords.push(newRecord);
-                }
+              let filter = null;
+              if (part == 0) {
+                filter = {
+                  address: parameter.token, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+                      ethers.utils.id("Approval(address,address,uint256)"),
+                    ],
+                    null,
+                    tokenSetAgentAddresses,
+                  ]};
+              } else if (part == 1) {
+                filter = {
+                  address: parameter.weth, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Approval(address indexed owner, address indexed spender, uint tokens);
+                      ethers.utils.id("Approval(address,address,uint256)"),
+                    ],
+                    null,
+                    tokenSetAgentAddresses,
+                  ]};
+              } else if (part == 2) {
+                filter = {
+                  address: parameter.token, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+                      ethers.utils.id("Transfer(address,address,uint256)"),
+                    ],
+                    tokenSetOwnerAddresses,
+                    null,
+                  ]};
+              } else if (part == 3) {
+                filter = {
+                  address: parameter.token, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+                      ethers.utils.id("Transfer(address,address,uint256)"),
+                    ],
+                    null,
+                    tokenSetOwnerAddresses,
+                  ]};
+              } else if (part == 4) {
+                filter = {
+                  address: parameter.weth, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+                      ethers.utils.id("Transfer(address,address,uint256)"),
+                    ],
+                    tokenSetOwnerAddresses,
+                    null,
+                  ]};
+              } else if (part == 5) {
+                filter = {
+                  address: parameter.weth, fromBlock, toBlock,
+                  topics: [[
+                      // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
+                      ethers.utils.id("Transfer(address,address,uint256)"),
+                    ],
+                    null,
+                    tokenSetOwnerAddresses,
+                  ]};
               }
+              console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", filter: " + JSON.stringify(filter));
+              const eventLogs = await provider.getLogs(filter);
+              console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - eventLogs: " + JSON.stringify(eventLogs));
+              // const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
+              // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - records: " + JSON.stringify(records));
+              const newRecords = [];
+              // for (const record of records) {
+              //   // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - record: " + JSON.stringify(record, null, 2));
+              //   const contractIndex = context.state.addressToIndex[record.contract];
+              //   if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
+              //     if (!(record.txHash in context.state.txHashToIndex)) {
+              //       context.commit('addTxHashIndex', record.txHash);
+              //     }
+              //     for (const address of [record.from, record.to]) {
+              //       if (!(address in context.state.addressToIndex)) {
+              //         context.commit('addAddressIndex', address);
+              //       }
+              //     }
+              //     newRecord = {
+              //       tokenSet: parameter.tokenIndex,
+              //       ...record,
+              //       txHash: context.state.txHashToIndex[record.txHash],
+              //       contract: context.state.addressToIndex[record.contract],
+              //       from: context.state.addressToIndex[record.from],
+              //       to: context.state.addressToIndex[record.to],
+              //     };
+              //     newRecords.push(newRecord);
+              //   }
+              // }
               if (newRecords.length) {
                 addCount += newRecords.length;
                 context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
@@ -1629,12 +1696,15 @@ const dataModule = {
           }
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
-        const data = await db.cache.where("objectName").equals('tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
+        const data = await db.cache.where("objectName").equals('tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
         startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
         deleteCount = await db.tokenSetTokenAgentInternalEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
-        await getLogs(startBlock, parameter.blockNumber, 0);
-        await getLogs(startBlock, parameter.blockNumber, 1);
-        await db.cache.put({ objectName: 'tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
+        for (let i = 0; i < 6; i++) {
+          await getLogs(startBlock, parameter.blockNumber, i);
+        }
+        // await getLogs(startBlock, parameter.blockNumber, 0);
+        // await getLogs(startBlock, parameter.blockNumber, 1);
+        await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });

@@ -1019,8 +1019,11 @@ const dataModule = {
       if (options.token && !devMode) {
         await context.dispatch('collateTokenSetTokenAgentEvents', parameter);
       }
-      if (options.token && devMode) {
+      if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentInternalEvents', parameter);
+      }
+      if (options.token && !devMode) {
+        await context.dispatch('syncTokenSetTokenEvents', parameter);
       }
 
       // console.log("context.state.addressToIndex AFTER: " + JSON.stringify(context.state.addressToIndex));
@@ -1546,6 +1549,97 @@ const dataModule = {
         });
       }
       console.log(now() + " INFO dataModule:actions.syncTokenSetTokenAgentInternalEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
+    },
+
+    async syncTokenSetTokenEvents(context, parameter) {
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents BEGIN - token: " + parameter.token);
+      const db = new Dexie(context.state.db.name);
+      db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
+      let [startBlock, deleteAcount, addCount] = [0, 0, 0];
+      return;
+      if (network.tokenAgentFactory) {
+        async function getLogs(fromBlock, toBlock, part) {
+          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.getLogs: " + fromBlock + " - " + toBlock);
+          const tokenSetAgentAddresses = Object.keys(context.state.tokenSetAgents).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
+          const fromAddresses = part == 0 ? tokenSetAgentAddresses : null;
+          const toAddresses = part == 1 ? tokenSetAgentAddresses : null;
+          // TODO: Split up into batches of addresses
+          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", fromAddresses: " + JSON.stringify(fromAddresses) + ", toAddresses: " + JSON.stringify(toAddresses));
+          let split = false;
+          const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
+          if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
+            try {
+              const filter = {
+                address: null, fromBlock, toBlock,
+                topics: [[
+                    // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
+                    ethers.utils.id("InternalTransfer(address,address,uint256,uint40)"),
+                  ],
+                  fromAddresses,
+                  toAddresses,
+                ],
+              };
+              const eventLogs = await provider.getLogs(filter);
+              const records = parseTokenAgentEventLogs(eventLogs, parameter.chainId, network.tokenAgent.abi);
+              const newRecords = [];
+              for (const record of records) {
+                // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - record: " + JSON.stringify(record, null, 2));
+                const contractIndex = context.state.addressToIndex[record.contract];
+                if (contractIndex in (context.state.tokenAgents[parameter.chainId] || {})) {
+                  if (!(record.txHash in context.state.txHashToIndex)) {
+                    context.commit('addTxHashIndex', record.txHash);
+                  }
+                  for (const address of [record.from, record.to]) {
+                    if (!(address in context.state.addressToIndex)) {
+                      context.commit('addAddressIndex', address);
+                    }
+                  }
+                  newRecord = {
+                    tokenSet: parameter.tokenIndex,
+                    ...record,
+                    txHash: context.state.txHashToIndex[record.txHash],
+                    contract: context.state.addressToIndex[record.contract],
+                    from: context.state.addressToIndex[record.from],
+                    to: context.state.addressToIndex[record.to],
+                  };
+                  newRecords.push(newRecord);
+                }
+              }
+              if (newRecords.length) {
+                addCount += newRecords.length;
+                context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
+                await db.tokenSetTokenAgentInternalEvents.bulkAdd(newRecords).then(function(lastKey) {
+                  // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.bulkAdd - lastKey: " + JSON.stringify(lastKey));
+                }).catch(Dexie.BulkError, function(e) {
+                  // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents bulkAdd error: " + JSON.stringify(e.failures, null, 2));
+                });
+              }
+            } catch (e) {
+              split = true;
+            }
+          } else {
+            split = true;
+          }
+          if (split) {
+            const mid = parseInt((fromBlock + toBlock) / 2);
+            await getLogs(fromBlock, mid, part);
+            await getLogs(parseInt(mid) + 1, toBlock, part);
+          }
+        }
+        context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
+        const data = await db.cache.where("objectName").equals('tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
+        startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        deleteCount = await db.tokenSetTokenAgentInternalEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
+        await getLogs(startBlock, parameter.blockNumber, 0);
+        await getLogs(startBlock, parameter.blockNumber, 1);
+        await db.cache.put({ objectName: 'tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
+        }).catch(function(error) {
+          console.log("error: " + error);
+        });
+      }
+      console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents END - startBlock: " + startBlock + ", blockNumber: " + parameter.blockNumber+ ", deleteCount: " + deleteCount + ", addCount: " + addCount);
     },
 
 

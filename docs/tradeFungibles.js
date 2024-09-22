@@ -1491,6 +1491,21 @@ data: {{ data }}
     tokenContracts() {
       return store.getters['data/tokenContracts'];
     },
+    addressToIndex() {
+      return store.getters['data/addressToIndex'];
+    },
+    indexToAddress() {
+      return store.getters['data/indexToAddress'];
+    },
+    txHashToIndex() {
+      return store.getters['data/txHashToIndex'];
+    },
+    indexToTxHash() {
+      return store.getters['data/indexToTxHash'];
+    },
+    tokenSet() {
+      return store.getters['data/tokenSet'];
+    },
     names() {
       return store.getters['data/names'];
     },
@@ -1681,7 +1696,31 @@ data: {{ data }}
     },
 
     newSellOffers() {
-      console.log(now() + " INFO TradeFungibles:computed.newSellOffers");
+      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - this.tokenSet: " + JSON.stringify(this.tokenSet, null, 2));
+      console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenSet.timestamp: " + this.formatTimestamp(this.tokenSet.timestamp) + ", token.symbol: " + this.tokenSet.symbol + ", token.decimals: " + this.tokenSet.decimals);
+      const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
+
+      const points = [ [0.01, 10.123, 0.011, 10.234] ]; // [];
+      const simulate = true; // false;
+      const mineOnly = false;
+      const showInvalidated = true; // false;
+      const showExpired = true; // false;
+      const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
+
+      const collator = {};
+      const prices = [];
+      for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
+        // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenAgent: " + tokenAgent + " => " + JSON.stringify(d, null, 2));
+        if (!mineOnly || d.owner == coinbaseIndex) {
+          for (const e of d.events) {
+            if (e.nonce == d.nonce) {
+              console.log(now() + " INFO TradeFungibles:computed.newSellOffers - ACTIVE e: " + JSON.stringify(e));
+            } else {
+              // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - INVALIDATED e: " + JSON.stringify(e));
+            }
+          }
+        }
+      }
       return { records: [{ one: 1, two: 2 }]};
     },
 

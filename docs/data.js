@@ -136,10 +136,10 @@ const dataModule = {
     txHashToIndex: {},
     indexToTxHash: [],
 
+    tokenSet: {},
+
     tokenSetAgents: {},
     tokenSetOwners: {},
-
-    tokenSet: {},
 
     addresses: {},
     tokenAgents: {},
@@ -190,6 +190,8 @@ const dataModule = {
     indexToAddress: state => state.indexToAddress,
     txHashToIndex: state => state.txHashToIndex,
     indexToTxHash: state => state.indexToTxHash,
+
+    tokenSet: state => state.tokenSet,
 
     addresses: state => state.addresses,
     tokenAgents: state => state.tokenAgents,

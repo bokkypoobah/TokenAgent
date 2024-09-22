@@ -992,6 +992,11 @@ const dataModule = {
             context.commit('addAddressIndex', options.token);
           }
           options.tokenIndex = context.state.addressToIndex[options.token];
+          if (options.token in (context.state.tokenContracts[chainId] || {})) {
+            options.symbol = context.state.tokenContracts[chainId][options.token].symbol;
+            options.name = context.state.tokenContracts[chainId][options.token].name;
+            options.decimals = context.state.tokenContracts[chainId][options.token].decimals;
+          }
         } catch (e) {
           console.log(now() + " ERROR dataModule:actions.syncIt - tokenContractAddress: " + options.tokenContractAddress);
           options.token = null;
@@ -1863,6 +1868,9 @@ const dataModule = {
         chainId: parameter.chainId,
         token: parameter.token,
         tokenIndex: parameter.tokenIndex,
+        symbol: parameter.symbol,
+        name: parameter.name,
+        decimals: parameter.decimals,
         weth: parameter.weth,
         wethIndex: parameter.wethIndex,
         blockNumber: parameter.blockNumber,

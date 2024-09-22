@@ -1639,10 +1639,6 @@ const dataModule = {
                   topics: [[
                       // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
                       ethers.utils.id("Transfer(address,address,uint256)"),
-                      // WETH event  Deposit(address indexed dst, uint wad);
-                      ethers.utils.id("Deposit(address,uint256)"),
-                      // WETH event  Withdrawal(address indexed src, uint wad);
-                      ethers.utils.id("Withdrawal(address,uint256)"),
                     ],
                     null,
                     tokenSetOwnerAddresses,
@@ -1711,13 +1707,28 @@ const dataModule = {
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
         const data = await db.cache.where("objectName").equals('tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
-        startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
+        // startBlock = data.length == 1 ? data[0].object.blockNumber - parameter.confirmations : 0;
+        let [startBlock, lastAgents, lastOwners] = [0, [], []];
+        if (data.length == 1) {
+          startBlock = data[0].object.blockNumber - parameter.confirmations;
+          lastAgents = data[0].object.agents || [];
+          lastOwners = data[0].object.owners || [];
+        }
+        const agents = Object.keys(context.state.tokenSetAgents).map(e => parseInt(e));
+        const owners = Object.keys(context.state.tokenSetOwners).map(e => parseInt(e));
+        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - startBlock: " + startBlock + ", lastAgents: " + JSON.stringify(lastAgents) + ", agents: " + JSON.stringify(agents) + ", lastOwners: " + JSON.stringify(lastOwners) + ", owners: " + JSON.stringify(owners));
         deleteCount = await db.tokenSetTokenEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         // TODO: Incremental sync of old addresses, and full sync for new addresses
         for (let i = 0; i < 6; i++) {
           await getLogs(startBlock, parameter.blockNumber, i);
         }
-        await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
+        await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex,
+          object: {
+            blockNumber: parameter.blockNumber,
+            agents: Object.keys(context.state.tokenSetAgents).map(e => parseInt(e)),
+            owners: Object.keys(context.state.tokenSetOwners).map(e => parseInt(e)),
+          }
+        }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });

@@ -1009,8 +1009,8 @@ const dataModule = {
 
       const parameter = { chainId, coinbase, blockNumber, confirmations, cryptoCompareAPIKey, ...options, incrementalSync: true };
 
-      const devMode = true;
-      // const devMode = false;
+      // const devMode = true;
+      const devMode = false;
 
       if (options.token && !devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
@@ -1033,7 +1033,7 @@ const dataModule = {
       if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenAgentInternalEvents', parameter);
       }
-      if (options.token && devMode) {
+      if (options.token && !devMode) {
         await context.dispatch('syncTokenSetTokenEvents', parameter);
       }
 
@@ -1572,8 +1572,7 @@ const dataModule = {
       if (network.tokenAgentFactory) {
         async function getLogs(fromBlock, toBlock, part, addresses) {
           console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.getLogs: " + fromBlock + " - " + toBlock + ", part: " + part + ", addresses: " + JSON.stringify(addresses));
-          const tokenSetAgentAddresses = Object.keys(context.state.tokenSetAgents).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
-          const tokenSetOwnerAddresses = Object.keys(context.state.tokenSetOwners).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
+          const addressesInBytes = addresses.map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
           let split = false;
           const maxLogScrapingSize = NETWORKS['' + parameter.chainId].maxLogScrapingSize || null;
           if (!maxLogScrapingSize || (toBlock - fromBlock) <= maxLogScrapingSize) {
@@ -1587,7 +1586,7 @@ const dataModule = {
                       ethers.utils.id("Approval(address,address,uint256)"),
                     ],
                     null,
-                    tokenSetAgentAddresses,
+                    addressesInBytes,
                   ]};
               } else if (part == 1) {
                 filter = {
@@ -1597,7 +1596,7 @@ const dataModule = {
                       ethers.utils.id("Approval(address,address,uint256)"),
                     ],
                     null,
-                    tokenSetAgentAddresses,
+                    addressesInBytes,
                   ]};
               } else if (part == 2) {
                 filter = {
@@ -1606,7 +1605,7 @@ const dataModule = {
                       // ERC-20 event Transfer(address indexed from, address indexed to, uint tokens);
                       ethers.utils.id("Transfer(address,address,uint256)"),
                     ],
-                    tokenSetOwnerAddresses,
+                    addressesInBytes,
                     null,
                   ]};
               } else if (part == 3) {
@@ -1617,7 +1616,7 @@ const dataModule = {
                       ethers.utils.id("Transfer(address,address,uint256)"),
                     ],
                     null,
-                    tokenSetOwnerAddresses,
+                    addressesInBytes,
                   ]};
               } else if (part == 4) {
                 filter = {
@@ -1630,7 +1629,7 @@ const dataModule = {
                       // WETH event  Withdrawal(address indexed src, uint wad);
                       ethers.utils.id("Withdrawal(address,uint256)"),
                     ],
-                    tokenSetOwnerAddresses,
+                    addressesInBytes,
                     null,
                   ]};
               } else if (part == 5) {
@@ -1641,7 +1640,7 @@ const dataModule = {
                       ethers.utils.id("Transfer(address,address,uint256)"),
                     ],
                     null,
-                    tokenSetOwnerAddresses,
+                    addressesInBytes,
                   ]};
               }
               // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + part + ", filter: " + JSON.stringify(filter));
@@ -1713,8 +1712,8 @@ const dataModule = {
           lastAgentList = data[0].object.agents || [];
           lastOwnerList = data[0].object.owners || [];
         }
-        lastAgentList = [5, 6, 7];
-        lastOwnerList = [0];
+        // lastAgentList = [5, 6, 7];
+        // lastOwnerList = [10];
         const lastAgents = {};
         lastAgentList.forEach(e => { lastAgents[e] = 1; });
         const newAgents = {};
@@ -1723,19 +1722,24 @@ const dataModule = {
         lastOwnerList.forEach(e => { lastOwners[e] = 1; });
         const newOwners = {};
         Object.keys(context.state.tokenSetOwners).forEach(e => { if (!(e in lastOwners)) { newOwners[e] = 1; } });
-        console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - startBlock: " + startBlock + ", lastAgents: " + JSON.stringify(Object.keys(lastAgents)) + ", newAgents: " + JSON.stringify(Object.keys(newAgents)) + ", lastOwners: " + JSON.stringify(Object.keys(lastOwners)) + ", newOwners: " + JSON.stringify(Object.keys(newOwners)));
-
+        // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - startBlock: " + startBlock + ", lastAgents: " + JSON.stringify(Object.keys(lastAgents)) + ", newAgents: " + JSON.stringify(Object.keys(newAgents)) + ", lastOwners: " + JSON.stringify(Object.keys(lastOwners)) + ", newOwners: " + JSON.stringify(Object.keys(newOwners)));
         deleteCount = await db.tokenSetTokenEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
-        // TODO: Incremental sync of old addresses, and full sync for new addresses
+        const BATCHSIZE = 100;
         for (let i = 0; i < 6; i++) {
           const lastAddresses = i < 2 ? Object.keys(lastAgents) : Object.keys(lastOwners);
           const newAddresses = i < 2 ? Object.keys(newAgents) : Object.keys(newOwners);
-          console.log("part: " + i + " lastAddresses: " + JSON.stringify(lastAddresses) + ", newAddresses: " + JSON.stringify(newAddresses));
+          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents - part: " + i + " lastAddresses: " + JSON.stringify(lastAddresses) + ", newAddresses: " + JSON.stringify(newAddresses));
           if (lastAddresses.length > 0) {
-            await getLogs(startBlock, parameter.blockNumber, i, lastAddresses);
+            for (let j = 0; j < lastAddresses.length; j += BATCHSIZE) {
+              const batch = lastAddresses.slice(j, parseInt(j) + BATCHSIZE);
+              await getLogs(startBlock, parameter.blockNumber, i, batch);
+            }
           }
           if (newAddresses.length > 0) {
-            await getLogs(0, parameter.blockNumber, i, newAddresses);
+            for (let j = 0; j < newAddresses.length; j += BATCHSIZE) {
+              const batch = newAddresses.slice(j, parseInt(j) + BATCHSIZE);
+              await getLogs(0, parameter.blockNumber, i, batch);
+            }
           }
         }
         await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex,

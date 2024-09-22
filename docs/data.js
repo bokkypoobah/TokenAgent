@@ -1766,41 +1766,13 @@ const dataModule = {
       console.log(now() + " INFO dataModule:actions.collateTokenSet BEGIN - token: " + parameter.token);
       const db = new Dexie(context.state.db.name);
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
-
-      const tokenSet = {
-        chainId: parameter.chainId,
-        token: parameter.token,
-        tokenIndex: parameter.tokenIndex,
-        weth: parameter.weth,
-        wethIndex: parameter.wethIndex,
-        blockNumber: parameter.blockNumber,
-        timestamp: parameter.timestamp,
-      };
-
-      // context.commit('setState', { name: 'tokenSet', data: tokenSet });
-      // console.log(now() + " INFO dataModule:actions.collateTokenSet - context.state.tokenSet: " + JSON.stringify(context.state.tokenSet));
-      // await context.dispatch('saveData', ['tokenSet']);
-      // return;
-
-      // const tokenSetAgents = {};
-      // const tokenSetOwners = {};
-      // const newAddress = false;
-      // for (const [address, d] of Object.entries(context.state.addresses)) {
-      //   if (!(address in context.state.addressToIndex)) {
-      //     context.commit('addAddressIndex', address);
-      //     newAddress = true;
-      //   }
-      //   tokenSetOwners[context.state.addressToIndex[address]] = 1;
-      // }
-      // if (newAddress) {
-      //   context.dispatch('saveData', ['indexToAddress']);
-      // }
-      // if (!(parameter.coinbaseIndex in tokenSetOwners)) {
-      //   tokenSetOwners[parameter.coinbaseIndex] = 1;
-      // }
+      const approvals = {};
+      const balances = {};
       const tokenAgents = {};
+      // console.log("context.state.tokenSetOwners: " + JSON.stringify(context.state.tokenSetOwners, null, 2));
       let rows = 0;
       let done = false;
+      const tradeHashes = {};
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         for (const e of data) {
@@ -1823,19 +1795,82 @@ const dataModule = {
             };
           }
           tokenAgents[e.contract].events.push(e);
-          // if (('maker' in e) && !(e.maker in tokenSetOwners)) {
-          //   tokenSetOwners[e.maker] = 1;
-          // }
-          // if (('taker' in e) && !(e.taker in tokenSetOwners)) {
-          //   tokenSetOwners[e.taker] = 1;
-          // }
+          if (e.eventType == EVENTTYPE_TRADED) {
+            // console.log("Traded: " + JSON.stringify(e));
+            tradeHashes[e.txHash] = e.contract;
+          }
+        }
+        rows = parseInt(rows) + data.length;
+        done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
+      } while (!done);
+      // console.log("tradeHashes: " + JSON.stringify(Object.keys(tradeHashes), null, 2));
+      rows = 0;
+      done = false;
+      do {
+        let data = await db.tokenSetTokenEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
+        for (const e of data) {
+          if (e.eventType == EVENTTYPE_TRANSFER || e.eventType == EVENTTYPE_DEPOSIT || e.eventType == EVENTTYPE_WITHDRAWAL) {
+            // console.log(now() + " INFO dataModule:actions.collateTokenSet - Transfer: " + JSON.stringify(e));
+            if (e.to in context.state.tokenSetOwners) {
+              if (!(e.contract in balances)) {
+                balances[e.contract] = {};
+              }
+              if (!(e.to in balances[e.contract])) {
+                balances[e.contract][e.to] = { tokens: e.tokens };
+              } else {
+                balances[e.contract][e.to].tokens = ethers.BigNumber.from(balances[e.contract][e.to].tokens).add(e.tokens).toString();
+              }
+            }
+            if (e.from in context.state.tokenSetOwners) {
+              if (!(e.contract in balances)) {
+                balances[e.contract] = {};
+              }
+              if (!(e.from in balances[e.contract])) {
+                balances[e.contract][e.from] = {
+                  tokens: e.from == ADDRESS0 ? "0" : ethers.BigNumber.from(0).sub(e.tokens).toString(),
+                };
+              } else {
+                balances[e.contract][e.from].tokens = ethers.BigNumber.from(balances[e.contract][e.from].tokens).sub(e.tokens).toString();
+              }
+            }
+            if (e.txHash in tradeHashes) {
+              // console.log(now() + " INFO dataModule:actions.collateTokenSet - Trade Transfer: " + JSON.stringify(e));
+              const tokenAgent = tradeHashes[e.txHash];
+              if (approvals[e.contract] && approvals[e.contract][e.from] && approvals[e.contract][e.from][tokenAgent]) {
+                approvals[e.contract][e.from][tokenAgent].spent = ethers.BigNumber.from(approvals[e.contract][e.from][tokenAgent].spent).add(e.tokens).toString();
+                approvals[e.contract][e.from][tokenAgent].tokens = ethers.BigNumber.from(approvals[e.contract][e.from][tokenAgent].tokens).sub(e.tokens).toString();
+                approvals[e.contract][e.from][tokenAgent].spends.push({ txHash: e.txHash, logIndex: e.logIndex, tokens: e.tokens });
+              }
+            }
+          } else if (e.eventType == EVENTTYPE_APPROVAL) {
+            // console.log(now() + " INFO dataModule:actions.collateTokenSet - Approval: " + JSON.stringify(e));
+            if (!(e.contract in approvals)) {
+              approvals[e.contract] = {};
+            }
+            if (!(e.owner in approvals[e.contract])) {
+              approvals[e.contract][e.owner] = {};
+            }
+            approvals[e.contract][e.owner][e.spender] = { tokens: e.tokens, approvedTokens: e.tokens, txHash: e.txHash, logIndex: e.logIndex, spent: 0, spends: [] };
+          } else {
+            console.log(now() + " INFO dataModule:actions.collateTokenSet - e: " + JSON.stringify(e));
+          }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
 
-      tokenSet.tokenAgents = tokenAgents;
-
+      const tokenSet = {
+        chainId: parameter.chainId,
+        token: parameter.token,
+        tokenIndex: parameter.tokenIndex,
+        weth: parameter.weth,
+        wethIndex: parameter.wethIndex,
+        blockNumber: parameter.blockNumber,
+        timestamp: parameter.timestamp,
+        approvals,
+        balances,
+        tokenAgents,
+      };
       context.commit('setState', { name: 'tokenSet', data: tokenSet });
       await context.dispatch('saveData', ['tokenSet']);
       console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet, null, 2));

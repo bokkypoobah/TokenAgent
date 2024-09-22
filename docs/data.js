@@ -1432,13 +1432,17 @@ const dataModule = {
       db.version(context.state.db.version).stores(context.state.db.schemaDefinition);
       const tokenSetAgents = {};
       const tokenSetOwners = {};
+      const newAddress = false;
       for (const [address, d] of Object.entries(context.state.addresses)) {
         if (!(address in context.state.addressToIndex)) {
           context.commit('addAddressIndex', address);
-          context.dispatch('saveData', ['indexToAddress']);
+          newAddress = true;
         }
         const a = context.state.addressToIndex[address];
         tokenSetOwners[a] = 1;
+      }
+      if (newAddress) {
+        context.dispatch('saveData', ['indexToAddress']);
       }
       let rows = 0;
       let done = false;

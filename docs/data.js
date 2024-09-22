@@ -1777,52 +1777,50 @@ const dataModule = {
         timestamp: parameter.timestamp,
       };
 
-      context.commit('setState', { name: 'tokenSet', data: tokenSet });
-      console.log(now() + " INFO dataModule:actions.collateTokenSet - context.state.tokenSet: " + JSON.stringify(context.state.tokenSet));
-      await context.dispatch('saveData', ['tokenSet']);
-      return;
+      // context.commit('setState', { name: 'tokenSet', data: tokenSet });
+      // console.log(now() + " INFO dataModule:actions.collateTokenSet - context.state.tokenSet: " + JSON.stringify(context.state.tokenSet));
+      // await context.dispatch('saveData', ['tokenSet']);
+      // return;
 
-      const tokenSetAgents = {};
-      const tokenSetOwners = {};
-      const newAddress = false;
-      for (const [address, d] of Object.entries(context.state.addresses)) {
-        if (!(address in context.state.addressToIndex)) {
-          context.commit('addAddressIndex', address);
-          newAddress = true;
-        }
-        tokenSetOwners[context.state.addressToIndex[address]] = 1;
-      }
-      if (newAddress) {
-        context.dispatch('saveData', ['indexToAddress']);
-      }
-      if (!(parameter.coinbaseIndex in tokenSetOwners)) {
-        tokenSetOwners[parameter.coinbaseIndex] = 1;
-      }
+      // const tokenSetAgents = {};
+      // const tokenSetOwners = {};
+      // const newAddress = false;
+      // for (const [address, d] of Object.entries(context.state.addresses)) {
+      //   if (!(address in context.state.addressToIndex)) {
+      //     context.commit('addAddressIndex', address);
+      //     newAddress = true;
+      //   }
+      //   tokenSetOwners[context.state.addressToIndex[address]] = 1;
+      // }
+      // if (newAddress) {
+      //   context.dispatch('saveData', ['indexToAddress']);
+      // }
+      // if (!(parameter.coinbaseIndex in tokenSetOwners)) {
+      //   tokenSetOwners[parameter.coinbaseIndex] = 1;
+      // }
       let rows = 0;
       let done = false;
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         for (const e of data) {
           console.log(now() + " INFO dataModule:actions.collateTokenSet - e: " + JSON.stringify(e));
-          if (!(e.contract in tokenSetAgents)) {
-            tokenSetAgents[e.contract] = 1;
-          }
-          if (('maker' in e) && !(e.maker in tokenSetOwners)) {
-            tokenSetOwners[e.maker] = 1;
-          }
-          if (('taker' in e) && !(e.taker in tokenSetOwners)) {
-            tokenSetOwners[e.taker] = 1;
-          }
+          // if (!(e.contract in tokenSetAgents)) {
+          //   tokenSetAgents[e.contract] = 1;
+          // }
+          // if (('maker' in e) && !(e.maker in tokenSetOwners)) {
+          //   tokenSetOwners[e.maker] = 1;
+          // }
+          // if (('taker' in e) && !(e.taker in tokenSetOwners)) {
+          //   tokenSetOwners[e.taker] = 1;
+          // }
         }
         rows = parseInt(rows) + data.length;
         done = data.length < context.state.DB_PROCESSING_BATCH_SIZE;
       } while (!done);
-      context.commit('setState', { name: 'tokenSetAgents', data: tokenSetAgents });
-      context.commit('setState', { name: 'tokenSetOwners', data: tokenSetOwners });
-      // console.log("tokenSetAgents: " + JSON.stringify(Object.keys(context.state.tokenSetAgents).map(e => context.state.indexToAddress[e])));
-      // console.log("tokenSetOwners: " + JSON.stringify(Object.keys(context.state.tokenSetOwners).map(e => context.state.indexToAddress[e])));
-      await context.dispatch('saveData', ['tokenSetAgents', 'tokenSetOwners']);
-      console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSetAgents: " + Object.keys(tokenSetAgents).length + ", tokenSetOwners: " + Object.keys(tokenSetOwners).length);
+
+      context.commit('setState', { name: 'tokenSet', data: tokenSet });
+      await context.dispatch('saveData', ['tokenSet']);
+      console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet));
     },
 
 

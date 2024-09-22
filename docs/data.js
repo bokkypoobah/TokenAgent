@@ -165,13 +165,14 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata084d",
+      name: "tokenagentdata084e",
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenAgentEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenSetTokenAgentEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
         tokenSetTokenAgentInternalEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
+        tokenSetTokenEvents: '[tokenSet+blockNumber+logIndex],[blockNumber+contract],contract',
 
         announcements: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations,stealthAddress',
         registrations: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract,confirmations',
@@ -978,6 +979,10 @@ const dataModule = {
       // console.log("context.state.indexToTxHash BEFORE: " + JSON.stringify(context.state.indexToTxHash));
 
       if (options.tokenContractAddress) {
+        if (!(coinbase in context.state.addressToIndex)) {
+          context.commit('addAddressIndex', coinbase);
+        }
+        options.coinbaseIndex = context.state.addressToIndex[coinbase];
         try {
           options.token = ethers.utils.getAddress(options.tokenContractAddress);
           // console.log(now() + " INFO dataModule:actions.syncIt - options.token: " + options.token);
@@ -1419,11 +1424,13 @@ const dataModule = {
           context.commit('addAddressIndex', address);
           newAddress = true;
         }
-        const a = context.state.addressToIndex[address];
-        tokenSetOwners[a] = 1;
+        tokenSetOwners[context.state.addressToIndex[address]] = 1;
       }
       if (newAddress) {
         context.dispatch('saveData', ['indexToAddress']);
+      }
+      if (!(parameter.coinbaseIndex in tokenSetOwners)) {
+        tokenSetOwners[parameter.coinbaseIndex] = 1;
       }
       let rows = 0;
       let done = false;
@@ -1528,12 +1535,12 @@ const dataModule = {
           }
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
-        const data = await db.cache.where("objectName").equals('tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
+        const data = await db.cache.where("objectName").equals('tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
         startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
         deleteCount = await db.tokenSetTokenAgentInternalEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         await getLogs(startBlock, parameter.blockNumber, 0);
         await getLogs(startBlock, parameter.blockNumber, 1);
-        await db.cache.put({ objectName: 'tokenSetTokenAgent.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
+        await db.cache.put({ objectName: 'tokenSetTokenAgentInternalEvents.' + parameter.chainId + '.' + parameter.tokenIndex, object: parameter.blockNumber }).then(function() {
         }).catch(function(error) {
           console.log("error: " + error);
         });

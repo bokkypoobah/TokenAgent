@@ -1713,6 +1713,7 @@ const dataModule = {
         const data = await db.cache.where("objectName").equals('tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex).toArray();
         startBlock = data.length == 1 ? data[0].object - parameter.confirmations : 0;
         deleteCount = await db.tokenSetTokenEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
+        // TODO: Incremental sync of old addresses, and full sync for new addresses
         for (let i = 0; i < 6; i++) {
           await getLogs(startBlock, parameter.blockNumber, i);
         }

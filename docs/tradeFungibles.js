@@ -1715,6 +1715,30 @@ data: {{ data }}
           if (e.eventType == EVENTTYPE_OFFERED && e.buySell == 1) {
             if ((!mineOnly || d.owner == coinbaseIndex) && (includeInvalidated || d.nonce == e.nonce) && (includeExpired || (e.expiry == 0 || e.expiry >= this.tokenSet.timestamp))) {
               console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
+              if (!(d.owner in collator)) {
+                collator[d.owner] = {};
+              }
+              if (!(tokenAgent in collator[d.owner])) {
+                collator[d.owner][tokenAgent] = {
+                  offers: {},
+                  trades: [],
+                };
+              }
+              collator[d.owner][tokenAgent].offers[e.index] = e;
+              if (e.prices.length == e.tokenss.length) {
+                for (let i = 0; i < e.prices.length; i++) {
+                  prices.push({
+                    txHash: e.txHash, logIndex: e.logIndex,
+                    tokenAgent, owner: d.owner,
+                    offerIndex: e.index, nonce: e.nonce, expiry: e.expiry,
+                    priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
+                    // tokenAgent, owner: d.owner, indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner,
+                    // offerIndex: e.index, nonce: e.nonce, currentNonce: d.nonce, valid: d.nonce == e.nonce && (e.expiry == 0 || e.expiry > this.data.timestamp),
+                    // priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
+                    // expiry: e.expiry, tokensAvailable: null,
+                  });
+                }
+              }
             }
           } else if (e.eventType == EVENTTYPE_TRADED) {
             // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - TRADED e: " + JSON.stringify(e));
@@ -1728,7 +1752,8 @@ data: {{ data }}
           // }
         }
       }
-      return { records: [{ one: 1, two: 2 }]};
+      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - collator: " + JSON.stringify(collator, null, 2));
+      return { prices, collator };
     },
 
     newBuyOffers() {
@@ -2221,7 +2246,7 @@ data: {{ data }}
                   tokenAgents: {},
                 };
               }
-              if (!(tokenAgent in collator[d.owner])) {
+              if (!(tokenAgent in collator[d.owner].tokenAgents)) {
                 collator[d.owner].tokenAgents[tokenAgent] = {
                   tokenApproval: this.approvals[this.data.token] && this.approvals[this.data.token][d.owner] && this.approvals[this.data.token][d.owner][tokenAgent] && this.approvals[this.data.token][d.owner][tokenAgent].tokens || 0,
                   indexByOwner: d.indexByOwner,

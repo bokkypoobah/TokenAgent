@@ -1703,22 +1703,29 @@ data: {{ data }}
       const points = [ [0.01, 10.123, 0.011, 10.234] ]; // [];
       const simulate = true; // false;
       const mineOnly = false;
-      const showInvalidated = true; // false;
-      const showExpired = true; // false;
+      const includeInvalidated = true; // false;
+      const includeExpired = true; // false;
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
 
       const collator = {};
       const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
         // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenAgent: " + tokenAgent + " => " + JSON.stringify(d, null, 2));
-        if (!mineOnly || d.owner == coinbaseIndex) {
-          for (const e of d.events) {
-            if (e.nonce == d.nonce) {
-              console.log(now() + " INFO TradeFungibles:computed.newSellOffers - ACTIVE e: " + JSON.stringify(e));
-            } else {
-              // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - INVALIDATED e: " + JSON.stringify(e));
+        for (const e of d.events) {
+          if (e.eventType == EVENTTYPE_OFFERED && e.buySell == 1) {
+            if ((!mineOnly || d.owner == coinbaseIndex) && (includeInvalidated || d.nonce == e.nonce) && (includeExpired || (e.expiry == 0 || e.expiry >= this.tokenSet.timestamp))) {
+              console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
             }
+          } else if (e.eventType == EVENTTYPE_TRADED) {
+            // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - TRADED e: " + JSON.stringify(e));
+          } else {
+            console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OTHER e: " + JSON.stringify(e));
           }
+          // if (e.nonce == d.nonce) {
+          //   console.log(now() + " INFO TradeFungibles:computed.newSellOffers - ACTIVE e: " + JSON.stringify(e));
+          // } else {
+          //   // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - INVALIDATED e: " + JSON.stringify(e));
+          // }
         }
       }
       return { records: [{ one: 1, two: 2 }]};

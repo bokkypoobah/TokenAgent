@@ -1570,8 +1570,8 @@ const dataModule = {
       const network = parameter.chainId && NETWORKS[parameter.chainId.toString()] || {};
       let [startBlock, deleteAcount, addCount] = [0, 0, 0];
       if (network.tokenAgentFactory) {
-        async function getLogs(fromBlock, toBlock, part) {
-          // console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.getLogs: " + fromBlock + " - " + toBlock);
+        async function getLogs(fromBlock, toBlock, part, addresses) {
+          console.log(now() + " INFO dataModule:actions.syncTokenSetTokenEvents.getLogs: " + fromBlock + " - " + toBlock + ", part: " + part + ", addresses: " + JSON.stringify(addresses));
           const tokenSetAgentAddresses = Object.keys(context.state.tokenSetAgents).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
           const tokenSetOwnerAddresses = Object.keys(context.state.tokenSetOwners).map(e => '0x000000000000000000000000' + context.state.indexToAddress[e].substring(2, 42).toLowerCase());
           let split = false;
@@ -1701,8 +1701,8 @@ const dataModule = {
           }
           if (split) {
             const mid = parseInt((fromBlock + toBlock) / 2);
-            await getLogs(fromBlock, mid, part);
-            await getLogs(parseInt(mid) + 1, toBlock, part);
+            await getLogs(fromBlock, mid, part, addresses);
+            await getLogs(parseInt(mid) + 1, toBlock, part, addresses);
           }
         }
         context.commit('setSyncSection', { section: 'TokenSet TokenAgent events', total: null });
@@ -1713,8 +1713,8 @@ const dataModule = {
           lastAgentList = data[0].object.agents || [];
           lastOwnerList = data[0].object.owners || [];
         }
-        // lastAgentList = [5, 6, 7];
-        // lastOwnerList = [0];
+        lastAgentList = [5, 6, 7];
+        lastOwnerList = [0];
         const lastAgents = {};
         lastAgentList.forEach(e => { lastAgents[e] = 1; });
         const newAgents = {};
@@ -1728,7 +1728,15 @@ const dataModule = {
         deleteCount = await db.tokenSetTokenEvents.where("[tokenSet+blockNumber+logIndex]").between([parameter.tokenIndex, startBlock, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).delete();
         // TODO: Incremental sync of old addresses, and full sync for new addresses
         for (let i = 0; i < 6; i++) {
-          await getLogs(startBlock, parameter.blockNumber, i);
+          const lastAddresses = i < 2 ? Object.keys(lastAgents) : Object.keys(lastOwners);
+          const newAddresses = i < 2 ? Object.keys(newAgents) : Object.keys(newOwners);
+          console.log("part: " + i + " lastAddresses: " + JSON.stringify(lastAddresses) + ", newAddresses: " + JSON.stringify(newAddresses));
+          if (lastAddresses.length > 0) {
+            await getLogs(startBlock, parameter.blockNumber, i, lastAddresses);
+          }
+          if (newAddresses.length > 0) {
+            await getLogs(0, parameter.blockNumber, i, newAddresses);
+          }
         }
         await db.cache.put({ objectName: 'tokenSetTokenEvents.' + parameter.chainId + '.' + parameter.tokenIndex,
           object: {

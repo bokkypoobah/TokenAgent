@@ -1700,7 +1700,7 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenSet.timestamp: " + this.formatTimestamp(this.tokenSet.timestamp) + ", token.symbol: " + this.tokenSet.symbol + ", token.decimals: " + this.tokenSet.decimals);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
 
-      const points = [ [0.01, 10.123, 0.011, 10.234] ]; // [];
+      const points = [ [0.012, 10.123], [0.013, 10.234] ]; // [];
       const simulate = true; // false;
       const mineOnly = false;
       const includeInvalidated = true; // false;
@@ -1718,6 +1718,7 @@ data: {{ data }}
               }
               if (!(tokenAgent in collator[d.owner])) {
                 collator[d.owner][tokenAgent] = {
+                  nonce: d.nonce,
                   offers: {},
                   trades: [],
                 };
@@ -1731,6 +1732,7 @@ data: {{ data }}
             }
             if (!(tokenAgent in collator[e.maker])) {
               collator[e.maker][tokenAgent] = {
+                nonce: d.nonce,
                 offers: {},
                 trades: [],
               };
@@ -1758,13 +1760,41 @@ data: {{ data }}
                   tokenAgent, owner,
                   offerIndex: d3.index, nonce: d3.nonce, expiry: d3.expiry,
                   priceIndex: i, price: d3.prices[i], tokens: d3.tokenss[i],
-                  // currentNonce: d.nonce, valid: d.nonce == d3.nonce && (d3.expiry == 0 || d3.expiry > this.data.timestamp),
+                  valid: d3.nonce == d2.nonce && (d3.expiry == 0 || d3.expiry >= this.tokenSet.timestamp),
                 });
               }
             }
           }
         }
       }
+      if (simulate && this.tokenSet.timestamp) {
+        for (const [i, point] of points.entries()) {
+          prices.push({
+            txHash: null, logIndex: null,
+            tokenAgent: null, owner: coinbaseIndex,
+            offerIndex: null, nonce: null, expiry: null,
+            priceIndex: i, price: ethers.utils.parseEther(point[0].toString()).toString(),
+            tokens: ethers.utils.parseUnits(point[1].toString(), this.tokenSet.decimals).toString(),
+            valid: true,
+          });
+        }
+      }
+      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
+      prices.sort((a, b) => {
+        if (a.valid && !b.valid) {
+          return -1;
+        } else if (!a.valid && b.valid) {
+          return 1;
+        }
+        const [priceA, tokensA] = [ethers.BigNumber.from(a.price), ethers.BigNumber.from(a.tokens)];
+        const [priceB, tokensB] = [ethers.BigNumber.from(b.price), ethers.BigNumber.from(b.tokens)];
+        if (priceA.lt(priceB)) {
+          return -1;
+        } else if (priceA.gt(priceB)) {
+          return 1;
+        }
+        return tokensA.lt(tokensB) ? 1 : -1;
+      });
 
       // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
       return { prices, collator };

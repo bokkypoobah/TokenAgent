@@ -695,6 +695,14 @@ modalBuyOffer: {{ modalBuyOffer }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </div>
+                <div class="mt-0 pr-1" style="min-width: 9rem;">
+                  <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link" v-b-popover.hover.ds500="settings.sellOffers.select.tokenAgent ? 'Click to reset filter by Token Agent: ' + indexToAddress[settings.sellOffers.select.tokenAgent] : ''">
+                    <b-badge variant="link">
+                      {{ settings.sellOffers.select.tokenAgent == null ? '' : (indexToAddress[settings.sellOffers.select.owner].substring(0, 12) + (settings.sellOffers.select.indexByOwner == 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
+                      <b-icon-x shift-v="-1" font-scale="1.2"></b-icon-x>
+                    </b-badge>
+                  </b-button>
+                </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
                 <div class="mt-0 pr-1">
@@ -728,6 +736,10 @@ modalBuyOffer: {{ modalBuyOffer }}
                   <template #cell(maker)="data">
                     <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
                       <b-icon-asterisk shift-v="+10" font-scale="0.6"></b-icon-asterisk>
+                    </b-button>
+                    <!-- <b-button size="sm" @click="settings.sellOffers.select = { tokenAgent: data.item.tokenAgent, maker: data.item.maker, indexByOwner: data.item.indexByOwner }" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0"> -->
+                    <b-button size="sm" @click="filterSellOffersByTokenAgent(data.item)" variant="link" v-b-popover.hover.ds500="'Filter by Token Agent: ' + indexToAddress[data.item.tokenAgent]" class="m-0 p-0">
+                      <b-icon-filter shift-v="+2" font-scale="1.1"></b-icon-filter>
                     </b-button>
                     {{ indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '' }}
                     <!-- <font size="-1">
@@ -1317,6 +1329,12 @@ data: {{ data }}
           simulate: false, // false,
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
 
+          select: {
+            tokenAgent: null,
+            owner: null,
+            indexByOwner: null,
+          },
+
           tabIndex: 0,
           selected: {
             txHash: null,
@@ -1342,6 +1360,12 @@ data: {{ data }}
           includeExpired: false, // false,
           simulate: false, // false,
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
+
+          select: {
+            tokenAgent: null,
+            owner: null,
+            indexByOwner: null,
+          },
 
           tabIndex: 0,
           selected: {
@@ -1410,7 +1434,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 22,
+        version: 23,
       },
 
       tokenAgentFactoryEvents: [],
@@ -3279,6 +3303,34 @@ data: {{ data }}
         this.modalSellOffer.tokenAgent = this.indexToAddress[item[0].tokenAgent];
         this.$refs.modalselloffer.show();
       }
+    },
+
+    filterSellOffersByTokenAgent(item) {
+      console.log(now() + " INFO Addresses:methods.filterSellOffersByTokenAgent BEGIN: " + JSON.stringify(item, null, 2));
+      if (!this.settings.sellOffers.select.tokenAgent) {
+        this.settings.sellOffers.select = {
+          tokenAgent: item.tokenAgent,
+          owner: item.owner,
+          indexByOwner: item.indexByOwner,
+        };
+      } else {
+        this.settings.sellOffers.select = {
+          tokenAgent: null,
+          owner: null,
+          indexByOwner: null,
+        };
+      }
+      console.log(now() + " INFO Addresses:methods.filterSellOffersByTokenAgent - this.settings.sellOffers.select: " + JSON.stringify(this.settings.sellOffers.select, null, 2));
+    },
+
+    resetFilterSellOffersByTokenAgent() {
+      console.log(now() + " INFO Addresses:methods.resetFilterSellOffersByTokenAgent BEGIN");
+      this.settings.sellOffers.select = {
+        tokenAgent: null,
+        owner: null,
+        indexByOwner: null,
+      };
+      console.log(now() + " INFO Addresses:methods.resetFilterSellOffersByTokenAgent - this.settings.sellOffers.select: " + JSON.stringify(this.settings.sellOffers.select, null, 2));
     },
 
     sellOffersRowSelected(item) {

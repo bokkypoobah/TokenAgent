@@ -721,7 +721,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                     {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                   </template>
                   <template #cell(expiry)="data">
-                    {{ formatTimestamp(data.item.expiry) }}
+                    <span v-b-popover.hover.ds500="formatTimestamp(data.item.expiry)">
+                      {{ formatExpiry(data.item.expiry) }}
+                    </span>
                   </template>
                   <template #cell(maker)="data">
                     <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
@@ -3289,16 +3291,13 @@ data: {{ data }}
         this.settings.sellOffers.selected.offerIndex = item[0].offerIndex;
         this.settings.sellOffers.selected.priceIndex = item[0].priceIndex;
         this.settings.sellOffers.selected.expiry = item[0].expiry;
-        console.log("this.newSellOffers.collator: " + JSON.stringify(this.newSellOffers.collator, null, 2));
-        // console.log("this.tokenSet.tokenAgents: " + JSON.stringify(this.tokenSet.tokenAgents, null, 2));
-        // const tokenAgent = this.tokenSet.tokenAgents[item[0].tokenAgent];
+        // console.log("this.newSellOffers.collator: " + JSON.stringify(this.newSellOffers.collator, null, 2));
         const tokenAgent = this.newSellOffers.collator[item[0].owner][item[0].tokenAgent];
-        console.log("tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
+        // console.log("tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
         const offer = tokenAgent.offers[item[0].offerIndex];
-        console.log("offer: " + JSON.stringify(offer, null, 2));
+        // console.log("offer: " + JSON.stringify(offer, null, 2));
         this.settings.sellOffers.selected.prices = offer.prices;
         this.settings.sellOffers.selected.tokenss = offer.tokenss;
-        // console.log("tokenAgent.events: " + JSON.stringify(tokenAgent.events, null, 2));
       } else {
         this.settings.sellOffers.selected.txHash = null;
         this.settings.sellOffers.selected.logIndex = null;
@@ -3509,6 +3508,33 @@ data: {{ data }}
       }
     },
 
+    formatExpiry(e) {
+      if (e == 0) {
+        return "n/a";
+      } else {
+        const s = e - moment().unix();
+        if (s >= (365 * 24 * 60 * 60)) {
+          const years = parseFloat(s / (365 * 24 * 60 * 60)).toFixed(1);
+          return years + "y";
+        } else if (s >= (30 * 24 * 60 * 60)) {
+          const months = parseFloat(s / (30 * 24 * 60 * 60)).toFixed(1);
+          return months + "mo";
+        } else if (s >= (24 * 60 * 60)) {
+          const days = parseFloat(s / (24 * 60 * 60)).toFixed(1);
+          return days + "d";
+        } else if (s >= (60 * 60)) {
+          const hours = parseFloat(s / (60 * 60)).toFixed(1);
+          return hours + "h";
+        } else if (s >= 60) {
+          const minutes = parseFloat(s / 60).toFixed(1);
+          return minutes + "mi";
+        } else if (s >= 0) {
+          return s + "s";
+        } else {
+          return "exp";
+        }
+      }
+    },
     formatTimestamp(ts) {
       if (ts != null) {
         // if (this.settings.reportingDateTime == 1) {

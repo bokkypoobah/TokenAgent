@@ -850,7 +850,27 @@ modalBuyOffer: {{ modalBuyOffer }}
           </b-row>
           <b-row class="m-0 mt-2 p-0">
             <b-col class="m-0 mr-1 p-0">
-              <font size="-2">
+              <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'View existing offers'">Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Add offer'">Add Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
+                  </template>
+                </b-tab>
+              </b-tabs>
+              <b-card-text v-if="settings.sellOffers.tabIndex == 0" class="m-0 p-0">
+                Blah
+              </b-card-text>
+              <font v-if="settings.sellOffers.tabIndex != 0" size="-2">
                 <pre>
 <!-- settings.sellOffers: {{ settings.sellOffers }} -->
 newSellOffers: {{ newSellOffers }}
@@ -858,7 +878,27 @@ newSellOffers: {{ newSellOffers }}
               </font>
             </b-col>
             <b-col class="m-0 mr-1 p-0">
-              <font size="-2">
+              <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'View existing offers'">Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Add offer'">Add Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
+                  </template>
+                </b-tab>
+              </b-tabs>
+              <b-card-text v-if="settings.buyOffers.tabIndex == 0" class="m-0 p-0">
+                Blah
+              </b-card-text>
+              <font v-if="settings.buyOffers.tabIndex != 0" size="-2">
                 <pre>
 <!-- settings.buyOffers: {{ settings.buyOffers }} -->
 newBuyOffers: {{ newBuyOffers }}
@@ -1222,6 +1262,8 @@ data: {{ data }}
           simulate: false, // false,
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
 
+          tabIndex: 0,
+
           filter: null,
           currentPage: 1,
           pageSize: 10,
@@ -1234,6 +1276,8 @@ data: {{ data }}
           includeExpired: false, // false,
           simulate: false, // false,
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
+
+          tabIndex: 0,
 
           filter: null,
           currentPage: 1,
@@ -1289,7 +1333,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 20,
+        version: 21,
       },
 
       tokenAgentFactoryEvents: [],

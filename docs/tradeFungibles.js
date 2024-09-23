@@ -696,9 +696,16 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </b-dropdown>
                 </div>
                 <div class="mt-0 pr-1" style="min-width: 9rem;">
-                  <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link" v-b-popover.hover.ds500="settings.sellOffers.select.tokenAgent ? 'Click to reset filter by Token Agent: ' + indexToAddress[settings.sellOffers.select.tokenAgent] : ''">
+                  <!-- x {{ settings.sellOffers.select.tokenAgent }}
+                  <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link">
                     <b-badge variant="link">
-                      {{ settings.sellOffers.select.tokenAgent == null ? '' : (indexToAddress[settings.sellOffers.select.owner].substring(0, 12) + (settings.sellOffers.select.indexByOwner != 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
+                      {{ settings.sellOffers.select.tokenAgent == null ? '' : (settings.sellOffers.select.owner && indexToAddress[settings.sellOffers.select.owner] && indexToAddress[settings.sellOffers.select.owner].substring(0, 12) + (settings.sellOffers.select.indexByOwner != 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
+                      <b-icon-x shift-v="-1" font-scale="1.2"></b-icon-x>
+                    </b-badge>
+                  </b-button> -->
+                  <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link">
+                    <b-badge variant="link">
+                      {{ settings.sellOffers.select.tokenAgent == null ? '' : ((indexToAddress[settings.sellOffers.select.owner] && indexToAddress[settings.sellOffers.select.owner].substring(0, 12)) + (settings.sellOffers.select.indexByOwner != 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
                       <b-icon-x shift-v="-1" font-scale="1.2"></b-icon-x>
                     </b-badge>
                   </b-button>
@@ -737,9 +744,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                     <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
                       <b-icon-asterisk shift-v="+10" font-scale="0.6"></b-icon-asterisk>
                     </b-button>
-                    <b-button size="sm" @click="filterSellOffersByTokenAgent(data.item)" variant="link" v-b-popover.hover.ds500="'Filter by Token Agent: ' + indexToAddress[data.item.tokenAgent]" class="m-0 p-0">
+                    <!-- <b-button size="sm" @click="filterSellOffersByTokenAgent(data.item)" variant="link" v-b-popover.hover.ds500="'Filter by Token Agent: ' + indexToAddress[data.item.tokenAgent]" class="m-0 p-0">
                       <b-icon-filter shift-v="+2" font-scale="1.1"></b-icon-filter>
-                    </b-button>
+                    </b-button> -->
                     {{ (indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '') + (data.item.indexByOwner != 0 ? ':' + data.item.indexByOwner : '') }}
                     <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
@@ -879,7 +886,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </b-tab>
               </b-tabs>
               <b-card-text v-if="settings.sellOffers.tabIndex == 0" class="m-0 p-0">
-                <b-form-group v-if="settings.sellOffers.selected.offerIndex" label="Offer:" label-for="selloffer-offer" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                <!-- <b-form-group v-if="settings.sellOffers.selected.offerIndex" label="Offer:" label-for="selloffer-offer" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                   <b-link :href="explorer + 'tx/' + indexToTxHash[settings.sellOffers.selected.txHash] + '#eventlog#' + settings.sellOffers.selected.logIndex" v-b-popover.hover.ds500="'Offer index: ' + settings.sellOffers.selected.offerIndex" target="_blank">
                     <b-badge variant="link" class="m-0 p-0 mt-1">
                       {{ settings.sellOffers.selected.offerIndex }}
@@ -902,7 +909,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </b-badge>
                 </b-form-group>
 
-                {{ settings.sellOffers.selected }}
+                {{ settings.sellOffers.selected }} -->
 
                 <!-- <div v-if="settings.addSellOffer.selectedItem">
                   <b-form-group label="Maker:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
@@ -1335,17 +1342,8 @@ data: {{ data }}
           },
 
           tabIndex: 0,
-          selected: {
-            txHash: null,
-            logIndex: null,
-            maker: null,
-            tokenAgent: null,
-            offerIndex: null,
-            priceIndex: null,
-            expiry: null,
-            prices: [],
-            tokenss: [],
-          },
+          amountType: 'tokens',
+          amount: null,
 
           filter: null,
           currentPage: 1,
@@ -1367,17 +1365,8 @@ data: {{ data }}
           },
 
           tabIndex: 0,
-          selected: {
-            txHash: null,
-            logIndex: null,
-            maker: null,
-            tokenAgent: null,
-            offerIndex: null,
-            priceIndex: null,
-            expiry: null,
-            prices: [],
-            tokenss: [],
-          },
+          amountType: 'tokens',
+          amount: null,
 
           filter: null,
           currentPage: 1,
@@ -1918,45 +1907,48 @@ data: {{ data }}
       const simulate = this.settings.sellOffers.simulate;
       const points = this.settings.sellOffers.points;
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
+      const selectedTokenAgent = this.settings.sellOffers.select.tokenAgent;
 
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
-        for (const e of d.events) {
-          if (e.eventType == EVENTTYPE_OFFERED && e.buySell == 1) {
-            if ((!mineOnly || d.owner == coinbaseIndex) && (includeInvalidated || d.nonce == e.nonce) && (includeExpired || (e.expiry == 0 || e.expiry >= this.tokenSet.timestamp))) {
-              // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
-              if (!(d.owner in collator)) {
-                collator[d.owner] = {};
+        if (selectedTokenAgent == null || selectedTokenAgent == tokenAgent) {
+          for (const e of d.events) {
+            if (e.eventType == EVENTTYPE_OFFERED && e.buySell == 1) {
+              if ((!mineOnly || d.owner == coinbaseIndex) && (includeInvalidated || d.nonce == e.nonce) && (includeExpired || (e.expiry == 0 || e.expiry >= this.tokenSet.timestamp))) {
+                // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
+                if (!(d.owner in collator)) {
+                  collator[d.owner] = {};
+                }
+                if (!(tokenAgent in collator[d.owner])) {
+                  collator[d.owner][tokenAgent] = {
+                    nonce: d.nonce,
+                    indexByOwner: d.indexByOwner,
+                    offers: {},
+                    trades: [],
+                  };
+                }
+                collator[d.owner][tokenAgent].offers[e.index] = e;
               }
-              if (!(tokenAgent in collator[d.owner])) {
-                collator[d.owner][tokenAgent] = {
+            } else if (e.eventType == EVENTTYPE_TRADED) {
+              // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - TRADED e: " + JSON.stringify(e));
+              if (!(e.maker in collator)) {
+                collator[e.maker] = {};
+              }
+              if (!(tokenAgent in collator[e.maker])) {
+                collator[e.maker][tokenAgent] = {
                   nonce: d.nonce,
                   indexByOwner: d.indexByOwner,
                   offers: {},
                   trades: [],
                 };
               }
-              collator[d.owner][tokenAgent].offers[e.index] = e;
+              collator[e.maker][tokenAgent].trades.push(e);
+              if (e.index in collator[e.maker][tokenAgent].offers) {
+                collator[e.maker][tokenAgent].offers[e.index].tokenss = e.remainingTokenss;
+              }
+            } else {
+              console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OTHER e: " + JSON.stringify(e));
             }
-          } else if (e.eventType == EVENTTYPE_TRADED) {
-            // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - TRADED e: " + JSON.stringify(e));
-            if (!(e.maker in collator)) {
-              collator[e.maker] = {};
-            }
-            if (!(tokenAgent in collator[e.maker])) {
-              collator[e.maker][tokenAgent] = {
-                nonce: d.nonce,
-                indexByOwner: d.indexByOwner,
-                offers: {},
-                trades: [],
-              };
-            }
-            collator[e.maker][tokenAgent].trades.push(e);
-            if (e.index in collator[e.maker][tokenAgent].offers) {
-              collator[e.maker][tokenAgent].offers[e.index].tokenss = e.remainingTokenss;
-            }
-          } else {
-            console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OTHER e: " + JSON.stringify(e));
           }
         }
       }
@@ -1975,6 +1967,7 @@ data: {{ data }}
                   offerIndex: d3.index, nonce: d3.nonce, expiry: d3.expiry,
                   priceIndex: i, price: d3.prices[i], tokens: d3.tokenss[i],
                   valid: d3.nonce == d2.nonce && (d3.expiry == 0 || d3.expiry >= this.tokenSet.timestamp),
+                  // selected: tokenAgent == selectedTokenAgent,
                 });
               }
             }
@@ -3319,7 +3312,7 @@ data: {{ data }}
           indexByOwner: null,
         };
       }
-      console.log(now() + " INFO Addresses:methods.filterSellOffersByTokenAgent - this.settings.sellOffers.select: " + JSON.stringify(this.settings.sellOffers.select, null, 2));
+      // console.log(now() + " INFO Addresses:methods.filterSellOffersByTokenAgent - this.settings.sellOffers.select: " + JSON.stringify(this.settings.sellOffers.select, null, 2));
     },
 
     resetFilterSellOffersByTokenAgent() {
@@ -3335,33 +3328,20 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        this.settings.sellOffers.selected.txHash = item[0].txHash;
-        this.settings.sellOffers.selected.logIndex = item[0].logIndex;
-        this.settings.sellOffers.selected.maker = item[0].owner;
-        this.settings.sellOffers.selected.tokenAgent = item[0].tokenAgent;
-        this.settings.sellOffers.selected.offerIndex = item[0].offerIndex;
-        this.settings.sellOffers.selected.priceIndex = item[0].priceIndex;
-        this.settings.sellOffers.selected.expiry = item[0].expiry;
-        // console.log("this.newSellOffers.collator: " + JSON.stringify(this.newSellOffers.collator, null, 2));
-        const tokenAgent = this.newSellOffers.collator[item[0].owner][item[0].tokenAgent];
-        // console.log("tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
-        const offer = tokenAgent.offers[item[0].offerIndex];
-        // console.log("offer: " + JSON.stringify(offer, null, 2));
-        this.settings.sellOffers.selected.prices = offer.prices;
-        this.settings.sellOffers.selected.tokenss = offer.tokenss;
+        this.settings.sellOffers.select = {
+          tokenAgent: item[0].tokenAgent,
+          owner: item[0].owner,
+          indexByOwner: item[0].indexByOwner,
+        };
       } else {
-        this.settings.sellOffers.selected.txHash = null;
-        this.settings.sellOffers.selected.logIndex = null;
-        this.settings.sellOffers.selected.maker = null;
-        this.settings.sellOffers.selected.tokenAgent = null;
-        this.settings.sellOffers.selected.offerIndex = null;
-        this.settings.sellOffers.selected.priceIndex = null;
-        this.settings.sellOffers.selected.expiry = null;
-        this.settings.sellOffers.selected.prices = [];
-        this.settings.sellOffers.selected.tokenss = [];
+        // this.settings.sellOffers.select = {
+        //   tokenAgent: null,
+        //   owner: null,
+        //   indexByOwner: null,
+        // };
       }
       this.saveSettings();
-      // this.$refs.sellOffersTable.clearSelected();
+      this.$refs.sellOffersTable.clearSelected();
     },
 
     buyOffersRowSelected(item) {

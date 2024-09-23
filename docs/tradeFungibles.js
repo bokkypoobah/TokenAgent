@@ -1708,13 +1708,11 @@ data: {{ data }}
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
 
       const collator = {};
-      const prices = [];
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
-        // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenAgent: " + tokenAgent + " => " + JSON.stringify(d, null, 2));
         for (const e of d.events) {
           if (e.eventType == EVENTTYPE_OFFERED && e.buySell == 1) {
             if ((!mineOnly || d.owner == coinbaseIndex) && (includeInvalidated || d.nonce == e.nonce) && (includeExpired || (e.expiry == 0 || e.expiry >= this.tokenSet.timestamp))) {
-              console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
+              // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OFFERED SELL e: " + JSON.stringify(e));
               if (!(d.owner in collator)) {
                 collator[d.owner] = {};
               }
@@ -1739,35 +1737,36 @@ data: {{ data }}
             }
             collator[e.maker][tokenAgent].trades.push(e);
             if (e.index in collator[e.maker][tokenAgent].offers) {
-              // console.log("Found offer: " + JSON.stringify(collator[e.maker][tokenAgent].offers[e.index]));
               collator[e.maker][tokenAgent].offers[e.index].tokenss = e.remainingTokenss;
             }
-
           } else {
             console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OTHER e: " + JSON.stringify(e));
           }
-          // if (e.nonce == d.nonce) {
-          //   console.log(now() + " INFO TradeFungibles:computed.newSellOffers - ACTIVE e: " + JSON.stringify(e));
-          // } else {
-          //   // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - INVALIDATED e: " + JSON.stringify(e));
-          // }
+        }
+      }
+      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - collator: " + JSON.stringify(collator, null, 2));
+
+      const prices = [];
+      for (const [owner, d1] of Object.entries(collator)) {
+        for (const [tokenAgent, d2] of Object.entries(collator[owner])) {
+          for (const [offerIndex, d3] of Object.entries(d2.offers)) {
+            // console.log(owner + "/" + tokenAgent + "/" + offerIndex + " => " + JSON.stringify(d3));
+            if (d3.prices.length == d3.tokenss.length) {
+              for (let i = 0; i < d3.prices.length; i++) {
+                prices.push({
+                  txHash: d3.txHash, logIndex: d3.logIndex,
+                  tokenAgent, owner,
+                  offerIndex: d3.index, nonce: d3.nonce, expiry: d3.expiry,
+                  priceIndex: i, price: d3.prices[i], tokens: d3.tokenss[i],
+                  // currentNonce: d.nonce, valid: d.nonce == d3.nonce && (d3.expiry == 0 || d3.expiry > this.data.timestamp),
+                });
+              }
+            }
+          }
         }
       }
 
-      // Go through collator offers
-      // if (e.prices.length == e.tokenss.length) {
-      //   for (let i = 0; i < e.prices.length; i++) {
-      //     prices.push({
-      //       txHash: e.txHash, logIndex: e.logIndex,
-      //       tokenAgent, owner: d.owner,
-      //       offerIndex: e.index, nonce: e.nonce, expiry: e.expiry,
-      //       priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
-      //       // currentNonce: d.nonce, valid: d.nonce == e.nonce && (e.expiry == 0 || e.expiry > this.data.timestamp),
-      //     });
-      //   }
-      // }
-
-      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - collator: " + JSON.stringify(collator, null, 2));
+      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
       return { prices, collator };
     },
 

@@ -1740,7 +1740,7 @@ data: {{ data }}
             collator[e.maker][tokenAgent].trades.push(e);
             if (e.index in collator[e.maker][tokenAgent].offers) {
               // console.log("Found offer: " + JSON.stringify(collator[e.maker][tokenAgent].offers[e.index]));
-              collator[e.maker][tokenAgent].offers[e.index].tokenss = e.remainingTokens;
+              collator[e.maker][tokenAgent].offers[e.index].tokenss_ = e.remainingTokenss;
             }
 
           } else {

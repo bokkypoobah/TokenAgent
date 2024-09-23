@@ -265,7 +265,7 @@ const TradeFungibles = {
               <b-col class="m-0 p-0">
                 <b-card sub-title="Add Sell Offer" class="m-0 ml-1 p-1 border-1" body-class="m-1 p-1">
                   <b-card-text class="m-0 p-0">
-                    <b-form-group label="" label-size="sm" :state="!pointsFeedback" :invalid-feedback="pointsFeedback" class="mx-0 my-1 p-0">
+                    <b-form-group label="" label-size="sm" :state="!sellOfferPointsFeedback" :invalid-feedback="sellOfferPointsFeedback" class="mx-0 my-1 p-0">
                       <font size="-1">
                         <b-table ref="addSellOfferPointsTable" small fixed striped sticky-header="600px" responsive hover :fields="addSellOfferPointsFields" :items="settings.addSellOffer.points" show-empty head-variant="light" class="m-0 mt-1">
                           <template #empty="scope">
@@ -313,7 +313,7 @@ const TradeFungibles = {
                       <b-form-timepicker size="sm" id="modaladdselloffer-expirytime" v-model="expiryTime" minutes-step="15" now-button label-no-time-selected="Select" class="w-50"></b-form-timepicker>
                     </b-form-group>
                     <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
-                      <b-button size="sm" :disabled="myTokenAgentOptions.length == 1 || !settings.addSellOffer.tokenAgent || settings.addSellOffer.points.length == 0 || !!pointsFeedback" @click="execAddSellOffer" variant="warning">Add Sell Offer</b-button>
+                      <b-button size="sm" :disabled="myTokenAgentOptions.length == 1 || !settings.addSellOffer.tokenAgent || settings.addSellOffer.points.length == 0 || !!sellOfferPointsFeedback" @click="execAddSellOffer" variant="warning">Add Sell Offer</b-button>
                     </b-form-group>
                   </b-card-text>
                 </b-card>
@@ -1582,8 +1582,8 @@ data: {{ data }}
       return results;
     },
 
-    pointsFeedback() {
-      // console.log(now() + " INFO TradeFungibles:computed.pointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
+    sellOfferPointsFeedback() {
+      // console.log(now() + " INFO TradeFungibles:computed.sellOfferPointsFeedback - this.settings.addSellOffer.points: " + JSON.stringify(this.settings.addSellOffer.points));
       for (const [i, point] of this.settings.addSellOffer.points.entries()) {
         // console.log(i + " => " + JSON.stringify(point));
         if (point.price == null || point.price == "") {
@@ -1701,11 +1701,12 @@ data: {{ data }}
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
 
       const points = [ [0.012, 10.123], [0.013, 10.234] ]; // [];
-      const simulate = true; // false;
+      const simulate = false; // false;
       const mineOnly = false;
       const includeInvalidated = true; // false;
       const includeExpired = true; // false;
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
+      const ignoreMyApprovals = false;
 
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
@@ -1719,6 +1720,7 @@ data: {{ data }}
               if (!(tokenAgent in collator[d.owner])) {
                 collator[d.owner][tokenAgent] = {
                   nonce: d.nonce,
+                  indexByOwner: d.indexByOwner,
                   offers: {},
                   trades: [],
                 };
@@ -1733,6 +1735,7 @@ data: {{ data }}
             if (!(tokenAgent in collator[e.maker])) {
               collator[e.maker][tokenAgent] = {
                 nonce: d.nonce,
+                indexByOwner: d.indexByOwner,
                 offers: {},
                 trades: [],
               };
@@ -1757,7 +1760,7 @@ data: {{ data }}
               for (let i = 0; i < d3.prices.length; i++) {
                 prices.push({
                   txHash: d3.txHash, logIndex: d3.logIndex,
-                  tokenAgent, owner,
+                  tokenAgent, owner, indexByOwner: d2.indexByOwner,
                   offerIndex: d3.index, nonce: d3.nonce, expiry: d3.expiry,
                   priceIndex: i, price: d3.prices[i], tokens: d3.tokenss[i],
                   valid: d3.nonce == d2.nonce && (d3.expiry == 0 || d3.expiry >= this.tokenSet.timestamp),
@@ -1767,11 +1770,12 @@ data: {{ data }}
           }
         }
       }
+
       if (simulate && this.tokenSet.timestamp) {
         for (const [i, point] of points.entries()) {
           prices.push({
             txHash: null, logIndex: null,
-            tokenAgent: null, owner: coinbaseIndex,
+            tokenAgent: null, owner: coinbaseIndex, indexByOwner: null,
             offerIndex: null, nonce: null, expiry: null,
             priceIndex: i, price: ethers.utils.parseEther(point[0].toString()).toString(),
             tokens: ethers.utils.parseUnits(point[1].toString(), this.tokenSet.decimals).toString(),
@@ -1779,7 +1783,7 @@ data: {{ data }}
           });
         }
       }
-      // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
+
       prices.sort((a, b) => {
         if (a.valid && !b.valid) {
           return -1;
@@ -1795,7 +1799,6 @@ data: {{ data }}
         }
         return tokensA.lt(tokensB) ? 1 : -1;
       });
-
       const tokenBalances = {};
       const tokenApprovals = {};
       for (const [owner, d1] of Object.entries(collator)) {
@@ -1810,8 +1813,37 @@ data: {{ data }}
         }
       }
 
+      const records = [];
+      let totalTokens = ethers.BigNumber.from(0);
+      let totalWeth = ethers.BigNumber.from(0);
+      for (const [i, price] of prices.entries()) {
+        const ignoreApproval = price.owner == coinbaseIndex && ignoreMyApprovals;
+        const tokenBalance = ethers.BigNumber.from(tokenBalances[price.owner] && tokenBalances[price.owner].tokens || 0);
+        const tokenApproval = ethers.BigNumber.from(!price.simulated && tokenApprovals[price.owner] && tokenApprovals[price.owner][price.tokenAgent] && tokenApprovals[price.owner][price.tokenAgent].tokens || 0);
+        let tokens = ethers.BigNumber.from(price.tokens);
+        let wethAmount = null;
+        if (price.valid) {
+          if (tokens.gt(tokenBalance)) {
+            tokens = tokenBalance;
+          }
+          if (!ignoreApproval && !simulate && tokens.gt(tokenApproval)) {
+            tokens = tokenApproval;
+          }
+          if (tokens.gt(0)) {
+            wethAmount = tokens.mul(ethers.BigNumber.from(price.price)).div(TENPOW18);
+            totalTokens = ethers.BigNumber.from(totalTokens).add(tokens).toString();
+            totalWeth = ethers.BigNumber.from(totalWeth).add(wethAmount).toString();
+            tokenBalances[price.owner].tokens = ethers.BigNumber.from(tokenBalances[price.owner].tokens).sub(tokens).toString();
+            if (!ignoreApproval && !price.simulated) {
+              tokenApprovals[price.owner][price.tokenAgent].tokens = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent].tokens).sub(tokens).toString();
+            }
+          }
+        }
+        records.push({ ...price, originalTokens: price.tokens, tokens: tokens.toString(), totalTokens: totalTokens.toString(), wethAmount: wethAmount != null && wethAmount.toString() || null, totalWeth: totalWeth.toString() });
+      }
+
       // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
-      return { tokenBalances, tokenApprovals, prices, collator };
+      return { records, tokenBalances, tokenApprovals, prices, collator };
     },
 
     newBuyOffers() {
@@ -2281,8 +2313,8 @@ data: {{ data }}
       // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - this.settings.addSellOffer: " + JSON.stringify(this.settings.addSellOffer));
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
       const points = this.settings.addSellOffer.points;
-      // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - points: " + JSON.stringify(points) + ", pointsFeedback: " + this.pointsFeedback);
-      const simulate = this.settings.addSellOffer.simulate && this.pointsFeedback == null;
+      // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - points: " + JSON.stringify(points) + ", sellOfferPointsFeedback: " + this.sellOfferPointsFeedback);
+      const simulate = this.settings.addSellOffer.simulate && this.sellOfferPointsFeedback == null;
       // console.log(now() + " INFO TradeFungibles:computed.addSellOffer - simulate: " + simulate);
       const collator = {};
       const prices = [];

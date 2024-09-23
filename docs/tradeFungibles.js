@@ -702,9 +702,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
-                <div class="mt-0 pr-1">
+                <!-- <div class="mt-0 pr-1">
                   <b-form-select size="sm" v-model="settings.sellOffers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
-                </div>
+                </div> -->
                 <div class="mt-0 pr-1">
                   <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedSellOffers.length + '/' + sellOffers.length }}</font>
                 </div>
@@ -718,20 +718,14 @@ modalBuyOffer: {{ modalBuyOffer }}
               <font size="-1">
                 <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
                   <template #cell(number)="data">
-                    <font size="-1">
-                      {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
-                    </font>
+                    {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                   </template>
                   <template #cell(expiry)="data">
-                    <font size="-1">
-                      {{ formatTimestamp(data.item.expiry) }}
-                    </font>
-                    <!-- <font size="-1">
-                      {{ data.item.tokenAgent.substring(0, 6) + '...' + data.item.tokenAgent.slice(-4) + ':' + data.item.tokenAgentIndexByOwner }}
-                    </font> -->
+                    {{ formatTimestamp(data.item.expiry) }}
                   </template>
                   <template #cell(maker)="data">
-                    <font size="-1">
+                    {{ indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '' }}
+                    <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                         {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
                       </b-link>
@@ -744,23 +738,16 @@ modalBuyOffer: {{ modalBuyOffer }}
                       <b-badge variant="light" v-b-popover.hover.ds500="'Price index ' + data.item.priceIndex" class="m-0 p-0">
                         {{ data.item.priceIndex }}
                       </b-badge>
-                    </font>
+                    </font> -->
                   </template>
                   <template #cell(tokens)="data">
-                    <font size="-1">
-                      <!-- {{ formatDecimals(data.item.tokensAvailable, 18) }} -->
-                      {{ formatTokens(data.item.tokensAvailable) }}
-                    </font>
+                    {{ formatTokens(data.item.tokens) }}
                   </template>
                   <template #cell(price)="data">
-                    <font size="-1">
-                      <!-- {{ formatDecimals(data.item.price, 18) }} -->
-                      {{ formatPrice(data.item.price) }}
-                    </font>
+                    {{ formatPrice(data.item.price) }}
                   </template>
                 </b-table>
               </font>
-
             </b-col>
             <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
@@ -806,9 +793,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
-                <div class="mt-0 pr-1">
+                <!-- <div class="mt-0 pr-1">
                   <b-form-select size="sm" v-model="settings.buyOffers.sortOption" @change="saveSettings" :options="sortOptions" v-b-popover.hover.ds500="'Yeah. Sort'"></b-form-select>
-                </div>
+                </div> -->
                 <div class="mt-0 pr-1">
                   <font size="-2" v-b-popover.hover.ds500="'# filtered / all entries'">{{ filteredSortedBuyOffers.length + '/' + buyOffers.length }}</font>
                 </div>
@@ -1914,7 +1901,7 @@ data: {{ data }}
             totalTokens = ethers.BigNumber.from(totalTokens).add(tokens).toString();
             totalWeth = ethers.BigNumber.from(totalWeth).add(wethAmount).toString();
             tokenBalances[price.owner].tokens = ethers.BigNumber.from(tokenBalances[price.owner].tokens).sub(tokens).toString();
-            if (!ignoreApproval && !price.simulated) {
+            if (!ignoreApproval && !price.simulated && tokenApprovals[price.owner] && tokenApprovals[price.owner][price.tokenAgent]) {
               tokenApprovals[price.owner][price.tokenAgent].tokens = ethers.BigNumber.from(tokenApprovals[price.owner][price.tokenAgent].tokens).sub(tokens).toString();
             }
           }
@@ -1932,6 +1919,8 @@ data: {{ data }}
     },
 
     sellOffers() {
+      // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.newSellOffers.records: " + JSON.stringify(this.newSellOffers.records, null, 2));
+      return this.newSellOffers.records;
       const results = [];
       // console.log(now() + " INFO TradeFungibles:computed.sellOffers - this.sellByMakers: " + JSON.stringify(this.sellByMakers, null, 2));
       const collator = {};
@@ -3165,15 +3154,15 @@ data: {{ data }}
       if (item && item.length > 0) {
         this.modalSellOffer.txHash = item[0].txHash;
         this.modalSellOffer.logIndex = item[0].logIndex;
-        this.modalSellOffer.maker = item[0].maker;
-        this.modalSellOffer.tokenAgent = item[0].tokenAgent;
-        this.modalSellOffer.tokenAgentIndexByOwner = item[0].tokenAgentIndexByOwner;
-        this.modalSellOffer.offerIndex = item[0].offerIndex;
-        this.modalSellOffer.priceIndex = item[0].priceIndex;
-        this.modalSellOffer.price = item[0].price;
-        this.modalSellOffer.tokens = item[0].token;
-        this.modalSellOffer.expiry = item[0].expiry;
-        this.modalSellOffer.offer = this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex];
+        this.modalSellOffer.maker = this.indexToAddress[item[0].owner];
+        this.modalSellOffer.tokenAgent = this.indexToAddress[item[0].tokenAgent];
+        // this.modalSellOffer.tokenAgentIndexByOwner = item[0].tokenAgentIndexByOwner;
+        // this.modalSellOffer.offerIndex = item[0].offerIndex;
+        // this.modalSellOffer.priceIndex = item[0].priceIndex;
+        // this.modalSellOffer.price = item[0].price;
+        // this.modalSellOffer.tokens = item[0].token;
+        // this.modalSellOffer.expiry = item[0].expiry;
+        // this.modalSellOffer.offer = this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex];
         // this.modalSellOffer = {
         //   txHash: item[0].txHash,
         //   logIndex: item[0].logIndex,

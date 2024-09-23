@@ -698,7 +698,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 pr-1" style="min-width: 9rem;">
                   <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link" v-b-popover.hover.ds500="settings.sellOffers.select.tokenAgent ? 'Click to reset filter by Token Agent: ' + indexToAddress[settings.sellOffers.select.tokenAgent] : ''">
                     <b-badge variant="link">
-                      {{ settings.sellOffers.select.tokenAgent == null ? '' : (indexToAddress[settings.sellOffers.select.owner].substring(0, 12) + (settings.sellOffers.select.indexByOwner == 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
+                      {{ settings.sellOffers.select.tokenAgent == null ? '' : (indexToAddress[settings.sellOffers.select.owner].substring(0, 12) + (settings.sellOffers.select.indexByOwner != 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
                       <b-icon-x shift-v="-1" font-scale="1.2"></b-icon-x>
                     </b-badge>
                   </b-button>
@@ -737,11 +737,10 @@ modalBuyOffer: {{ modalBuyOffer }}
                     <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
                       <b-icon-asterisk shift-v="+10" font-scale="0.6"></b-icon-asterisk>
                     </b-button>
-                    <!-- <b-button size="sm" @click="settings.sellOffers.select = { tokenAgent: data.item.tokenAgent, maker: data.item.maker, indexByOwner: data.item.indexByOwner }" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0"> -->
                     <b-button size="sm" @click="filterSellOffersByTokenAgent(data.item)" variant="link" v-b-popover.hover.ds500="'Filter by Token Agent: ' + indexToAddress[data.item.tokenAgent]" class="m-0 p-0">
                       <b-icon-filter shift-v="+2" font-scale="1.1"></b-icon-filter>
                     </b-button>
-                    {{ indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '' }}
+                    {{ (indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '') + (data.item.indexByOwner != 0 ? ':' + data.item.indexByOwner : '') }}
                     <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                         {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}

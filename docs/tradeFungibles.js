@@ -727,9 +727,6 @@ modalBuyOffer: {{ modalBuyOffer }}
                     <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
                       <b-icon-asterisk shift-v="+10" font-scale="0.6"></b-icon-asterisk>
                     </b-button>
-                    <!-- <b-badge @click="viewOldTakeSellOffer([data.item]);" variant="link" class="m-0 mt-1">
-                      old
-                    </b-badge> -->
                     {{ indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '' }}
                     <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
@@ -869,7 +866,67 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </b-tab>
               </b-tabs>
               <b-card-text v-if="settings.sellOffers.tabIndex == 0" class="m-0 p-0">
-                Blah
+                <b-form-group v-if="settings.sellOffers.selected.offerIndex" label="Offer:" label-for="selloffer-offer" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                  <b-link :href="explorer + 'tx/' + indexToTxHash[settings.sellOffers.selected.txHash] + '#eventlog#' + settings.sellOffers.selected.logIndex" v-b-popover.hover.ds500="'Offer index: ' + settings.sellOffers.selected.offerIndex" target="_blank">
+                    <b-badge variant="link" class="m-0 p-0 mt-1">
+                      {{ settings.sellOffers.selected.offerIndex }}
+                    </b-badge>
+                  </b-link>
+                  @
+                  <b-link v-if="indexToAddress[settings.sellOffers.selected.maker]" :href="explorer + 'address/' + indexToAddress[settings.sellOffers.selected.maker]" v-b-popover.hover.ds500="'Maker ' + indexToAddress[settings.sellOffers.selected.maker]" target="_blank">
+                    <b-badge variant="link" class="m-0 p-0 mt-1">
+                      {{ indexToAddress[settings.sellOffers.selected.maker].substring(0, 10) }}
+                    </b-badge>
+                  </b-link>
+                  :
+                  <b-link v-if="indexToAddress[settings.sellOffers.selected.tokenAgent]" :href="explorer + 'address/' + indexToAddress[settings.sellOffers.selected.tokenAgent]" v-b-popover.hover.ds500="'Token Agent ' + indexToAddress[settings.sellOffers.selected.tokenAgent]" target="_blank">
+                    <b-badge variant="link" class="m-0 p-0 mt-1">
+                      {{ indexToAddress[settings.sellOffers.selected.tokenAgent].substring(0, 10) }}
+                    </b-badge>
+                  </b-link>
+                  <b-badge variant="white" v-b-popover.hover.ds500="'Expiry'" class="m-0 p-0 mt-1">
+                    {{ settings.sellOffers.selected.expiry == 0 ? '(no expiry)' : formatTimestamp(settings.sellOffers.selected.expiry) }}
+                  </b-badge>
+                </b-form-group>
+
+                {{ settings.sellOffers.selected }}
+
+                <!-- <div v-if="settings.addSellOffer.selectedItem">
+                  <b-form-group label="Maker:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <b-link :href="explorer + 'address/' + settings.addSellOffer.selectedItem.owner" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                      <font size="-1">
+                        <p class="m-0 mt-1 p-0">
+                          {{ settings.addSellOffer.selectedItem.owner }}
+                        </p>
+                      </font>
+                    </b-link>
+                  </b-form-group> -->
+                  <!-- <b-form-group label="Token Agent:" label-for="modaladdselloffer-tokenagent" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="'Makers Token Agent #: ' + settings.addSellOffer.selectedItem.indexByOwner + ', nonce: ' + settings.addSellOffer.selectedItem.currentNonce" class="mx-0 my-1 p-0">
+                    <b-link :href="explorer + 'address/' + settings.addSellOffer.selectedItem.tokenAgent" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                      <font size="-1">
+                        <p class="m-0 mt-1 p-0">
+                          {{ settings.addSellOffer.selectedItem.tokenAgent }}
+                        </p>
+                      </font>
+                    </b-link>
+                  </b-form-group> -->
+                  <!-- <b-form-group label="Offer Index:" label-for="modaladdselloffer-offerindex" label-size="sm" label-cols-sm="3" label-align-sm="right" :description="(settings.addSellOffer.selectedItem.nonce == settings.addSellOffer.selectedItem.currentNonce ? ' Offer nonce: ' : 'INVALIDATED offer nonce: ') + settings.addSellOffer.selectedItem.nonce" class="mx-0 my-1 p-0">
+                    <b-link :href="explorer + 'tx/' + settings.addSellOffer.selectedItem.txHash + '#eventlog#' + settings.addSellOffer.selectedItem.logIndex" v-b-popover.hover.ds500="'View in explorer'" target="_blank">
+                      <font size="-1">
+                        <p class="m-0 mt-1 p-0">
+                          {{ settings.addSellOffer.selectedItem.offerIndex }}
+                        </p>
+                      </font>
+                    </b-link>
+                  </b-form-group> -->
+                  <!-- <b-form-group label="Expiry:" label-for="modaladdselloffer-expiry" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
+                    <font size="-1">
+                      <p class="m-0 mt-1 p-0">
+                        {{ formatTimestamp(settings.addSellOffer.selectedItem.expiry) }}
+                      </p>
+                    </font>
+                  </b-form-group> -->
+
               </b-card-text>
               <font v-if="settings.sellOffers.tabIndex != 0" size="-2">
                 <pre>
@@ -1259,6 +1316,17 @@ data: {{ data }}
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
 
           tabIndex: 0,
+          selected: {
+            txHash: null,
+            logIndex: null,
+            maker: null,
+            tokenAgent: null,
+            offerIndex: null,
+            priceIndex: null,
+            expiry: null,
+            prices: [],
+            tokenss: [],
+          },
 
           filter: null,
           currentPage: 1,
@@ -1274,6 +1342,17 @@ data: {{ data }}
           points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
 
           tabIndex: 0,
+          selected: {
+            txHash: null,
+            logIndex: null,
+            maker: null,
+            tokenAgent: null,
+            offerIndex: null,
+            priceIndex: null,
+            expiry: null,
+            prices: [],
+            tokenss: [],
+          },
 
           filter: null,
           currentPage: 1,
@@ -1329,7 +1408,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 21,
+        version: 22,
       },
 
       tokenAgentFactoryEvents: [],
@@ -3203,33 +3282,36 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        this.modalSellOffer.txHash = item[0].txHash;
-        this.modalSellOffer.logIndex = item[0].logIndex;
-        this.modalSellOffer.maker = this.indexToAddress[item[0].owner];
-        this.modalSellOffer.tokenAgent = this.indexToAddress[item[0].tokenAgent];
-        // this.modalSellOffer.tokenAgentIndexByOwner = item[0].tokenAgentIndexByOwner;
-        // this.modalSellOffer.offerIndex = item[0].offerIndex;
-        // this.modalSellOffer.priceIndex = item[0].priceIndex;
-        // this.modalSellOffer.price = item[0].price;
-        // this.modalSellOffer.tokens = item[0].token;
-        // this.modalSellOffer.expiry = item[0].expiry;
-        // this.modalSellOffer.offer = this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex];
-        // this.modalSellOffer = {
-        //   txHash: item[0].txHash,
-        //   logIndex: item[0].logIndex,
-        //   maker: item[0].maker,
-        //   tokenAgent: item[0].tokenAgent,
-        //   tokenAgentIndexByOwner: item[0].tokenAgentIndexByOwner,
-        //   offerIndex: item[0].offerIndex,
-        //   priceIndex: item[0].priceIndex,
-        //   price: item[0].price,
-        //   tokens: item[0].token,
-        //   expiry: item[0].expiry,
-        //   offer: this.data.tokenAgents[item[0].tokenAgent].offers[item[0].offerIndex],
-        // };
-        this.$refs.modalselloffer.show();
-        this.$refs.sellOffersTable.clearSelected();
+        this.settings.sellOffers.selected.txHash = item[0].txHash;
+        this.settings.sellOffers.selected.logIndex = item[0].logIndex;
+        this.settings.sellOffers.selected.maker = item[0].owner;
+        this.settings.sellOffers.selected.tokenAgent = item[0].tokenAgent;
+        this.settings.sellOffers.selected.offerIndex = item[0].offerIndex;
+        this.settings.sellOffers.selected.priceIndex = item[0].priceIndex;
+        this.settings.sellOffers.selected.expiry = item[0].expiry;
+        console.log("this.newSellOffers.collator: " + JSON.stringify(this.newSellOffers.collator, null, 2));
+        // console.log("this.tokenSet.tokenAgents: " + JSON.stringify(this.tokenSet.tokenAgents, null, 2));
+        // const tokenAgent = this.tokenSet.tokenAgents[item[0].tokenAgent];
+        const tokenAgent = this.newSellOffers.collator[item[0].owner][item[0].tokenAgent];
+        console.log("tokenAgent: " + JSON.stringify(tokenAgent, null, 2));
+        const offer = tokenAgent.offers[item[0].offerIndex];
+        console.log("offer: " + JSON.stringify(offer, null, 2));
+        this.settings.sellOffers.selected.prices = offer.prices;
+        this.settings.sellOffers.selected.tokenss = offer.tokenss;
+        // console.log("tokenAgent.events: " + JSON.stringify(tokenAgent.events, null, 2));
+      } else {
+        this.settings.sellOffers.selected.txHash = null;
+        this.settings.sellOffers.selected.logIndex = null;
+        this.settings.sellOffers.selected.maker = null;
+        this.settings.sellOffers.selected.tokenAgent = null;
+        this.settings.sellOffers.selected.offerIndex = null;
+        this.settings.sellOffers.selected.priceIndex = null;
+        this.settings.sellOffers.selected.expiry = null;
+        this.settings.sellOffers.selected.prices = [];
+        this.settings.sellOffers.selected.tokenss = [];
       }
+      this.saveSettings();
+      // this.$refs.sellOffersTable.clearSelected();
     },
 
     buyOffersRowSelected(item) {

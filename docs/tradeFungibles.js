@@ -1796,8 +1796,22 @@ data: {{ data }}
         return tokensA.lt(tokensB) ? 1 : -1;
       });
 
+      const tokenBalances = {};
+      const tokenApprovals = {};
+      for (const [owner, d1] of Object.entries(collator)) {
+        const balance = this.tokenSet.balances[this.tokenSet.tokenIndex] && this.tokenSet.balances[this.tokenSet.tokenIndex][owner].tokens || "0";
+        tokenBalances[owner] = { tokens: balance, originalTokens: balance };
+        for (const [tokenAgent, d2] of Object.entries(collator[owner])) {
+          const approval = this.tokenSet.approvals[this.tokenSet.tokenIndex] && this.tokenSet.approvals[this.tokenSet.tokenIndex][owner] && this.tokenSet.approvals[this.tokenSet.tokenIndex][owner][tokenAgent].tokens || "0";
+          if (!(owner in tokenApprovals)) {
+            tokenApprovals[owner] = {};
+          }
+          tokenApprovals[owner][tokenAgent] = { tokens: approval, originalTokens: approval };
+        }
+      }
+
       // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - prices: " + JSON.stringify(prices, null, 2));
-      return { prices, collator };
+      return { tokenBalances, tokenApprovals, prices, collator };
     },
 
     newBuyOffers() {

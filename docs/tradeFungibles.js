@@ -660,6 +660,38 @@ modalBuyOffer: {{ modalBuyOffer }}
           <b-row class="m-0 p-0">
             <b-col class="m-0 mr-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-0 pr-1">
+                  <b-dropdown size="sm" id="dropdown-left" variant="link" no-caret v-b-popover.hover.ds500="'Filters'" class="m-0 p-0">
+                    <template #button-content>
+                      <b-icon-three-dots-vertical shift-v="+1" font-scale="0.9"></b-icon-three-dots-vertical><span class="sr-only">Menu</span>
+                    </template>
+                    <b-dropdown-item href="#" @click="settings.sellOffers.mineOnly = !settings.sellOffers.mineOnly; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.sellOffers.mineOnly">
+                        Mine Only
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.sellOffers.ignoreMyApprovals = !settings.sellOffers.ignoreMyApprovals; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.sellOffers.ignoreMyApprovals">
+                        Ignore My Approvals
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.sellOffers.includeInvalidated = !settings.sellOffers.includeInvalidated; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.sellOffers.includeInvalidated">
+                        Include Invalidated
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.sellOffers.includeExpired = !settings.sellOffers.includeExpired; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.sellOffers.includeExpired">
+                        Include Expired
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.sellOffers.simulate = !settings.sellOffers.simulate; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.sellOffers.simulate">
+                        Simulate
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                  </b-dropdown>
+                </div>
                 <div class="mt-1 pr-1">
                   Sell Offers
                 </div>
@@ -732,6 +764,38 @@ modalBuyOffer: {{ modalBuyOffer }}
             </b-col>
             <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-0 pr-1">
+                  <b-dropdown size="sm" id="dropdown-left" variant="link" no-caret v-b-popover.hover.ds500="'Filters'" class="m-0 p-0">
+                    <template #button-content>
+                      <b-icon-three-dots-vertical shift-v="+1" font-scale="0.9"></b-icon-three-dots-vertical><span class="sr-only">Menu</span>
+                    </template>
+                    <b-dropdown-item href="#" @click="settings.buyOffers.mineOnly = !settings.buyOffers.mineOnly; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.buyOffers.mineOnly">
+                        Mine Only
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.buyOffers.ignoreMyApprovals = !settings.buyOffers.ignoreMyApprovals; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.buyOffers.ignoreMyApprovals">
+                        Ignore My Approvals
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.buyOffers.includeInvalidated = !settings.buyOffers.includeInvalidated; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.buyOffers.includeInvalidated">
+                        Include Invalidated
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.buyOffers.includeExpired = !settings.buyOffers.includeExpired; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.buyOffers.includeExpired">
+                        Include Expired
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                    <b-dropdown-item href="#" @click="settings.buyOffers.simulate = !settings.buyOffers.simulate; saveSettings(); ">
+                      <b-form-checkbox size="sm" v-model="settings.buyOffers.simulate">
+                        Simulate
+                      </b-form-checkbox>
+                    </b-dropdown-item>
+                  </b-dropdown>
+                </div>
                 <div class="mt-1 pr-1">
                   Buy Offers
                 </div>
@@ -801,6 +865,7 @@ modalBuyOffer: {{ modalBuyOffer }}
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
+settings.sellOffers: {{ settings.sellOffers }}
 newSellOffers: {{ newSellOffers }}
                 </pre>
               </font>
@@ -808,6 +873,7 @@ newSellOffers: {{ newSellOffers }}
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
+settings.buyOffers: {{ settings.buyOffers }}
 newBuyOffers: {{ newBuyOffers }}
                 </pre>
               </font>
@@ -1162,12 +1228,26 @@ data: {{ data }}
         decimals: null,
 
         sellOffers: {
+          mineOnly: false,
+          ignoreMyApprovals: false,
+          includeInvalidated: false, // false,
+          includeExpired: false, // false,
+          simulate: false, // false,
+          points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
+
           filter: null,
           currentPage: 1,
           pageSize: 10,
           sortOption: 'txorderdsc',
         },
         buyOffers: {
+          mineOnly: false,
+          ignoreMyApprovals: false,
+          includeInvalidated: false, // false,
+          includeExpired: false, // false,
+          simulate: false, // false,
+          points: [ [0.012, 10.123], [0.013, 10.234] ], // [];
+
           filter: null,
           currentPage: 1,
           pageSize: 10,
@@ -1222,7 +1302,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 19,
+        version: 20,
       },
 
       tokenAgentFactoryEvents: [],
@@ -1700,13 +1780,13 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenSet.timestamp: " + this.formatTimestamp(this.tokenSet.timestamp) + ", token.symbol: " + this.tokenSet.symbol + ", token.decimals: " + this.tokenSet.decimals);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
 
-      const points = [ [0.012, 10.123], [0.013, 10.234] ]; // [];
-      const simulate = false; // false;
       const mineOnly = false;
+      const ignoreMyApprovals = false;
       const includeInvalidated = true; // false;
       const includeExpired = true; // false;
+      const simulate = false; // false;
+      const points = [ [0.012, 10.123], [0.013, 10.234] ]; // [];
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
-      const ignoreMyApprovals = false;
 
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {

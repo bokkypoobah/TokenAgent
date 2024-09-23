@@ -258,7 +258,7 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi) {
           eventType: EVENTTYPE_OFFERED, index, token, tokenType, maker, buySell, expiry, nonce,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
-          tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
+          tokenss_: tokenss.map(e => ethers.BigNumber.from(e).toString()), // 'tokenss' gets lost in the JSON.stringify(...) -> JSON.parse(...) of Offered records
           timestamp,
         };
       } else if (logData.eventFragment.name == "Traded") {
@@ -268,7 +268,7 @@ function parseTokenAgentEventLogs(logs, chainId, tokenAgentAbi) {
           eventType: EVENTTYPE_TRADED, index, token, tokenType, maker, taker, makerBuySell,
           prices: prices.map(e => ethers.BigNumber.from(e).toString()),
           tokenIds: tokenIds.map(e => ethers.BigNumber.from(e).toString()),
-          tokenss: tokenss.map(e => ethers.BigNumber.from(e).toString()),
+          tokenss_: tokenss.map(e => ethers.BigNumber.from(e).toString()), // For consistency with the above
           remainingTokenss: remainingTokenss.map(e => ethers.BigNumber.from(e).toString()),
           price: price.toString(),
           timestamp,

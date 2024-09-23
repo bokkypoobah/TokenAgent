@@ -1783,7 +1783,6 @@ const dataModule = {
       do {
         let data = await db.tokenSetTokenAgentEvents.where('[tokenSet+blockNumber+logIndex]').between([parameter.tokenIndex, Dexie.minKey, Dexie.minKey],[parameter.tokenIndex, Dexie.maxKey, Dexie.maxKey]).offset(rows).limit(context.state.DB_PROCESSING_BATCH_SIZE).toArray();
         for (const e of data) {
-          // console.log(now() + " INFO dataModule:actions.collateTokenSet - e: " + JSON.stringify(e));
           if (!(e.contract in tokenAgents)) {
             const ta = context.state.tokenAgents[parameter.chainId] && context.state.tokenAgents[parameter.chainId][e.contract];
             tokenAgents[e.contract] = {
@@ -1883,7 +1882,8 @@ const dataModule = {
       };
       context.commit('setState', { name: 'tokenSet', data: tokenSet });
       await context.dispatch('saveData', ['tokenSet']);
-      console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet, null, 2));
+      // console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenAgents: " + JSON.stringify(tokenAgents));
+      // console.log(now() + " INFO dataModule:actions.collateTokenSet END - tokenSet: " + JSON.stringify(tokenSet));
     },
 
 

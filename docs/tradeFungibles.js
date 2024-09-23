@@ -1725,23 +1725,24 @@ data: {{ data }}
                 };
               }
               collator[d.owner][tokenAgent].offers[e.index] = e;
-              if (e.prices.length == e.tokenss.length) {
-                for (let i = 0; i < e.prices.length; i++) {
-                  prices.push({
-                    txHash: e.txHash, logIndex: e.logIndex,
-                    tokenAgent, owner: d.owner,
-                    offerIndex: e.index, nonce: e.nonce, expiry: e.expiry,
-                    priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
-                    // tokenAgent, owner: d.owner, indexByOwner: collator[d.owner].tokenAgents[tokenAgent].indexByOwner,
-                    // offerIndex: e.index, nonce: e.nonce, currentNonce: d.nonce, valid: d.nonce == e.nonce && (e.expiry == 0 || e.expiry > this.data.timestamp),
-                    // priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
-                    // expiry: e.expiry, tokensAvailable: null,
-                  });
-                }
-              }
             }
           } else if (e.eventType == EVENTTYPE_TRADED) {
             // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - TRADED e: " + JSON.stringify(e));
+            if (!(e.maker in collator)) {
+              collator[e.maker] = {};
+            }
+            if (!(tokenAgent in collator[e.maker])) {
+              collator[e.maker][tokenAgent] = {
+                offers: {},
+                trades: [],
+              };
+            }
+            collator[e.maker][tokenAgent].trades.push(e);
+            if (e.index in collator[e.maker][tokenAgent].offers) {
+              // console.log("Found offer: " + JSON.stringify(collator[e.maker][tokenAgent].offers[e.index]));
+              collator[e.maker][tokenAgent].offers[e.index].tokenss = e.remainingTokens;
+            }
+
           } else {
             console.log(now() + " INFO TradeFungibles:computed.newSellOffers - OTHER e: " + JSON.stringify(e));
           }
@@ -1752,6 +1753,20 @@ data: {{ data }}
           // }
         }
       }
+
+      // Go through collator offers
+      // if (e.prices.length == e.tokenss.length) {
+      //   for (let i = 0; i < e.prices.length; i++) {
+      //     prices.push({
+      //       txHash: e.txHash, logIndex: e.logIndex,
+      //       tokenAgent, owner: d.owner,
+      //       offerIndex: e.index, nonce: e.nonce, expiry: e.expiry,
+      //       priceIndex: i, price: e.prices[i], tokens: e.tokenss[i],
+      //       // currentNonce: d.nonce, valid: d.nonce == e.nonce && (e.expiry == 0 || e.expiry > this.data.timestamp),
+      //     });
+      //   }
+      // }
+
       // console.log(now() + " INFO TradeFungibles:computed.newSellOffers - collator: " + JSON.stringify(collator, null, 2));
       return { prices, collator };
     },

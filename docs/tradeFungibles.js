@@ -853,17 +853,12 @@ modalBuyOffer: {{ modalBuyOffer }}
               <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
                 <b-tab no-body>
                   <template #title>
-                    <span v-b-popover.hover.ds500="'View existing offers'">Offer</span>
-                  </template>
-                </b-tab>
-                <b-tab no-body>
-                  <template #title>
-                    <span v-b-popover.hover.ds500="'Add offer'">Add Offer</span>
-                  </template>
-                </b-tab>
-                <b-tab no-body>
-                  <template #title>
                     <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Make offer'">Make Offer</span>
                   </template>
                 </b-tab>
               </b-tabs>
@@ -881,17 +876,12 @@ newSellOffers: {{ newSellOffers }}
               <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
                 <b-tab no-body>
                   <template #title>
-                    <span v-b-popover.hover.ds500="'View existing offers'">Offer</span>
-                  </template>
-                </b-tab>
-                <b-tab no-body>
-                  <template #title>
-                    <span v-b-popover.hover.ds500="'Add offer'">Add Offer</span>
-                  </template>
-                </b-tab>
-                <b-tab no-body>
-                  <template #title>
                     <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
+                  </template>
+                </b-tab>
+                <b-tab no-body>
+                  <template #title>
+                    <span v-b-popover.hover.ds500="'Make offer'">Make Offer</span>
                   </template>
                 </b-tab>
               </b-tabs>

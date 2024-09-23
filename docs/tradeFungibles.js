@@ -865,7 +865,7 @@ modalBuyOffer: {{ modalBuyOffer }}
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
-settings.sellOffers: {{ settings.sellOffers }}
+<!-- settings.sellOffers: {{ settings.sellOffers }} -->
 newSellOffers: {{ newSellOffers }}
                 </pre>
               </font>
@@ -873,7 +873,7 @@ newSellOffers: {{ newSellOffers }}
             <b-col class="m-0 mr-1 p-0">
               <font size="-2">
                 <pre>
-settings.buyOffers: {{ settings.buyOffers }}
+<!-- settings.buyOffers: {{ settings.buyOffers }} -->
 newBuyOffers: {{ newBuyOffers }}
                 </pre>
               </font>
@@ -1780,12 +1780,12 @@ data: {{ data }}
       console.log(now() + " INFO TradeFungibles:computed.newSellOffers - tokenSet.timestamp: " + this.formatTimestamp(this.tokenSet.timestamp) + ", token.symbol: " + this.tokenSet.symbol + ", token.decimals: " + this.tokenSet.decimals);
       const TENPOW18 = ethers.BigNumber.from("1000000000000000000");
 
-      const mineOnly = false;
-      const ignoreMyApprovals = false;
-      const includeInvalidated = true; // false;
-      const includeExpired = true; // false;
-      const simulate = false; // false;
-      const points = [ [0.012, 10.123], [0.013, 10.234] ]; // [];
+      const mineOnly = this.settings.sellOffers.mineOnly;
+      const ignoreMyApprovals = this.settings.sellOffers.ignoreMyApprovals;
+      const includeInvalidated = this.settings.sellOffers.includeInvalidated;
+      const includeExpired = this.settings.sellOffers.includeExpired;
+      const simulate = this.settings.sellOffers.simulate;
+      const points = this.settings.sellOffers.points;
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
 
       const collator = {};

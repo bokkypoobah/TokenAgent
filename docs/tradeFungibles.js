@@ -724,6 +724,12 @@ modalBuyOffer: {{ modalBuyOffer }}
                     {{ formatTimestamp(data.item.expiry) }}
                   </template>
                   <template #cell(maker)="data">
+                    <b-button size="sm" @click="viewOldTakeSellOffer([data.item]);" variant="link" v-b-popover.hover.ds500="'Old Take Sell Offer'" class="m-0 p-0">
+                      <b-icon-asterisk shift-v="+10" font-scale="0.6"></b-icon-asterisk>
+                    </b-button>
+                    <!-- <b-badge @click="viewOldTakeSellOffer([data.item]);" variant="link" class="m-0 mt-1">
+                      old
+                    </b-badge> -->
                     {{ indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '' }}
                     <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
@@ -3180,6 +3186,17 @@ data: {{ data }}
         }
         this.$refs.addSellOfferTable.clearSelected();
         this.saveSettings();
+      }
+    },
+
+    viewOldTakeSellOffer(item) {
+      console.log(now() + " INFO Addresses:methods.viewOldTakeSellOffer BEGIN: " + JSON.stringify(item, null, 2));
+      if (item && item.length > 0) {
+        this.modalSellOffer.txHash = item[0].txHash;
+        this.modalSellOffer.logIndex = item[0].logIndex;
+        this.modalSellOffer.maker = this.indexToAddress[item[0].owner];
+        this.modalSellOffer.tokenAgent = this.indexToAddress[item[0].tokenAgent];
+        this.$refs.modalselloffer.show();
       }
     },
 

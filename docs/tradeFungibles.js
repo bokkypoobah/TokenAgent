@@ -763,6 +763,9 @@ modalBuyOffer: {{ modalBuyOffer }}
                       </b-badge>
                     </font> -->
                   </template>
+                  <template #cell(wethAmount)="data">
+                    {{ formatWeth(data.item.wethAmount) }}
+                  </template>
                   <template #cell(tokens)="data">
                     {{ formatTokens(data.item.tokens) }}
                   </template>
@@ -1618,8 +1621,9 @@ data: {{ data }}
       sellOffersFields: [
         // { key: 'nonce', label: 'Nonce', sortable: false, thStyle: 'width: 5%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
-        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
-        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
         // { key: 'token', label: 'Token', sortable: false, thStyle: 'width: 15%;', tdClass: 'text-left' },

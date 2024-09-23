@@ -660,10 +660,13 @@ modalBuyOffer: {{ modalBuyOffer }}
           <b-row class="m-0 p-0">
             <b-col class="m-0 mr-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-1 pr-1">
+                  Sell Offers
+                </div>
                 <div class="mt-0 pr-1">
                   <b-dropdown size="sm" id="dropdown-left" variant="link" no-caret v-b-popover.hover.ds500="'Filters'" class="m-0 p-0">
                     <template #button-content>
-                      <b-icon-three-dots-vertical shift-v="+1" font-scale="0.9"></b-icon-three-dots-vertical><span class="sr-only">Menu</span>
+                      <b-icon-list-task shift-v="-1" font-scale="1.2"></b-icon-list-task><span class="sr-only">Menu</span>
                     </template>
                     <b-dropdown-item href="#" @click="settings.sellOffers.mineOnly = !settings.sellOffers.mineOnly; saveSettings(); ">
                       <b-form-checkbox size="sm" v-model="settings.sellOffers.mineOnly">
@@ -691,9 +694,6 @@ modalBuyOffer: {{ modalBuyOffer }}
                       </b-form-checkbox>
                     </b-dropdown-item>
                   </b-dropdown>
-                </div>
-                <div class="mt-1 pr-1">
-                  Sell Offers
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>
@@ -764,10 +764,13 @@ modalBuyOffer: {{ modalBuyOffer }}
             </b-col>
             <b-col class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-1 pr-1">
+                  Buy Offers
+                </div>
                 <div class="mt-0 pr-1">
                   <b-dropdown size="sm" id="dropdown-left" variant="link" no-caret v-b-popover.hover.ds500="'Filters'" class="m-0 p-0">
                     <template #button-content>
-                      <b-icon-three-dots-vertical shift-v="+1" font-scale="0.9"></b-icon-three-dots-vertical><span class="sr-only">Menu</span>
+                      <b-icon-list-task shift-v="-1" font-scale="1.2"></b-icon-list-task><span class="sr-only">Menu</span>
                     </template>
                     <b-dropdown-item href="#" @click="settings.buyOffers.mineOnly = !settings.buyOffers.mineOnly; saveSettings(); ">
                       <b-form-checkbox size="sm" v-model="settings.buyOffers.mineOnly">
@@ -795,9 +798,6 @@ modalBuyOffer: {{ modalBuyOffer }}
                       </b-form-checkbox>
                     </b-dropdown-item>
                   </b-dropdown>
-                </div>
-                <div class="mt-1 pr-1">
-                  Buy Offers
                 </div>
                 <div class="mt-0 flex-grow-1">
                 </div>

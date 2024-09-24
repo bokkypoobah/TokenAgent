@@ -894,14 +894,15 @@ modalBuyOffer: {{ modalBuyOffer }}
                   <b-input-group>
                     <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="settings.sellOffers.amount" @update="saveSettings();" debounce="600"></b-form-input>
                     <b-input-group-append>
-                      <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="settings.sellOffers.amountType" @change="saveSettings();" class="ml-2">
+                      <b-form-radio-group size="sm" buttons id="modalselloffer-amounttype" v-model="settings.sellOffers.amountType" @change="saveSettings();" button-variant="outline-primary">
                         <b-form-radio value="tokens">{{ settings.symbol }}</b-form-radio>
                         <b-form-radio value="weth">WETH</b-form-radio>
+                        <b-form-radio value="eth">ETH</b-form-radio>
                       </b-form-radio-group>
                     </b-input-group-append>
                   </b-input-group>
                 </b-form-group>
-                {{ settings.sellOffers }}
+                <!-- {{ settings.sellOffers }} -->
 
                 <!-- <b-form-group label="Token:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
                   <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
@@ -1926,6 +1927,9 @@ data: {{ data }}
       const points = this.settings.sellOffers.points;
       const coinbaseIndex = this.coinbase && this.addressToIndex[this.coinbase] || null;
       const selectedTokenAgent = this.settings.sellOffers.select.tokenAgent;
+      const amount = this.settings.sellOffers.amount;
+      const amountType = this.settings.sellOffers.amountType;
+      console.log(now() + " INFO TradeFungibles:computed.newSellOffers - amount: " + amount + ", amountType: " + amountType);
 
       const collator = {};
       for (const [tokenAgent, d] of Object.entries(this.tokenSet.tokenAgents || {})) {
@@ -3686,7 +3690,7 @@ data: {{ data }}
       return false;
     },
     saveSettings() {
-      console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      // console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {

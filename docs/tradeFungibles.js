@@ -658,7 +658,7 @@ modalBuyOffer: {{ modalBuyOffer }}
 
         <b-card v-if="settings.tabIndex == 0" class="m-0 p-0 border-0" body-class="m-0 p-0">
           <b-row class="m-0 p-0">
-            <b-col class="m-0 mr-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 1" class="m-0 mr-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
                 <div class="mt-1 pr-1">
                   Sell Offers
@@ -729,6 +729,14 @@ modalBuyOffer: {{ modalBuyOffer }}
                 <div class="mt-0 pl-1">
                   <b-form-select size="sm" v-model="settings.sellOffers.pageSize" @change="saveSettings" :options="pageSizes" v-b-popover.hover.ds500="'Page size'"></b-form-select>
                 </div>
+                <div class="mt-0 pl-1">
+                  <b-button v-if="settings.viewMode == 0" size="sm" @click="settings.viewMode = 1; saveSettings();" variant="link" v-b-popover.hover.ds500="'Sell offers view'" class="m-0 p-0">
+                    <b-icon-chevron-right shift-v="+1" font-scale="0.9"></b-icon-chevron-right>
+                  </b-button>
+                  <b-button v-if="settings.viewMode == 1" size="sm" @click="settings.viewMode = 0; saveSettings();" variant="link" v-b-popover.hover.ds500="'Split view'" class="m-0 p-0">
+                    <b-icon-chevron-left shift-v="+1" font-scale="0.9"></b-icon-chevron-left>
+                  </b-button>
+                </div>
               </div>
               <font size="-1">
                 <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
@@ -778,8 +786,17 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </b-table>
               </font>
             </b-col>
-            <b-col class="m-0 ml-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 2" class="m-0 ml-1 p-0">
               <div class="d-flex flex-wrap m-0 mt-1 p-0">
+                <div class="mt-0 pr-1">
+                  <b-button v-if="settings.viewMode == 0" size="sm" @click="settings.viewMode = 2; saveSettings();" variant="link" v-b-popover.hover.ds500="'Buy offers view'" class="m-0 p-0">
+                    <b-icon-chevron-left shift-v="+1" font-scale="0.9"></b-icon-chevron-left>
+                  </b-button>
+                  <b-button v-if="settings.viewMode == 2" size="sm" @click="settings.viewMode = 0; saveSettings();" variant="link" v-b-popover.hover.ds500="'Split view'" class="m-0 p-0">
+                    <b-icon-chevron-right shift-v="+1" font-scale="0.9"></b-icon-chevron-right>
+                  </b-button>
+
+                </div>
                 <div class="mt-1 pr-1">
                   Buy Offers
                 </div>
@@ -1451,6 +1468,8 @@ data: {{ data }}
         name: null,
         decimals: null,
 
+        viewMode: 0, // 0:split, 1:sell, 2:buy
+
         sellOffers: {
           mineOnly: false,
           ignoreMyApprovals: false,
@@ -1548,7 +1567,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 24,
+        version: 25,
       },
 
       tokenAgentFactoryEvents: [],

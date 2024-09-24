@@ -877,12 +877,12 @@ modalBuyOffer: {{ modalBuyOffer }}
               </font>
             </b-col>
           </b-row>
-          <b-row class="m-0 mt-2 p-0">
+          <b-row class="m-0 p-0">
             <b-col class="m-0 mr-1 p-0">
               <b-card no-body>
-                <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" pills card vertical content-class="mt-0" align="left" style="min-height: 290px;">
+                <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>
-                    <b-card-text>
+                    <b-card-text class="m-0 p-0">
                       <b-form-group label="Requested amount:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="m-0 p-0">
                         <b-input-group class="w-75">
                           <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="settings.sellOffers.amount" @update="saveSettings();" debounce="600"></b-form-input>
@@ -1067,7 +1067,7 @@ newSellOffers: {{ newSellOffers }}
             </b-col>
             <b-col class="m-0 mr-1 p-0">
               <b-card no-body>
-                <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" pills card vertical content-class="mt-0" align="left" style="min-height: 290px;">
+                <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>
                     <b-card-text>
                     </b-card-text>

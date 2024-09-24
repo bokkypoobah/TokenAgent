@@ -272,7 +272,7 @@ const TradeFungibles = {
                             Click [+] below to add a new row
                           </template>
                           <template #cell(price)="data">
-                            <b-form-input size="sm" type="number" v-model.trim="data.item.price"  @change="saveSettings();" debounce="600" class="text-right"></b-form-input>
+                            <b-form-input size="sm" type="number" v-model.trim="data.item.price" @change="saveSettings();" debounce="600" class="text-right"></b-form-input>
                           </template>
                           <template #cell(tokens)="data">
                             <b-form-input size="sm" type="number" v-model.trim="data.item.tokens" @change="saveSettings();" debounce="600" class="text-right"></b-form-input>
@@ -889,6 +889,29 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </b-tab>
               </b-tabs>
               <b-card-text v-if="settings.sellOffers.tabIndex == 0" class="m-0 p-0">
+                <b-form-group label="Requested amount:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-3 p-0">
+                  <!-- <b-input-group style="width: 20.0rem;"> -->
+                  <b-input-group>
+                    <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="settings.sellOffers.amount" @update="saveSettings();" debounce="600"></b-form-input>
+                    <b-input-group-append>
+                      <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="settings.sellOffers.amountType" @change="saveSettings();" class="ml-2">
+                        <b-form-radio value="tokens">{{ settings.symbol }}</b-form-radio>
+                        <b-form-radio value="weth">WETH</b-form-radio>
+                      </b-form-radio-group>
+                    </b-input-group-append>
+                  </b-input-group>
+                </b-form-group>
+                {{ settings.sellOffers }}
+
+                <!-- <b-form-group label="Token:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                  <b-form-radio-group size="sm" id="modalselloffer-amounttype" v-model="modalSellOffer.amountType">
+                    <b-form-radio value="receiveTokens">{{ settings.symbol }}</b-form-radio>
+                    <b-form-radio value="payWeth">{{ modalSellOffer.paymentsInEth ? 'ETH' : 'WETH' }}</b-form-radio>
+                  </b-form-radio-group>
+                </b-form-group>
+                <b-form-group :label="(modalSellOffer.amountType == 'receiveTokens' ? ('Receive ' + settings.symbol) : ('Pay ' + (modalSellOffer.paymentsInEth ? 'ETH' : 'WETH'))) + ':'" label-for="modalselloffer-amount" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                  <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="modalSellOffer.amount" debounce="600" class="pl-2 w-75"></b-form-input>
+                </b-form-group> -->
                 <!-- <b-form-group v-if="settings.sellOffers.selected.offerIndex" label="Offer:" label-for="selloffer-offer" label-size="sm" label-cols-sm="3" label-align-sm="right" class="mx-0 my-1 p-0">
                   <b-link :href="explorer + 'tx/' + indexToTxHash[settings.sellOffers.selected.txHash] + '#eventlog#' + settings.sellOffers.selected.logIndex" v-b-popover.hover.ds500="'Offer index: ' + settings.sellOffers.selected.offerIndex" target="_blank">
                     <b-badge variant="link" class="m-0 p-0 mt-1">
@@ -972,7 +995,7 @@ newSellOffers: {{ newSellOffers }}
                 </b-tab>
               </b-tabs>
               <b-card-text v-if="settings.buyOffers.tabIndex == 0" class="m-0 p-0">
-                
+
               </b-card-text>
               <font v-if="settings.buyOffers.tabIndex != 0" size="-2">
                 <pre>
@@ -3663,7 +3686,7 @@ data: {{ data }}
       return false;
     },
     saveSettings() {
-      // console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
+      console.log(now() + " INFO TradeFungibles:methods.saveSettings - tokenAgentAgentSettings: " + JSON.stringify(this.settings, null, 2));
       localStorage.tokenAgentTradeFungiblesSettings = JSON.stringify(this.settings);
     },
     async viewSyncOptions() {

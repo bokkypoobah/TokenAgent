@@ -772,22 +772,32 @@ modalBuyOffer: {{ modalBuyOffer }}
                     </font> -->
                   </template>
                   <template #cell(totalWeth)="data">
-                    {{ formatWeth(data.item.totalWeth) }}
+                    <span v-b-popover.hover.ds500="formatDecimals(data.item.totalWeth, 18)">
+                      {{ formatWeth(data.item.totalWeth) }}
+                    </span>
                   </template>
                   <template #head(wethAmount)="data">
                     {{ settings.sellOffers.paymentType == 'eth' ? 'ETH' : 'WETH' }}
                   </template>
                   <template #cell(wethAmount)="data">
-                    {{ formatWeth(data.item.wethAmount) }}
+                    <span v-b-popover.hover.ds500="formatDecimals(data.item.wethAmount, 18)">
+                      {{ formatWeth(data.item.wethAmount) }}
+                    </span>
                   </template>
                   <template #cell(totalTokens)="data">
-                    {{ formatTokens(data.item.totalTokens) }}
+                    <span v-b-popover.hover.ds500="formatDecimals(data.item.totalTokens, settings.decimals)">
+                      {{ formatTokens(data.item.totalTokens) }}
+                    </span>
                   </template>
                   <template #cell(tokens)="data">
-                    {{ formatTokens(data.item.tokens) }}
+                    <span v-b-popover.hover.ds500="formatDecimals(data.item.tokens, settings.decimals)">
+                      {{ formatTokens(data.item.tokens) }}
+                    </span>
                   </template>
                   <template #cell(price)="data">
-                    {{ formatPrice(data.item.price) }}
+                    <span v-b-popover.hover.ds500="formatDecimals(data.item.price, 18)">
+                      {{ formatPrice(data.item.price) }}
+                    </span>
                   </template>
                 </b-table>
               </font>

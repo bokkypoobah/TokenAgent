@@ -739,7 +739,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="sellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="settings.viewMode == 0 ? sellOffersFields : extendedSellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
                   <template #cell(number)="data">
                     {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                   </template>
@@ -771,11 +771,17 @@ modalBuyOffer: {{ modalBuyOffer }}
                       </b-badge>
                     </font> -->
                   </template>
+                  <template #cell(totalWeth)="data">
+                    {{ formatWeth(data.item.totalWeth) }}
+                  </template>
                   <template #head(wethAmount)="data">
                     {{ settings.sellOffers.paymentType == 'eth' ? 'ETH' : 'WETH' }}
                   </template>
                   <template #cell(wethAmount)="data">
                     {{ formatWeth(data.item.wethAmount) }}
+                  </template>
+                  <template #cell(totalTokens)="data">
+                    {{ formatTokens(data.item.totalTokens) }}
                   </template>
                   <template #cell(tokens)="data">
                     {{ formatTokens(data.item.tokens) }}
@@ -853,7 +859,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="buyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="settings.viewMode == 0 ? buyOffersFields : extendedBuyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
                   <template #cell(price)="data">
                     <font size="-1">
                       {{ formatDecimals(data.item.price, 18) }}
@@ -895,7 +901,7 @@ modalBuyOffer: {{ modalBuyOffer }}
             </b-col>
           </b-row>
           <b-row class="m-0 p-0">
-            <b-col class="m-0 mr-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 1" class="m-0 mr-1 p-0">
               <b-card no-body>
                 <b-tabs small card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>
@@ -1082,7 +1088,7 @@ newSellOffers: {{ newSellOffers }}
                 </pre>
               </font>
             </b-col>
-            <b-col class="m-0 mr-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 2" class="m-0 mr-1 p-0">
               <b-card no-body>
                 <b-tabs small card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>
@@ -1768,10 +1774,30 @@ data: {{ data }}
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
       ],
+      extendedSellOffersFields: [
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', tdClass: 'text-left' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 10%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalWeth', label: '∑ WETH', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-right', tdClass: 'text-right' },
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', thClass: 'text-right', tdClass: 'text-right' },
+      ],
       buyOffersFields: [
         { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
         { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
         { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
+        { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', thClass: 'text-left', tdClass: 'text-left' },
+      ],
+      extendedBuyOffersFields: [
+        { key: 'price', label: 'Price', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
+        { key: 'tokens', label: 'Tokens', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'totalTokens', label: '∑ Tokens', sortable: false, thStyle: 'width: 25%;', thClass: 'text-left', tdClass: 'text-left' },
+        { key: 'wethAmount', label: 'WETH', sortable: false, thStyle: 'width: 25%;', tdClass: 'text-left' },
+        { key: 'totalWeth', label: '∑ WETH', sortable: false, thStyle: 'width: 25%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'maker', label: 'Maker', sortable: false, thStyle: 'width: 20%;', tdClass: 'text-left' },
         { key: 'expiry', label: 'Expiry', sortable: false, thStyle: 'width: 10%;', thClass: 'text-left', tdClass: 'text-left' },
         { key: 'number', label: '#', sortable: false, thStyle: 'width: 5%;', thClass: 'text-left', tdClass: 'text-left' },

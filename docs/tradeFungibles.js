@@ -739,7 +739,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="settings.viewMode == 0 ? sellOffersFields : extendedSellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="settings.viewMode == 0 ? sellOffersFields : extendedSellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 350px;">
                   <template #cell(number)="data">
                     {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                   </template>
@@ -811,7 +811,6 @@ modalBuyOffer: {{ modalBuyOffer }}
                   <b-button v-if="settings.viewMode == 2" size="sm" @click="settings.viewMode = 0; saveSettings();" variant="link" v-b-popover.hover.ds500="'Split view'" class="m-0 p-0">
                     <b-icon-chevron-right shift-v="+1" font-scale="0.9"></b-icon-chevron-right>
                   </b-button>
-
                 </div>
                 <div class="mt-1 pr-1">
                   Buy Offers
@@ -869,7 +868,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="settings.viewMode == 0 ? buyOffersFields : extendedBuyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1">
+                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="settings.viewMode == 0 ? buyOffersFields : extendedBuyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 350px;">
                   <template #cell(price)="data">
                     <font size="-1">
                       {{ formatDecimals(data.item.price, 18) }}
@@ -910,8 +909,8 @@ modalBuyOffer: {{ modalBuyOffer }}
               </font>
             </b-col>
           </b-row>
-          <b-row class="m-0 p-0">
-            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 1" class="m-0 mr-1 p-0">
+          <b-row class="m-0 mt-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 1" :cols="settings.viewMode == 0 ? null : 6" class="m-0 mr-1 p-0">
               <b-card no-body>
                 <b-tabs small card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>
@@ -1098,7 +1097,7 @@ newSellOffers: {{ newSellOffers }}
                 </pre>
               </font>
             </b-col>
-            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 2" class="m-0 mr-1 p-0">
+            <b-col v-if="settings.viewMode == 0 || settings.viewMode == 2" :cols="settings.viewMode == 0 ? null : 6" class="m-0 ml-1 p-0">
               <b-card no-body>
                 <b-tabs small card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" pills card vertical nav-class="m-0 p-1" content-class="mt-0" active-tab-class="m-1 p-1" align="left" style="min-height: 260px;">
                   <b-tab title="Take Offer" active>

@@ -879,7 +879,60 @@ modalBuyOffer: {{ modalBuyOffer }}
           </b-row>
           <b-row class="m-0 mt-2 p-0">
             <b-col class="m-0 mr-1 p-0">
-              <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
+              <b-card no-body>
+                <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" pills card vertical content-class="mt-0" align="left" style="min-height: 290px;">
+                  <b-tab title="Take Offer" active>
+                    <b-card-text>
+                      <b-form-group label="Requested amount:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="m-0 p-0">
+                        <b-input-group class="w-75">
+                          <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="settings.sellOffers.amount" @update="saveSettings();" debounce="600"></b-form-input>
+                          <b-input-group-append>
+                            <b-form-radio-group size="sm" buttons id="modalselloffer-amounttype" v-model="settings.sellOffers.amountType" @change="saveSettings();" button-variant="outline-primary">
+                              <b-form-radio value="tokens">{{ settings.symbol }}</b-form-radio>
+                              <b-form-radio value="weth">{{ settings.sellOffers.paymentType == 'weth' ? 'WETH' : 'ETH' }}</b-form-radio>
+                            </b-form-radio-group>
+                          </b-input-group-append>
+                        </b-input-group>
+                      </b-form-group>
+                      <b-form-group :label="'Receive ' + settings.symbol + ':'" label-for="modalselloffer-filledtokens" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-filledtokens" :value="newSellOffers.filled.tokens && formatDecimals(newSellOffers.filled.tokens, 18)" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group :label="'Pay [W]ETH'" label-for="modalselloffer-filledweth" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-filledweth" :value="newSellOffers.filled.weth && formatDecimals(newSellOffers.filled.weth, 18)" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group label="Average Price:" label-for="modalselloffer-filledaverageprice" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-filledaverageprice" :value="newSellOffers.filled.averagePrice && formatDecimals(newSellOffers.filled.averagePrice, 18)" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group label="Payment in:" label-for="modalselloffer-paymenttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-radio-group size="sm" buttons id="modalselloffer-paymenttype" v-model="settings.sellOffers.paymentType" @change="saveSettings();" button-variant="outline-primary">
+                          <b-form-radio value="weth">WETH</b-form-radio>
+                          <b-form-radio value="eth">ETH</b-form-radio>
+                        </b-form-radio-group>
+                      </b-form-group>
+                      <b-form-group label="ETH Balance:" label-for="modalselloffer-ethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-ethbalance" :value="formatDecimals(balance, 18)" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group v-if="settings.sellOffers.paymentType == 'weth'" label="WETH Balance:" label-for="modalselloffer-wethbalance" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-wethbalance" :value="balances[data.weth] && balances[data.weth][coinbase] && formatDecimals(balances[data.weth][coinbase].tokens, 18) || '0'" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group v-if="settings.sellOffers.paymentType == 'weth'" label="WETH Approved:" label-for="modalselloffer-wethapproved" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-form-input size="sm" plaintext id="modalselloffer-wethapproved" :value="approvals[data.weth] && approvals[data.weth][coinbase] && approvals[data.weth][coinbase][sellOffer.tokenAgent] && formatDecimals(approvals[data.weth][coinbase][sellOffer.tokenAgent].tokens, 18) || '0'" class="pl-2 w-75"></b-form-input>
+                      </b-form-group>
+                      <b-form-group label="" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 my-1 p-0">
+                        <b-button size="sm" :disabled="!networkSupported || !newSellOffers.filled.tokens || !settings.sellOffers.select.tokenAgent" @click="newSellOffersTrade" variant="warning">Trade</b-button>
+                      </b-form-group>
+                    </b-card-text>
+                  </b-tab>
+                  <b-tab title="Make Offer">
+                    <b-card-text>
+                      Tab contents 2
+                    </b-card-text>
+                  </b-tab>
+                </b-tabs>
+              </b-card>
+
+
+              <!-- <b-tabs size="sm" card v-model="settings.sellOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
                 <b-tab no-body>
                   <template #title>
                     <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
@@ -890,8 +943,8 @@ modalBuyOffer: {{ modalBuyOffer }}
                     <span v-b-popover.hover.ds500="'Make offer'">Make Offer</span>
                   </template>
                 </b-tab>
-              </b-tabs>
-              <b-card-text v-if="settings.sellOffers.tabIndex == 0" class="m-0 p-0">
+              </b-tabs> -->
+              <b-card-text v-if="false && settings.sellOffers.tabIndex == 0" class="m-0 p-0">
                 <b-form-group label="Requested amount:" label-for="modalselloffer-amounttype" label-size="sm" label-cols-sm="4" label-align-sm="right" class="mx-0 mt-3 mb-0 p-0">
                   <b-input-group class="w-75">
                     <b-form-input size="sm" type="number" id="modalselloffer-amount" v-model="settings.sellOffers.amount" @update="saveSettings();" debounce="600"></b-form-input>
@@ -1013,7 +1066,21 @@ newSellOffers: {{ newSellOffers }}
               </font>
             </b-col>
             <b-col class="m-0 mr-1 p-0">
-              <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
+              <b-card no-body>
+                <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" pills card vertical content-class="mt-0" align="left" style="min-height: 290px;">
+                  <b-tab title="Take Offer" active>
+                    <b-card-text>
+                    </b-card-text>
+                  </b-tab>
+                  <b-tab title="Make Offer">
+                    <b-card-text>
+                      Tab contents 2
+                    </b-card-text>
+                  </b-tab>
+                </b-tabs>
+              </b-card>
+
+              <!-- <b-tabs size="sm" card v-model="settings.buyOffers.tabIndex" @input="saveSettings();" content-class="mt-0" align="left">
                 <b-tab no-body>
                   <template #title>
                     <span v-b-popover.hover.ds500="'Take offer'">Take Offer</span>
@@ -1024,10 +1091,10 @@ newSellOffers: {{ newSellOffers }}
                     <span v-b-popover.hover.ds500="'Make offer'">Make Offer</span>
                   </template>
                 </b-tab>
-              </b-tabs>
-              <b-card-text v-if="settings.buyOffers.tabIndex == 0" class="m-0 p-0">
+              </b-tabs> -->
+              <!-- <b-card-text v-if="settings.buyOffers.tabIndex == 0" class="m-0 p-0">
 
-              </b-card-text>
+              </b-card-text> -->
               <font v-if="settings.buyOffers.tabIndex != 0" size="-2">
                 <pre>
 <!-- settings.buyOffers: {{ settings.buyOffers }} -->

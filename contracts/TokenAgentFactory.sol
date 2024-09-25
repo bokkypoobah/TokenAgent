@@ -368,13 +368,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     error ExecutedTotalPriceGreaterThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error ExecutedTotalPriceLessThanSpecified(Price executedTotalPrice, Price tradeTotalPrice);
     error InsufficentEthersRemaining(uint ethersRequested, uint ethersRemaining);
-    error InsufficentTokensRemaining(Tokens tokensRequested, Tokens tokensRemaining);
-    error InvalidInputData(string reason);
-    error InvalidOffer(Nonce offerNonce, Nonce currentNonce);
-    error InvalidIndex(Index index);
-    error InvalidToken(Token token);
-    error InvalidTokenId(TokenId tokenId);
-    error OfferExpired(Index index, Unixtime expiry);
+    error InsufficentTokensRemaining(uint line, Tokens tokensRequested, Tokens tokensRemaining);
+    error InvalidInputData(uint line, string reason);
+    error InvalidOffer(uint line, Nonce offerNonce, Nonce currentNonce);
+    error InvalidIndex(uint line, Index index);
+    error InvalidToken(uint line, Token token);
+    error InvalidTokenId(uint line, TokenId tokenId);
+    error OfferExpired(uint line, Index index, Unixtime expiry);
     error PricesMustBeSortedWithNoDuplicates();
     error TokenIdsMustBeSortedWithNoDuplicates();
 
@@ -403,14 +403,14 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   prices[price0], tokenIds[tokenId0, tokenId1, ...], tokenss[]
     //   prices[price0, price1, ...], tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     function addOffers(AddOffer[] calldata inputs) external onlyOwner {
-        require(inputs.length > 0, InvalidInputData("No inputs"));
+        require(inputs.length > 0, InvalidInputData(0, "No inputs"));
         for (uint i = 0; i < inputs.length; i++) {
             AddOffer memory input = inputs[i];
             require(Token.unwrap(input.token) != address(weth), CannotOfferWETH());
             TokenType tokenType = tokenTypes[input.token];
             if (tokenType == TokenType.UNKNOWN) {
                 tokenType = _getTokenType(input.token);
-                require(tokenType != TokenType.INVALID, InvalidToken(input.token));
+                require(tokenType != TokenType.INVALID, InvalidToken(i, input.token));
                 tokenTypes[input.token] = tokenType;
             }
             Offer storage offer = offers.push();
@@ -419,20 +419,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.expiry = input.expiry;
             offer.nonce = nonce;
             if (input.prices.length == 0) {
-                revert InvalidInputData("all: prices array must contain at least one price");
+                revert InvalidInputData(i, "all: prices array must contain at least one price");
 
             } else if (tokenType == TokenType.ERC20 && input.tokenss.length != input.prices.length) {
-                revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
+                revert InvalidInputData(i, "ERC-20: tokenss array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
-                revert InvalidInputData("ERC-721: tokenss array length must contain exactly one number");
+                revert InvalidInputData(i, "ERC-721: tokenss array length must contain exactly one number");
             } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
-                revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
+                revert InvalidInputData(i, "ERC-721: tokenIds array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
-                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
+                revert InvalidInputData(i, "ERC-1155: tokenIds and tokenss array length must match");
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
-                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
+                revert InvalidInputData(i, "ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
             offer.prices = input.prices;
             if (tokenType == TokenType.ERC20) {
@@ -479,7 +479,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 
     // Cannot update token and buySell
     function updateOffers(UpdateOffer[] calldata inputs) external onlyOwner {
-        require(inputs.length > 0, InvalidInputData("No inputs"));
+        require(inputs.length > 0, InvalidInputData(0, "No inputs"));
         for (uint i = 0; i < inputs.length; i++) {
             UpdateOffer memory input = inputs[i];
             uint index = Index.unwrap(input.index);
@@ -488,20 +488,20 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
             offer.nonce = nonce;
             TokenType tokenType = tokenTypes[offer.token];
             if (input.prices.length == 0) {
-                revert InvalidInputData("all: prices array must contain at least one price");
+                revert InvalidInputData(i, "all: prices array must contain at least one price");
 
             } else if (tokenType == TokenType.ERC20 && input.tokenss.length != input.prices.length) {
-                revert InvalidInputData("ERC-20: tokenss array length must match prices array length");
+                revert InvalidInputData(i, "ERC-20: tokenss array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC721 && input.tokenss.length != 1) {
-                revert InvalidInputData("ERC-721: tokenss array length must contain exactly one number");
+                revert InvalidInputData(i, "ERC-721: tokenss array length must contain exactly one number");
             } else if (tokenType == TokenType.ERC721 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
-                revert InvalidInputData("ERC-721: tokenIds array length must match prices array length");
+                revert InvalidInputData(i, "ERC-721: tokenIds array length must match prices array length");
 
             } else if (tokenType == TokenType.ERC1155 && input.tokenIds.length != input.tokenss.length) {
-                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match");
+                revert InvalidInputData(i, "ERC-1155: tokenIds and tokenss array length must match");
             } else if (tokenType == TokenType.ERC1155 && input.prices.length != 1 && input.tokenIds.length != input.prices.length) {
-                revert InvalidInputData("ERC-1155: tokenIds and tokenss array length must match prices array length");
+                revert InvalidInputData(i, "ERC-1155: tokenIds and tokenss array length must match prices array length");
             }
             offer.prices = input.prices;
             if (tokenType == TokenType.ERC721 || tokenType == TokenType.ERC1155) {
@@ -542,7 +542,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     // ERC-1155
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
     function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant exceptOwner {
-        require(inputs.length > 0, InvalidInputData("No inputs"));
+        require(inputs.length > 0, InvalidInputData(0, "No inputs"));
         uint totalEth = msg.value;
         if (totalEth > 0) {
             emit InternalTransfer(msg.sender, address(this), totalEth, Unixtime.wrap(uint40(block.timestamp)));
@@ -551,17 +551,17 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
         uint ownerToTakerTotal;
         for (uint i = 0; i < inputs.length; i++) {
             TradeInput memory input = inputs[i];
-            require(Index.unwrap(input.index) < offers.length, InvalidIndex(input.index));
+            require(Index.unwrap(input.index) < offers.length, InvalidIndex(i, input.index));
             Offer storage offer = offers[Index.unwrap(input.index)];
             TokenType tokenType = tokenTypes[offer.token];
-            require(Nonce.unwrap(offer.nonce) == Nonce.unwrap(nonce), InvalidOffer(offer.nonce, nonce));
-            require(Unixtime.unwrap(offer.expiry) == 0 || block.timestamp <= Unixtime.unwrap(offer.expiry), OfferExpired(input.index, offer.expiry));
+            require(Nonce.unwrap(offer.nonce) == Nonce.unwrap(nonce), InvalidOffer(i, offer.nonce, nonce));
+            require(Unixtime.unwrap(offer.expiry) == 0 || block.timestamp <= Unixtime.unwrap(offer.expiry), OfferExpired(i, input.index, offer.expiry));
             uint price;
             uint[] memory prices_;
             uint[] memory tokenIds_;
             uint[] memory tokenss_; // TODO Delete
             if (tokenType == TokenType.ERC20) {
-                require(input.tokenss.length == 1, InvalidInputData("Expecting single tokens input"));
+                require(input.tokenss.length == 1, InvalidInputData(i, "Expecting single tokens input"));
                 uint tokens = uint(Tokens.unwrap(input.tokenss[0]));
                 uint totalTokens;
                 uint totalWETHTokens;
@@ -591,7 +591,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
                 if (input.execution == Execution.FILLORKILL && totalTokens < uint(Tokens.unwrap(input.tokenss[0]))) {
-                    revert InsufficentTokensRemaining(input.tokenss[0], Tokens.wrap(uint128(totalTokens)));
+                    revert InsufficentTokensRemaining(i, input.tokenss[0], Tokens.wrap(uint128(totalTokens)));
                 }
                 if (totalTokens > 0) {
                     price = totalWETHTokens * 10**18 / totalTokens;
@@ -606,7 +606,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     }
                 }
             } else if (tokenType == TokenType.ERC721) {
-                require(Tokens.unwrap(offer.tokenss[0]) >= input.tokenIds.length, InsufficentTokensRemaining(Tokens.wrap(uint128(input.tokenIds.length)), offer.tokenss[0]));
+                require(Tokens.unwrap(offer.tokenss[0]) >= input.tokenIds.length, InsufficentTokensRemaining(i, Tokens.wrap(uint128(input.tokenIds.length)), offer.tokenss[0]));
                 offer.tokenss[0] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[0]) - input.tokenIds.length));
                 prices_ = new uint[](input.tokenIds.length);
                 tokenIds_ = new uint[](input.tokenIds.length);
@@ -625,7 +625,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, input.tokenIds[j]);
                         }
-                        require(k != type(uint).max, InvalidTokenId(input.tokenIds[j]));
+                        require(k != type(uint).max, InvalidTokenId(i, input.tokenIds[j]));
                         if (offer.prices.length == offer.tokenIds.length) {
                             p = Price.unwrap(offer.prices[k]);
                         } else {
@@ -651,13 +651,13 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                     takerToOwnerTotal += price;
                 }
             } else if (tokenType == TokenType.ERC1155) {
-                require(input.tokenIds.length == input.tokenss.length, InvalidInputData("tokenIds must have the same length as tokenss"));
+                require(input.tokenIds.length == input.tokenss.length, InvalidInputData(i, "tokenIds must have the same length as tokenss"));
                 if ((offer.tokenId16s.length + offer.tokenIds.length) == 0) {
                     uint totalCount;
                     for (uint j = 0; j < input.tokenss.length; j++) {
                         totalCount += Tokens.unwrap(input.tokenss[j]);
                     }
-                    require(totalCount <= Tokens.unwrap(offer.tokenss[0]), InsufficentTokensRemaining(Tokens.wrap(uint128(totalCount)), offer.tokenss[0]));
+                    require(totalCount <= Tokens.unwrap(offer.tokenss[0]), InsufficentTokensRemaining(i, Tokens.wrap(uint128(totalCount)), offer.tokenss[0]));
                     offer.tokenss[0] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[0]) - totalCount));
                 }
                 prices_ = new uint[](input.tokenIds.length);
@@ -676,8 +676,8 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
                         } else {
                             k = ArrayUtils.indexOfTokenIds(offer.tokenIds, input.tokenIds[j]);
                         }
-                        require(k != type(uint).max, InvalidTokenId(input.tokenIds[j]));
-                        require(Tokens.unwrap(input.tokenss[j]) <= Tokens.unwrap(offer.tokenss[k]), InsufficentTokensRemaining(input.tokenss[j], offer.tokenss[k]));
+                        require(k != type(uint).max, InvalidTokenId(i, input.tokenIds[j]));
+                        require(Tokens.unwrap(input.tokenss[j]) <= Tokens.unwrap(offer.tokenss[k]), InsufficentTokensRemaining(i, input.tokenss[j], offer.tokenss[k]));
                         offer.tokenss[k] = Tokens.wrap(uint128(Tokens.unwrap(offer.tokenss[k]) - Tokens.unwrap(input.tokenss[j])));
                         if (offer.prices.length == offer.tokenIds.length) {
                             p = Price.unwrap(offer.prices[k]);
@@ -764,27 +764,23 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
 /// @notice TokenAgent factory
 contract TokenAgentFactory is CloneFactory, TokenInfo {
 
-    struct TokenAgentRecord {
-        TokenAgent tokenAgent;
-        Index indexByOwner;
-    }
     struct TokenAgentInfo {
         Index index;
-        Index indexByOwner;
         TokenAgent tokenAgent;
         Account owner;
     }
 
     WETH public weth;
     TokenAgent public tokenAgentTemplate;
-    TokenAgentRecord[] public tokenAgentRecords;
-    mapping(Account => Index[]) public tokenAgentIndicesByOwners;
+    TokenAgent[] public tokenAgents;
+    mapping(Account => Index) public tokenAgentIndexByOwners;
     mapping(TokenAgent => Index) public tokenAgentIndex;
 
-    event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
+    event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Unixtime timestamp);
 
     error NotInitialised();
     error GoAway();
+    error AlreadyDeployed(TokenAgent tokenAgent);
 
     constructor() {
         tokenAgentTemplate = new TokenAgent();
@@ -798,38 +794,35 @@ contract TokenAgentFactory is CloneFactory, TokenInfo {
 
     function newTokenAgent() public {
         require(address(weth) != address(0), NotInitialised());
-        TokenAgent tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
+        TokenAgent tokenAgent = tokenAgents[Index.unwrap(tokenAgentIndexByOwners[Account.wrap(msg.sender)])];
+        require(address(tokenAgent) == address(0), AlreadyDeployed(tokenAgent));
+        tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
         tokenAgent.init(weth, Account.wrap(msg.sender));
-        tokenAgentRecords.push(TokenAgentRecord(tokenAgent, Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length))));
-        tokenAgentIndicesByOwners[Account.wrap(msg.sender)].push(Index.wrap(uint32(tokenAgentRecords.length - 1)));
-        emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(uint32(tokenAgentRecords.length - 1)), Index.wrap(uint32(tokenAgentIndicesByOwners[Account.wrap(msg.sender)].length - 1)), Unixtime.wrap(uint40(block.timestamp)));
+        tokenAgents.push(tokenAgent);
+        tokenAgentIndexByOwners[Account.wrap(msg.sender)] = Index.wrap(uint32(tokenAgents.length - 1));
+        tokenAgentIndex[tokenAgent] = Index.wrap(uint32(tokenAgents.length - 1));
+        emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(uint32(tokenAgents.length - 1)), Unixtime.wrap(uint40(block.timestamp)));
     }
 
     function tokenAgentsLength() public view returns (uint) {
-        return tokenAgentRecords.length;
+        return tokenAgents.length;
     }
-    function tokenAgentsByOwnerLength(Account owner) public view returns (uint) {
-        return tokenAgentIndicesByOwners[owner].length;
-    }
-    function getTokenAgentsInfo(uint from, uint to) public view returns (TokenAgentInfo[] memory results) {
-        uint start = from < tokenAgentRecords.length ? from : tokenAgentRecords.length;
-        uint end = to < tokenAgentRecords.length ? to : tokenAgentRecords.length;
+    function getTokenAgentsInfo(uint fromIndex, uint toIndex) public view returns (TokenAgentInfo[] memory results) {
+        uint start = fromIndex < tokenAgents.length ? fromIndex : tokenAgents.length;
+        uint end = toIndex < tokenAgents.length ? toIndex : tokenAgents.length;
         results = new TokenAgentInfo[](end - start);
         uint k;
         for (uint i = start; i < end; i++) {
-            results[k++] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgentRecords[i].indexByOwner, tokenAgentRecords[i].tokenAgent, tokenAgentRecords[i].tokenAgent.owner());
+            results[k++] = TokenAgentInfo(Index.wrap(uint32(i)), tokenAgents[i], tokenAgents[i].owner());
         }
     }
-    function getTokenAgentsByOwnerInfo(Account owner, uint from, uint to) public view returns (TokenAgentInfo[] memory results) {
-        Index[] memory indices = tokenAgentIndicesByOwners[owner];
-        uint start = from < indices.length ? from : indices.length;
-        uint end = to < indices.length ? to : indices.length;
-        results = new TokenAgentInfo[](end - start);
-        uint k;
-        for (uint i = start; i < end; i++) {
-            uint index = Index.unwrap(indices[i]);
-            results[k++] = TokenAgentInfo(Index.wrap(uint32(index)), Index.wrap(uint32(i)), tokenAgentRecords[index].tokenAgent, tokenAgentRecords[index].tokenAgent.owner());
-        }
+    function getTokenAgentByOwnerInfo(Account owner) public view returns (TokenAgentInfo memory) {
+        Index index = tokenAgentIndexByOwners[owner];
+        return TokenAgentInfo(index, tokenAgents[Index.unwrap(index)], tokenAgents[Index.unwrap(index)].owner());
+    }
+    function getTokenAgentInfo(TokenAgent tokenAgent) public view returns (TokenAgentInfo memory) {
+        Index index = tokenAgentIndex[tokenAgent];
+        return TokenAgentInfo(index, tokenAgents[Index.unwrap(index)], tokenAgents[Index.unwrap(index)].owner());
     }
     function getTokenTypes(Token[] memory tokens) public view returns (TokenType[] memory _tokenTypes) {
         _tokenTypes = new TokenType[](tokens.length);

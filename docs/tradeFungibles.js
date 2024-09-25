@@ -3603,7 +3603,6 @@ data: {{ data }}
       this.settings.sellOffers.select = {
         tokenAgent: null,
         owner: null,
-        indexByOwner: null,
       };
       console.log(now() + " INFO Addresses:methods.resetFilterSellOffersByTokenAgent - this.settings.sellOffers.select: " + JSON.stringify(this.settings.sellOffers.select, null, 2));
     },
@@ -3611,17 +3610,17 @@ data: {{ data }}
     sellOffersRowSelected(item) {
       console.log(now() + " INFO Addresses:methods.sellOffersRowSelected BEGIN: " + JSON.stringify(item, null, 2));
       if (item && item.length > 0) {
-        this.settings.sellOffers.select = {
-          tokenAgent: item[0].tokenAgent,
-          owner: item[0].owner,
-          indexByOwner: item[0].indexByOwner,
-        };
-      } else {
-        // this.settings.sellOffers.select = {
-        //   tokenAgent: null,
-        //   owner: null,
-        //   indexByOwner: null,
-        // };
+        if (item[0].tokenAgent != this.settings.sellOffers.select.tokenAgent) {
+          this.settings.sellOffers.select = {
+            tokenAgent: item[0].tokenAgent,
+            owner: item[0].owner,
+          };
+        } else {
+          this.settings.sellOffers.select = {
+            tokenAgent: null,
+            owner: null,
+          };
+        }
       }
       this.saveSettings();
       this.$refs.sellOffersTable.clearSelected();

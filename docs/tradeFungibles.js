@@ -739,7 +739,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="settings.viewMode == 0 ? sellOffersFields : extendedSellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 350px;">
+                <b-table ref="sellOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='sellOffersRowSelected' :fields="settings.viewMode == 0 ? sellOffersFields : extendedSellOffersFields" :items="pagedFilteredSellOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 250px;">
                   <template #cell(number)="data">
                     {{ parseInt(data.index) + ((settings.sellOffers.currentPage - 1) * settings.sellOffers.pageSize) + 1 }}
                   </template>
@@ -868,7 +868,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                 </div>
               </div>
               <font size="-1">
-                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="settings.viewMode == 0 ? buyOffersFields : extendedBuyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 350px;">
+                <b-table ref="buyOffersTable" small fixed striped responsive hover sticky-header="400px" selectable select-mode="single" @row-selected='buyOffersRowSelected' :fields="settings.viewMode == 0 ? buyOffersFields : extendedBuyOffersFields" :items="pagedFilteredBuyOffers" show-empty head-variant="light" class="m-0 mt-1" style="min-height: 250px;">
                   <template #cell(price)="data">
                     <font size="-1">
                       {{ formatDecimals(data.item.price, 18) }}

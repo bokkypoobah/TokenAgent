@@ -3830,22 +3830,22 @@ data: {{ data }}
       } else {
         const s = e - moment().unix();
         if (s >= (365 * 24 * 60 * 60)) {
-          const years = parseFloat(s / (365 * 24 * 60 * 60)).toFixed(1);
+          const years = parseInt(s / (365 * 24 * 60 * 60));
           return years + "y";
         } else if (s >= (30 * 24 * 60 * 60)) {
-          const months = parseFloat(s / (30 * 24 * 60 * 60)).toFixed(1);
+          const months = parseInt(s / (30 * 24 * 60 * 60));
           return months + "mo";
         } else if (s >= (24 * 60 * 60)) {
-          const days = parseFloat(s / (24 * 60 * 60)).toFixed(1);
+          const days = parseInt(s / (24 * 60 * 60));
           return days + "d";
         } else if (s >= (60 * 60)) {
-          const hours = parseFloat(s / (60 * 60)).toFixed(1);
+          const hours = parseInt(s / (60 * 60));
           return hours + "h";
         } else if (s >= 60) {
-          const minutes = parseFloat(s / 60).toFixed(1);
+          const minutes = parseInt(s / 60);
           return minutes + "mi";
         } else if (s >= 0) {
-          return s + "s";
+          return parseInt(s) + "s";
         } else {
           return "exp";
         }

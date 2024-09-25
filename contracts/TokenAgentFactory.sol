@@ -19,7 +19,7 @@ pragma solidity ^0.8.27;
 // Enjoy. (c) BokkyPooBah / Bok Consulting Pty Ltd 2024. The MIT Licence.
 // ----------------------------------------------------------------------------
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 
 /// @notice https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
@@ -773,7 +773,7 @@ contract TokenAgentFactory is CloneFactory, TokenInfo {
     WETH public weth;
     TokenAgent public tokenAgentTemplate;
     TokenAgent[] public tokenAgents;
-    mapping(Account => Index) public tokenAgentIndexByOwners;
+    mapping(Account => TokenAgent) public tokenAgentByOwners;
     mapping(TokenAgent => Index) public tokenAgentIndex;
 
     event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Unixtime timestamp);
@@ -794,12 +794,18 @@ contract TokenAgentFactory is CloneFactory, TokenInfo {
 
     function newTokenAgent() public {
         require(address(weth) != address(0), NotInitialised());
-        TokenAgent tokenAgent = tokenAgents[Index.unwrap(tokenAgentIndexByOwners[Account.wrap(msg.sender)])];
-        require(address(tokenAgent) == address(0), AlreadyDeployed(tokenAgent));
-        tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
+        // uint index = Index.unwrap(tokenAgentByOwners[Account.wrap(msg.sender)]);
+        // console.log("msg.sender", msg.sender);
+        // console.log("index", index);
+        // if ((index + 1) < tokenAgents.length) {
+        //     console.log("tokenAgents[index]", address(tokenAgents[index]));
+        //     require(address(tokenAgents[index]) == address(0) && Account.unwrap(tokenAgents[index].owner()) != msg.sender, AlreadyDeployed(tokenAgents[index]));
+        // }
+        require(address(tokenAgentByOwners[Account.wrap(msg.sender)]) == address(0), AlreadyDeployed(tokenAgentByOwners[Account.wrap(msg.sender)]));
+        TokenAgent tokenAgent = TokenAgent(payable(createClone(address(tokenAgentTemplate))));
         tokenAgent.init(weth, Account.wrap(msg.sender));
         tokenAgents.push(tokenAgent);
-        tokenAgentIndexByOwners[Account.wrap(msg.sender)] = Index.wrap(uint32(tokenAgents.length - 1));
+        tokenAgentByOwners[Account.wrap(msg.sender)] = tokenAgent;
         tokenAgentIndex[tokenAgent] = Index.wrap(uint32(tokenAgents.length - 1));
         emit NewTokenAgent(tokenAgent, Account.wrap(msg.sender), Index.wrap(uint32(tokenAgents.length - 1)), Unixtime.wrap(uint40(block.timestamp)));
     }
@@ -817,8 +823,8 @@ contract TokenAgentFactory is CloneFactory, TokenInfo {
         }
     }
     function getTokenAgentByOwnerInfo(Account owner) public view returns (TokenAgentInfo memory) {
-        Index index = tokenAgentIndexByOwners[owner];
-        return TokenAgentInfo(index, tokenAgents[Index.unwrap(index)], tokenAgents[Index.unwrap(index)].owner());
+        TokenAgent tokenAgent = tokenAgentByOwners[owner];
+        return TokenAgentInfo(tokenAgentIndex[tokenAgent], tokenAgent, tokenAgent.owner());
     }
     function getTokenAgentInfo(TokenAgent tokenAgent) public view returns (TokenAgentInfo memory) {
         Index index = tokenAgentIndex[tokenAgent];

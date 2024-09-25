@@ -244,19 +244,19 @@ describe("TokenAgentFactory", function () {
         console.log("        * accounts[" + i + "]->tokenAgentFactory.newTokenAgent() => " + log.args[0].substring(0, 10) + " - gasUsed: " + formatNumber(newTokenAgentTxReceipt.gasUsed) + " " + ethers.formatEther(fee) + "Ξ " + feeUsd.toFixed(2) + " USD @ " + ethers.formatUnits(GASPRICE, "gwei") + " gwei " + ETHUSD.toFixed(2) + " ETH/USD");
       });
 
-      const tokenAgentsByOwnerInfo = await tokenAgentFactory.getTokenAgentsByOwnerInfo(accounts[i].address, 0, 10);
-      // console.log("        * tokenAgentsByOwnerInfo: " + JSON.stringify(tokenAgentsByOwnerInfo.map(e => e.toString())));
-      const tokenAgentAddress = tokenAgentsByOwnerInfo[0][2];
+      const tokenAgentByOwnerInfo = await tokenAgentFactory.getTokenAgentByOwnerInfo(accounts[i].address);
+      console.log("        * tokenAgentByOwnerInfo: " + JSON.stringify(tokenAgentByOwnerInfo.map(e => e.toString())));
+      const tokenAgentAddress = tokenAgentByOwnerInfo[1];
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
       tokenAgents.push(tokenAgent);
     }
 
     const tokenAgentsInfo = await tokenAgentFactory.getTokenAgentsInfo(0, 10);
-    console.log("          Index Index by Owner tokenAgent Owner");
-    console.log("          ----- -------------- ---------- ----------");
+    console.log("          Index tokenAgent Owner");
+    console.log("          ----- ---------- ----------");
     for (let i = 0; i < tokenAgentsInfo.length; i++) {
       const info = tokenAgentsInfo[i];
-      console.log("          " + padLeft(info[0], 5) + " " + padLeft(info[1], 14) + " " + info[2].substring(0, 10) + " " + info[3].substring(0, 10));
+      console.log("          " + padLeft(info[0], 5) + " " + info[1].substring(0, 10) + " " + info[2].substring(0, 10));
     }
 
     const amountWeth = ethers.parseUnits("100", 18);
@@ -360,15 +360,14 @@ describe("TokenAgentFactory", function () {
 
   describe("Deploy TokenAgentFactory And TokenAgent", function () {
 
-    it("Test TokenAgent secondary functions", async function () {
+    it.only("Test TokenAgent secondary functions", async function () {
       const d = await loadFixture(deployContracts);
       await expect(d.tokenAgentFactory.newTokenAgent())
-        .to.emit(d.tokenAgentFactory, "NewTokenAgent")
-        .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
-      expect(await d.tokenAgentFactory.tokenAgentsByOwnerLength(d.accounts[0].address)).to.equal(2);
-      expect(await d.tokenAgentFactory.tokenAgentsLength()).to.equal(5);
-      const tokenAgentsByOwnerInfo = await d.tokenAgentFactory.getTokenAgentsByOwnerInfo(d.accounts[0].address, 0, 10);
-      const tokenAgentAddress = tokenAgentsByOwnerInfo[1][2];
+        .to.be.revertedWithCustomError(d.tokenAgentFactory, "AlreadyDeployed")
+        .withArgs(anyValue);
+      expect(await d.tokenAgentFactory.tokenAgentsLength()).to.equal(4);
+      const getTokenAgentByOwnerInfo = await d.tokenAgentFactory.getTokenAgentByOwnerInfo(d.accounts[0].address);
+      const tokenAgentAddress = getTokenAgentByOwnerInfo[1];
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
       await expect(tokenAgent.connect(d.accounts[1]).init(d.weth, d.accounts[1]))

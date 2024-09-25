@@ -360,7 +360,7 @@ describe("TokenAgentFactory", function () {
 
   describe("Deploy TokenAgentFactory And TokenAgent", function () {
 
-    it.only("Test TokenAgent secondary functions", async function () {
+    it("Test TokenAgent secondary functions", async function () {
       const d = await loadFixture(deployContracts);
       await expect(d.tokenAgentFactory.newTokenAgent())
         .to.be.revertedWithCustomError(d.tokenAgentFactory, "AlreadyDeployed")
@@ -378,17 +378,14 @@ describe("TokenAgentFactory", function () {
 
     it("Test TokenAgent invalid offers", async function () {
       const d = await loadFixture(deployContracts);
-      await expect(d.tokenAgentFactory.newTokenAgent())
-        .to.emit(d.tokenAgentFactory, "NewTokenAgent")
-        .withArgs(anyValue, d.accounts[0].address, 4, 1, anyValue);
-      const tokenAgentsByOwnerInfo = await d.tokenAgentFactory.getTokenAgentsByOwnerInfo(d.accounts[0].address, 0, 10);
-      const tokenAgentAddress = tokenAgentsByOwnerInfo[1][2];
+      const tokenAgentByOwnerInfo = await d.tokenAgentFactory.getTokenAgentByOwnerInfo(d.accounts[0].address);
+      const tokenAgentAddress = tokenAgentByOwnerInfo[1];
       const TokenAgent = await ethers.getContractFactory("TokenAgent");
       const tokenAgent = TokenAgent.attach(tokenAgentAddress);
       const invalidOffer1 = [[d.accounts[0].address, SELL, d.expiry, [888], [], ["999999999999999999999999999999999997"]]];
       await expect(tokenAgent.addOffers(invalidOffer1))
         .to.be.revertedWithCustomError(tokenAgent, "InvalidToken")
-        .withArgs(d.accounts[0].address);
+        .withArgs(0, d.accounts[0].address);
       const invalidOffer2 = [
         [d.weth.target, SELL, d.expiry, [888], [], ["999999999999999999999999999999999997"]],
       ];

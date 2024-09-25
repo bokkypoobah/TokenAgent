@@ -157,12 +157,9 @@ function parseTokenAgentFactoryEventLogs(logs, chainId, tokenAgentFactoryAddress
       const contract = log.address;
       let eventRecord = null;
       if (logData.eventFragment.name == "NewTokenAgent") {
-        // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
-        const [tokenAgent, owner, index, indexByOwner, timestamp] = logData.args;
-        eventRecord = {
-          eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, indexByOwner,
-          timestamp,
-        };
+        // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Unixtime timestamp);
+        const [tokenAgent, owner, index, timestamp] = logData.args;
+        eventRecord = { eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, timestamp };
       } else {
         console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogs - UNHANDLED log: " + JSON.stringify(log));
       }
@@ -192,12 +189,9 @@ function parseTokenAgentFactoryEventLogsOld(logs, chainId, tokenAgentFactoryAddr
       const contract = log.address;
       let eventRecord = null;
       if (logData.eventFragment.name == "NewTokenAgent") {
-        // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
-        const [tokenAgent, owner, index, indexByOwner, timestamp] = logData.args;
-        eventRecord = {
-          eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, indexByOwner,
-          timestamp,
-        };
+        // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Unixtime timestamp);
+        const [tokenAgent, owner, index, timestamp] = logData.args;
+        eventRecord = { eventType: EVENTTYPE_NEWTOKENAGENT, tokenAgent, owner, index, timestamp };
       } else {
         console.log(now() + " INFO functions:parseTokenAgentFactoryEventLogsOld - UNHANDLED log: " + JSON.stringify(log));
       }

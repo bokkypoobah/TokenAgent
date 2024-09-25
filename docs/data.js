@@ -167,7 +167,7 @@ const dataModule = {
       halt: false,
     },
     db: {
-      name: "tokenagentdata084e",
+      name: "tokenagentdata085a",
       version: 1,
       schemaDefinition: {
         tokenAgentFactoryEvents: '[chainId+blockNumber+logIndex],[blockNumber+contract],contract',
@@ -237,7 +237,7 @@ const dataModule = {
       }
     },
     addTokenAgent(state, info) {
-      // console.log(now() + " INFO dataModule:mutations.addTokenAgent - info: " + JSON.stringify(info));
+      console.log(now() + " INFO dataModule:mutations.addTokenAgent - info: " + JSON.stringify(info));
       if (!(info.chainId in state.tokenAgents)) {
         Vue.set(state.tokenAgents, info.chainId, {});
       }
@@ -250,7 +250,6 @@ const dataModule = {
             timestamp: info.timestamp,
             owner: info.owner,
             index: info.index,
-            indexByOwner: info.indexByOwner,
             nonce: 0,
             nonceBlockNumber: null,
             nonceTimestamp: null,
@@ -1021,16 +1020,16 @@ const dataModule = {
       // const devMode = true;
       const devMode = false;
 
-      if (options.token && !devMode) {
+      if (!devMode) {
         await context.dispatch('syncTokenAgentFactoryEvents', parameter);
       }
-      if (options.token && !devMode) {
+      if (!devMode) {
         await context.dispatch('collateTokenAgentFactoryEvents', parameter);
       }
-      if (options.token && !devMode) {
+      if (!devMode) {
         await context.dispatch('syncTokenAgentGeneralEvents', parameter);
       }
-      if (options.token && !devMode) {
+      if (!devMode) {
         await context.dispatch('collateTokenAgentGeneralEvents', parameter);
       }
       if (options.token && !devMode) {
@@ -1055,78 +1054,6 @@ const dataModule = {
       // console.log("context.state.indexToTxHash AFTER: " + JSON.stringify(context.state.indexToTxHash));
       // context.dispatch('saveData', ['indexToAddress', 'indexToTxHash']);
 
-
-      // if (options.tokenAgentFactory && !options.devThing) {
-      //   await context.dispatch('syncTokenAgentFactoryEvents', parameter);
-      // }
-      // if (options.tokenAgentFactory && !options.devThing) {
-      //   await context.dispatch('collateTokenAgentFactoryEvents', parameter);
-      // }
-      // if (options.tokenAgents && !options.devThing) {
-      //   await context.dispatch('syncTokenAgentsEvents', parameter);
-      // }
-
-      // if (options.stealthTransfers && !options.devThing) {
-      //   await context.dispatch('syncStealthTransfers', parameter);
-      // }
-      // if (options.stealthTransfers && !options.devThing) {
-      //   await context.dispatch('syncStealthTransfersData', parameter);
-      // }
-      // if (options.stealthTransfers && !options.devThing) {
-      //   await context.dispatch('identifyMyStealthTransfers', parameter);
-      // }
-      // if (options.stealthTransfers && !options.devThing) {
-      //   await context.dispatch('collateStealthTransfers', parameter);
-      // }
-
-      // if (options.stealthMetaAddressRegistry && !options.devThing) {
-      //   await context.dispatch('syncRegistrations', parameter);
-      // }
-      // if (options.stealthMetaAddressRegistry && !options.devThing) {
-      //   await context.dispatch('syncRegistrationsData', parameter);
-      // }
-      // if (options.stealthMetaAddressRegistry && !options.devThing) {
-      //   await context.dispatch('collateRegistrations', parameter);
-      // }
-
-      // if ((options.tokens || options.selectedContract) && !options.devThing) {
-      //   await context.dispatch('syncTokenEvents', parameter);
-      // }
-      // if ((options.tokens || options.fungiblesMetadata || options.nonFungiblesMetadata || options.selectedContract) && !options.devThing) {
-      //   await context.dispatch('computeBalances', parameter);
-      //   await context.dispatch('computeApprovals', parameter);
-      // }
-
-      // if (options.devThing) {
-      //   await context.dispatch('computeApprovals', parameter);
-      // }
-
-      // if (options.ensEvents && chainId == 1 && !options.devThing) {
-      //   await context.dispatch('syncENSEvents', parameter);
-      // }
-
-      // if (options.fungiblesMetadata && !options.devThing) {
-      //   await context.dispatch('syncFungiblesMetadata', parameter);
-      // }
-      // if (options.nonFungiblesMetadata && !options.devThing) {
-      //   await context.dispatch('syncNonFungiblesMetadataFromReservoir', parameter);
-      //   // await context.dispatch('syncNonFungiblesMetadata', parameter);
-      // }
-      // if (options.ens && chainId == 1 && !options.devThing) {
-      //   await context.dispatch('syncReverseENS', parameter);
-      // }
-      // if (options.timestamps && !options.devThing) {
-      //   await context.dispatch('syncTokenEventTimestamps', parameter);
-      // }
-      // if (options.txData && !options.devThing) {
-      //   await context.dispatch('syncTokenEventTxData', parameter);
-      // }
-
-      // await context.dispatch('collateNames', parameter);
-      // if (options.devThing) {
-      //   console.log("Dev Thing");
-      // }
-      // context.dispatch('saveData', ['addresses', 'registry' /*, 'blocks', 'txs', 'ensMap'*/]);
       context.commit('setSyncSection', { section: null, total: null });
       context.commit('setSyncHalt', false);
       context.commit('forceRefresh');
@@ -1149,8 +1076,8 @@ const dataModule = {
               const filter = {
                 address: network.tokenAgentFactory.address, fromBlock, toBlock,
                 topics: [[
-                    // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Index indexByOwner, Unixtime timestamp);
-                    ethers.utils.id("NewTokenAgent(address,address,uint32,uint32,uint40)"),
+                    // event NewTokenAgent(TokenAgent indexed tokenAgent, Account indexed owner, Index indexed index, Unixtime timestamp);
+                    ethers.utils.id("NewTokenAgent(address,address,uint32,uint40)"),
                   ],
                 ],
               };

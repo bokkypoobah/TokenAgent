@@ -296,7 +296,7 @@ const Addresses = {
         currentPage: 1,
         pageSize: 10,
         sortOption: 'typenameasc',
-        version: 0,
+        version: 1,
       },
       defaultPhrase: "I want to login into my stealth wallet on Ethereum mainnet.",
       addressTypeInfo: {

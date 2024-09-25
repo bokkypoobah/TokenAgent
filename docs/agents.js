@@ -72,12 +72,12 @@ const Agents = {
             {{ parseInt(data.index) + ((settings.currentPage - 1) * settings.pageSize) + 1 }}
           </template>
           <template #cell(tokenAgent)="data">
-            <b-link :href="explorer + 'address/' + data.item.tokenAgent + '#code'" v-b-popover.hover.ds500="data.item.tokenAgent" target="_blank">
+            <b-link :href="explorer + 'address/' + (indexToAddress[data.item.tokenAgent] || data.item.tokenAgent) + '#code'" v-b-popover.hover.ds500="data.item.tokenAgent" target="_blank">
               {{ indexToAddress[data.item.tokenAgent] || data.item.tokenAgent }}
             </b-link>
           </template>
           <template #cell(owner)="data">
-            <b-link :href="explorer + 'address/' + data.item.owner" v-b-popover.hover.ds500="data.item.owner" target="_blank">
+            <b-link :href="explorer + 'address/' + (indexToAddress[data.item.owner] || data.item.owner)" v-b-popover.hover.ds500="data.item.owner" target="_blank">
               {{ indexToAddress[data.item.owner] || data.item.owner }}
             </b-link>
           </template>
@@ -100,7 +100,7 @@ const Agents = {
         newTokenAgent: {
           show: false,
         },
-        version: 3,
+        version: 4,
       },
       sortOptions: [
         { value: 'ownertokenagentasc', text: '▲ Owner, ▲ Token Agent' },

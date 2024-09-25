@@ -1582,7 +1582,7 @@ data: {{ data }}
           wethDisplayDecimals: 9,
         },
 
-        version: 25,
+        version: 26,
       },
 
       tokenAgentFactoryEvents: [],

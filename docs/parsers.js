@@ -228,8 +228,6 @@ function parseTokenAgentFactoryEventLogsOld(logs, chainId, tokenAgentFactoryAddr
 // enum TokenIdType { TOKENID256, TOKENID16 }
 // enum PaymentType { WETH, ETH }
 // enum TokenType { UNKNOWN, ERC20, ERC721, ERC1155, INVALID }
-// event OwnershipTransferStarted(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
-// event OwnershipTransferred(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 // event InternalTransfer(address indexed from, address indexed to, uint ethers, Unixtime timestamp);
 // event Offered(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);
 // event OfferUpdated(Index index, Token indexed token, TokenType tokenType, Account indexed maker, BuySell buySell, Unixtime expiry, Nonce nonce, Price[] prices, TokenId[] tokenIds, Tokens[] tokenss, Unixtime timestamp);

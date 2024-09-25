@@ -705,7 +705,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                   </b-button> -->
                   <b-button size="sm" v-if="settings.sellOffers.select.tokenAgent" @click="resetFilterSellOffersByTokenAgent" variant="link">
                     <b-badge variant="link">
-                      {{ settings.sellOffers.select.tokenAgent == null ? '' : ((indexToAddress[settings.sellOffers.select.owner] && indexToAddress[settings.sellOffers.select.owner].substring(0, 12)) + (settings.sellOffers.select.indexByOwner != 0 ? ':' + settings.sellOffers.select.indexByOwner : '')) }}
+                      {{ settings.sellOffers.select.tokenAgent == null ? '' : ((indexToAddress[settings.sellOffers.select.owner] && indexToAddress[settings.sellOffers.select.owner].substring(0, 12))) }}
                       <b-icon-x shift-v="-1" font-scale="1.2"></b-icon-x>
                     </b-badge>
                   </b-button>
@@ -755,7 +755,7 @@ modalBuyOffer: {{ modalBuyOffer }}
                     <!-- <b-button size="sm" @click="filterSellOffersByTokenAgent(data.item)" variant="link" v-b-popover.hover.ds500="'Filter by Token Agent: ' + indexToAddress[data.item.tokenAgent]" class="m-0 p-0">
                       <b-icon-filter shift-v="+2" font-scale="1.1"></b-icon-filter>
                     </b-button> -->
-                    {{ (indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '') + (data.item.indexByOwner != 0 ? ':' + data.item.indexByOwner : '') }}
+                    {{ (indexToAddress[data.item.owner] && indexToAddress[data.item.owner].substring(0, 12) || '') }}
                     <!-- <font size="-1">
                       <b-link size="sm" :href="explorer + 'token/' + settings.tokenContractAddress + '?a=' + data.item.maker" variant="link" v-b-popover.hover.ds500="data.item.maker" target="_blank">
                         {{ data.item.maker.substring(0, 8) + '...' + data.item.maker.slice(-6) }}
@@ -2097,7 +2097,6 @@ data: {{ data }}
                 if (!(tokenAgent in collator[d.owner])) {
                   collator[d.owner][tokenAgent] = {
                     nonce: d.nonce,
-                    indexByOwner: d.indexByOwner,
                     offers: {},
                     trades: [],
                   };
@@ -2112,7 +2111,6 @@ data: {{ data }}
               if (!(tokenAgent in collator[e.maker])) {
                 collator[e.maker][tokenAgent] = {
                   nonce: d.nonce,
-                  indexByOwner: d.indexByOwner,
                   offers: {},
                   trades: [],
                 };
@@ -2138,7 +2136,7 @@ data: {{ data }}
               for (let i = 0; i < d3.prices.length; i++) {
                 prices.push({
                   txHash: d3.txHash, logIndex: d3.logIndex,
-                  tokenAgent, owner, indexByOwner: d2.indexByOwner,
+                  tokenAgent, owner,
                   offerIndex: d3.index, nonce: d3.nonce, expiry: d3.expiry,
                   priceIndex: i, price: d3.prices[i], tokens: d3.tokenss[i],
                   valid: d3.nonce == d2.nonce && (d3.expiry == 0 || d3.expiry >= this.tokenSet.timestamp),
@@ -2154,7 +2152,7 @@ data: {{ data }}
         for (const [i, point] of points.entries()) {
           prices.push({
             txHash: null, logIndex: null,
-            tokenAgent: null, owner: coinbaseIndex, indexByOwner: null,
+            tokenAgent: null, owner: coinbaseIndex,
             offerIndex: null, nonce: null, expiry: null,
             priceIndex: i, price: ethers.utils.parseEther(point[0].toString()).toString(),
             tokens: ethers.utils.parseUnits(point[1].toString(), this.tokenSet.decimals).toString(),

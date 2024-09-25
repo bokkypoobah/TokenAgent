@@ -1,18 +1,14 @@
-/**
- *Submitted for verification at Etherscan.io on 2024-09-17
-*/
-
 pragma solidity ^0.8.27;
 
 // ----------------------------------------------------------------------------
-// TokenAgent with factory v0.8.4 testing
+// TokenAgent with factory v0.8.5 testing
 //
 // https://github.com/bokkypoobah/TokenAgent
 //
 // Deployed to Sepolia
 // - WETH 0x07391dbE03e7a0DEa0fce6699500da081537B6c3
-// - TokenAgent template 0x6441869d29DDb30A6B532aa3a78bFcb392354Fe8
-// - TokenAgentFactory 0x953Cdc57222c36809AD72fe7aa010dB51E096B60
+// - TokenAgent template
+// - TokenAgentFactory
 //
 // TODO:
 // - FILL for ERC-721/1155? No
@@ -190,21 +186,16 @@ library ArrayUtils {
 /// @notice Ownership
 contract Owned {
     Account public owner;
-    Account public pendingOwner;
-
-    event OwnershipTransferStarted(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
-    event OwnershipTransferred(Account indexed previousOwner, Account indexed newOwner, Unixtime timestamp);
 
     error AlreadyInitialised();
     error NotOwner();
     error Owner();
-    error NotNewOwner();
 
     modifier onlyOwner {
         require(msg.sender == Account.unwrap(owner), NotOwner());
         _;
     }
-    modifier notOwner {
+    modifier exceptOwner {
         require(msg.sender != Account.unwrap(owner), Owner());
         _;
     }
@@ -212,16 +203,6 @@ contract Owned {
     function initOwned(Account _owner) internal {
         require(Account.unwrap(owner) == address(0), AlreadyInitialised());
         owner = _owner;
-    }
-    function transferOwnership(Account _pendingOwner) public onlyOwner {
-        pendingOwner = _pendingOwner;
-        emit OwnershipTransferStarted(owner, _pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
-    }
-    function acceptOwnership() public {
-        require(msg.sender == Account.unwrap(pendingOwner), NotNewOwner());
-        emit OwnershipTransferred(owner, pendingOwner, Unixtime.wrap(uint40(block.timestamp)));
-        owner = pendingOwner;
-        pendingOwner = Account.wrap(address(0));
     }
     function recoverTokens(IERC20 token, Tokens tokens) public onlyOwner {
         if (address(token) == address(0)) {
@@ -560,7 +541,7 @@ contract TokenAgent is TokenInfo, Owned, NonReentrancy {
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[]
     // ERC-1155
     //   tokenIds[tokenId0, tokenId1, ...], tokenss[tokens0, tokens1, ...]
-    function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant notOwner {
+    function trade(TradeInput[] calldata inputs, PaymentType paymentType) external payable nonReentrant exceptOwner {
         require(inputs.length > 0, InvalidInputData("No inputs"));
         uint totalEth = msg.value;
         if (totalEth > 0) {

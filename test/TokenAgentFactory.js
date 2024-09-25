@@ -374,14 +374,6 @@ describe("TokenAgentFactory", function () {
       await expect(tokenAgent.connect(d.accounts[1]).init(d.weth, d.accounts[1]))
         .to.be.revertedWithCustomError(tokenAgent, "AlreadyInitialised");
       expect(await tokenAgent.owner()).to.equal(d.accounts[0].address);
-      await expect(tokenAgent.connect(d.accounts[1]).transferOwnership(d.accounts[0]))
-        .to.be.revertedWithCustomError(tokenAgent, "NotOwner");
-      await tokenAgent.connect(d.accounts[0]).transferOwnership(d.accounts[1]);
-      await expect(tokenAgent.connect(d.accounts[2]).acceptOwnership())
-        .to.be.revertedWithCustomError(tokenAgent, "NotNewOwner");
-      await expect(tokenAgent.connect(d.accounts[1]).acceptOwnership())
-        .to.emit(tokenAgent, "OwnershipTransferred")
-        .withArgs(d.accounts[0].address, d.accounts[1].address, anyValue);
       expect((await d.tokenAgentFactory.getTokenTypes([d.weth, d.erc20Token, d.erc721Token, d.erc1155Token, d.accounts[0]])).toString()).to.equal("1,1,2,3,4");
     });
 

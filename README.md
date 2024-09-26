@@ -2,6 +2,8 @@
 
 Personal agent for peer-to-peer ERC-20/721/1155 token exchange.
 
+⭐ Sep 26 2024 - Work on this project is been moved to https://github.com/bokkypoobah/Demodex ⭐
+
 #### UI URL
 [https://bokkypoobah.github.io/TokenAgent/](https://bokkypoobah.github.io/TokenAgent/)
 
